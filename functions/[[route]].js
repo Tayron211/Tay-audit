@@ -1443,7 +1443,7 @@ exit /b 0
         estado: toUpperStr(d.status, 'INSTALADO')
       });
 
-      const caseDevices = devices.filter(d => !['laptop', 'printer', 'monitor'].includes(d.deviceType?.toLowerCase()));
+      const caseDevices = devices.filter(d => !['laptop', 'printer', 'monitor', 'component', 'speaker', 'ecran', 'network'].includes(d.deviceType?.toLowerCase()));
       populateStyledWorksheet(wb.addWorksheet('CASE'), pcColumns, caseDevices.map(mapDeviceToPcRow));
       populateStyledWorksheet(wb.addWorksheet('LAPTOPS'), pcColumns, devices.filter(d => d.deviceType?.toLowerCase() === 'laptop').map(mapDeviceToPcRow));
 
@@ -1523,6 +1523,34 @@ exit /b 0
           c6: 'MULTIFUNCIONAL INYECCIÓN / LÁSER', c7: toUpperStr(d.ipAddress, '192.168.1.150'), estado: toUpperStr(d.status, 'INSTALADO')
         }))
       );
+
+      const hwComponents = devices.filter(d => d.deviceType?.toLowerCase() === 'component');
+      if (hwComponents.length > 0) {
+        const hwColumns = [
+          { header: 'CÓDIGO / ID', key: 'codigo', width: 20 },
+          { header: 'CATEGORÍA COMPONENTE', key: 'categoria', width: 26 },
+          { header: 'MARCA Y MODELO', key: 'modelo', width: 36 },
+          { header: 'NÚMERO DE SERIE / P/N', key: 'serie', width: 24 },
+          { header: 'ESPECIFICACIONES TÉCNICAS', key: 'specs', width: 48 },
+          { header: 'UBICACIÓN / EQUIPO', key: 'ubicacion', width: 28 },
+          { header: 'ÁREA / RESPONSABLE', key: 'responsable', width: 24 },
+          { header: 'ESTADO', key: 'estado', width: 16 }
+        ];
+        populateStyledWorksheet(
+          wb.addWorksheet('COMPONENTES HW'),
+          hwColumns,
+          hwComponents.map(d => ({
+            codigo: toUpperStr(d.hostname, 'HW-0001'),
+            categoria: toUpperStr((d.os || '').replace(/^Componente:\s*/i, ''), 'COMPONENTE HW'),
+            modelo: toUpperStr(d.brand && d.model ? `${d.brand} ${d.model}` : (d.model || d.brand || 'GENÉRICO')),
+            serie: toUpperStr(d.serialNumber, 'S/N'),
+            specs: toUpperStr(d.specs || d.notes, 'ESTÁNDAR'),
+            ubicacion: toUpperStr(d.location, 'ALMACÉN TI'),
+            responsable: toUpperStr(d.assignedUser || d.department, 'SOPORTE TI'),
+            estado: toUpperStr(d.status, 'CUSTODIA')
+          }))
+        );
+      }
 
       const buffer = await wb.xlsx.writeBuffer();
       return new Response(buffer, {

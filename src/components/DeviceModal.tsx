@@ -32,6 +32,7 @@ const DEVICE_TYPE_OPTIONS: SelectOption<DeviceType>[] = [
   { value: 'ecran', label: 'Ecran / Pantalla de Proyección' },
   { value: 'monitor', label: 'Monitor / Pantalla' },
   { value: 'network', label: 'Equipo de Red (Switch / Router)' },
+  { value: 'component', label: 'Componente de Cómputo / Hardware' },
   { value: 'other', label: 'Otro Periférico' }
 ];
 
@@ -628,11 +629,15 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               </div>
             )}
 
-            {/* Especificaciones / Conexión para Parlantes / Ecran */}
-            {(editForm.deviceType === 'speaker' || editForm.deviceType === 'ecran' || editForm.specs) && (
+            {/* Especificaciones / Conexión para Parlantes / Ecran / Componentes HW */}
+            {(editForm.deviceType === 'speaker' || editForm.deviceType === 'ecran' || editForm.deviceType === 'component' || editForm.specs) && (
               <div className="device-modal-section" style={{ borderLeft: '3px solid var(--accent-cyan)' }}>
                 <label className="device-modal-label" style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
-                  {editForm.deviceType === 'ecran' ? 'Dimensiones & Medidas del Ecran' : 'Tipo de Conexión & Especificaciones'}
+                  {editForm.deviceType === 'ecran'
+                    ? 'Dimensiones & Medidas del Ecran'
+                    : editForm.deviceType === 'component'
+                      ? 'Especificaciones Técnicas del Componente de Hardware'
+                      : 'Tipo de Conexión & Especificaciones'}
                 </label>
                 <input
                   type="text"

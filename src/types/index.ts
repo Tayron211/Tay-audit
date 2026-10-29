@@ -1,4 +1,4 @@
-export type DeviceType = 'pc' | 'laptop' | 'server' | 'printer' | 'network' | 'monitor' | 'speaker' | 'ecran' | 'other';
+export type DeviceType = 'pc' | 'laptop' | 'server' | 'printer' | 'network' | 'monitor' | 'speaker' | 'ecran' | 'component' | 'other';
 
 export type DeviceStatus = 'instalado' | 'custodia' | 'maintenance' | 'mantenimiento' | 'baja' | 'online' | 'offline' | 'audited';
 

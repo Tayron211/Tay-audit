@@ -145,7 +145,9 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
         const mBrand = (d.brand || '').toLowerCase().includes(q);
         const mModel = (d.model || '').toLowerCase().includes(q);
         const mLoc = (d.location || '').toLowerCase().includes(q);
-        return mHost || mUser || mIP || mSerial || mDept || mBrand || mModel || mLoc;
+        const mSpecs = (d.specs || '').toLowerCase().includes(q);
+        const mOs = (d.os || '').toLowerCase().includes(q);
+        return mHost || mUser || mIP || mSerial || mDept || mBrand || mModel || mLoc || mSpecs || mOs;
       }
 
       return true;
@@ -164,6 +166,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
       speaker: devices.filter(d => d.deviceType === 'speaker').length,
       ecran: devices.filter(d => d.deviceType === 'ecran').length,
       monitor: devices.filter(d => d.deviceType === 'monitor').length,
+      component: devices.filter(d => d.deviceType === 'component').length,
       instalado: devices.filter(d => d.status === 'instalado' || d.status === 'online' || d.status === 'audited').length,
       custodia: devices.filter(d => d.status === 'custodia' || d.status === 'offline').length,
       maintenance: devices.filter(d => d.status === 'maintenance' || d.status === 'mantenimiento').length,
@@ -371,6 +374,20 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
           </div>
         </div>
 
+        {/* Especificaciones Técnicas del Componente si aplica */}
+        {device.specs && (
+          <div style={{
+            padding: '8px 12px',
+            borderRadius: '6px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            fontSize: '0.72rem',
+            color: 'var(--text-primary)'
+          }}>
+            <strong style={{ color: 'var(--accent-primary)' }}>Especificaciones Técnicas:</strong> {device.specs}
+          </div>
+        )}
+
         {/* Notas de Inventario si existen */}
         {device.notes && (
           <div style={{
@@ -477,7 +494,8 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
             { id: 'network', label: 'Red', count: counts.network },
             { id: 'speaker', label: 'Parlantes', count: counts.speaker },
             { id: 'ecran', label: 'Ecran', count: counts.ecran },
-            { id: 'monitor', label: 'Monitores', count: counts.monitor }
+            { id: 'monitor', label: 'Monitores', count: counts.monitor },
+            { id: 'component', label: 'Hardware', count: counts.component }
           ].map(c => {
             const isSelected = categoryFilter === c.id;
             return (

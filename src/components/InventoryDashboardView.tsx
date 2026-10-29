@@ -82,6 +82,7 @@ export const InventoryDashboardView: React.FC<InventoryDashboardViewProps> = ({
     if (t === 'monitor' || t === 'pantalla') return 'monitor';
     if (t === 'speaker' || t === 'parlante' || t === 'altavoz' || t === 'audio') return 'speaker';
     if (t === 'ecran' || t === 'proyector' || t === 'telon' || t === 'pantalla_proyeccion') return 'ecran';
+    if (t === 'component' || t === 'hardware' || t === 'componente') return 'component';
     return 'other';
   };
 
@@ -223,6 +224,22 @@ export const InventoryDashboardView: React.FC<InventoryDashboardViewProps> = ({
         color: '#ec4899',
         bgLight: 'rgba(236, 72, 153, 0.12)',
         borderLight: 'rgba(236, 72, 153, 0.25)',
+        count: 0,
+        pct: 0,
+        installed: 0,
+        custody: 0,
+        maintenance: 0,
+        baja: 0,
+        online: 0
+      },
+      component: {
+        id: 'component',
+        name: 'Componentes de Cómputo (Hardware)',
+        desc: 'CPU, RAM, SSD/NVMe, Placas, GPU, Fuentes y Periféricos',
+        icon: HardDrive,
+        color: '#eab308',
+        bgLight: 'rgba(234, 179, 8, 0.12)',
+        borderLight: 'rgba(234, 179, 8, 0.25)',
         count: 0,
         pct: 0,
         installed: 0,

@@ -31,6 +31,7 @@ export const getCategoryIcon = (type: DeviceType) => {
     case 'speaker': return { icon: Volume2, color: '#f97316', label: 'Parlante' };
     case 'ecran': return { icon: Projector, color: '#a855f7', label: 'Ecran' };
     case 'monitor': return { icon: Tv, color: '#06b6d4', label: 'Monitor' };
+    case 'component': return { icon: HardDrive, color: '#f59e0b', label: 'Hardware' };
     default: return { icon: Monitor, color: '#94a3b8', label: 'Equipo' };
   }
 };

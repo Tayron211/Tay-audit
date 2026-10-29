@@ -15,11 +15,20 @@ import {
   Network, 
   Sparkles,
   Droplet,
-  UserCheck
+  UserCheck,
+  HardDrive,
+  ChevronDown,
+  Check,
+  Layers
 } from 'lucide-react';
 import type { Device, DeviceType, DeviceStatus } from '../types';
 import { api } from '../services/api';
 import { PRINTER_CATALOG, SPEAKER_PRESETS, ECRAN_PRESETS, searchPrinterCatalog } from '../data/printerCatalog';
+import {
+  HARDWARE_COMPONENTS_CATALOG,
+  getHardwareComponentDef,
+  type HardwareComponentKey
+} from '../data/hardwareComponentsCatalog';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 
 const FORM_STATUS_OPTIONS: SelectOption<DeviceStatus>[] = [
@@ -75,15 +84,39 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   const [printerSuggestions, setPrinterSuggestions] = useState(PRINTER_CATALOG.slice(0, 8));
   const printerDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close suggestions when clicking outside
+  // Hardware Components dropdown & dynamic fields state
+  const [isHwMenuOpen, setIsHwMenuOpen] = useState(false);
+  const [selectedComponentKey, setSelectedComponentKey] = useState<HardwareComponentKey>('ram');
+  const [componentFields, setComponentFields] = useState<Record<string, string>>(() => {
+    const initialDef = getHardwareComponentDef('ram');
+    const defaults: Record<string, string> = {};
+    initialDef.fields.forEach(f => { defaults[f.key] = f.defaultValue; });
+    return defaults;
+  });
+  const hwMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close suggestions and Hardware menu when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (printerDropdownRef.current && !printerDropdownRef.current.contains(e.target as Node)) {
         setShowPrinterSuggestions(false);
       }
+      if (hwMenuRef.current && !hwMenuRef.current.contains(e.target as Node)) {
+        setIsHwMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsHwMenuOpen(false);
+        setShowPrinterSuggestions(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -103,8 +136,40 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
     }
   }, [prefillCode]);
 
+  // Select a specific Hardware Component from the dropdown menu and adapt all fields
+  const handleSelectHardwareComponent = (compKey: HardwareComponentKey) => {
+    const def = getHardwareComponentDef(compKey);
+    const nextFields: Record<string, string> = {};
+    def.fields.forEach(f => {
+      nextFields[f.key] = f.defaultValue;
+    });
+    setSelectedComponentKey(compKey);
+    setComponentFields(nextFields);
+    setIsHwMenuOpen(false);
+
+    const autoCodePrefixes = ['EQUIPO-', 'PC-', 'IMP-', 'PARLANTE-', 'ECRAN-', 'MON-', ...HARDWARE_COMPONENTS_CATALOG.map(c => `${c.codePrefix}-`)];
+    setFormData(prev => {
+      const shouldGenCode = !prev.hostname || autoCodePrefixes.some(p => prev.hostname?.startsWith(p));
+      return {
+        ...prev,
+        deviceType: 'component',
+        brand: def.defaultBrand,
+        model: def.defaultModel,
+        status: prev.status || 'custodia',
+        location: prev.location === 'Sede Principal' ? 'Almacén TI / Stock' : (prev.location || 'Almacén TI / Stock'),
+        department: prev.department === 'Operaciones' ? 'Soporte TI / Hardware' : (prev.department || 'Soporte TI / Hardware'),
+        hostname: shouldGenCode ? `${def.codePrefix}-${Date.now().toString().slice(-4)}` : prev.hostname
+      };
+    });
+  };
+
   // When deviceType changes, adapt defaults
   const handleTypeChange = (newType: DeviceType) => {
+    setIsHwMenuOpen(false);
+    if (newType === 'component') {
+      handleSelectHardwareComponent(selectedComponentKey);
+      return;
+    }
     setFormData(prev => {
       const updated = { ...prev, deviceType: newType };
       if (newType === 'printer') {
@@ -180,11 +245,81 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
     setError(null);
 
     try {
-      await api.createDevice({
+      let payload: Partial<Device> = {
         ...formData,
         hostname: formData.hostname.toUpperCase().trim(),
         serialNumber: formData.serialNumber?.trim() || `SN-${Date.now().toString().slice(-6)}`
-      });
+      };
+
+      if (formData.deviceType === 'component') {
+        const compDef = getHardwareComponentDef(selectedComponentKey);
+        const specsParts = compDef.fields
+          .map(f => {
+            const val = (componentFields[f.key] || '').trim();
+            return val ? `${f.label.replace(/\s*\*$/, '')}: ${val}` : '';
+          })
+          .filter(Boolean);
+        const compactSpecs = compDef.fields
+          .map(f => (componentFields[f.key] || '').trim())
+          .filter(Boolean)
+          .join(' • ');
+
+        payload = {
+          ...payload,
+          deviceType: 'component',
+          os: `Componente: ${compDef.shortLabel}`,
+          specs: `[${compDef.shortLabel}] ${compactSpecs}`,
+          notes: formData.notes && formData.notes !== 'Levantamiento de inventario registrado.'
+            ? `${compDef.label} (${specsParts.join(' | ')}) — ${formData.notes}`
+            : `${compDef.label} • ${specsParts.join(' | ')}`
+        };
+
+        if (selectedComponentKey === 'cpu') {
+          payload.cpu = `${formData.brand || ''} ${formData.model || ''} (${componentFields.coresThreads || ''})`.trim();
+          payload.motherboard = componentFields.socket || 'Socket CPU';
+          payload.ram = componentFields.frequency || 'N/A';
+          payload.storage = componentFields.igpu || 'N/A';
+        } else if (selectedComponentKey === 'ram') {
+          payload.ram = `${componentFields.capacity || ''} ${componentFields.ddrType || ''} ${componentFields.speed || ''}`.trim();
+          payload.cpu = componentFields.formFactor || 'Módulo RAM';
+          payload.motherboard = componentFields.ddrType || 'RAM';
+          payload.storage = componentFields.capacity || 'N/A';
+        } else if (selectedComponentKey === 'storage') {
+          payload.storage = `${componentFields.capacity || ''} ${componentFields.driveType || ''}`.trim();
+          payload.cpu = componentFields.interface || 'Unidad de Almacenamiento';
+          payload.ram = componentFields.health || '100% Óptimo';
+          payload.motherboard = componentFields.driveType || 'Storage';
+        } else if (selectedComponentKey === 'motherboard') {
+          payload.motherboard = `${formData.brand || ''} ${formData.model || ''} (${componentFields.chipset || ''})`.trim();
+          payload.cpu = `Socket ${componentFields.socket || ''}`.trim();
+          payload.ram = componentFields.ramSlots || 'N/A';
+          payload.storage = componentFields.formFactor || 'N/A';
+        } else if (selectedComponentKey === 'gpu') {
+          payload.cpu = `GPU ${componentFields.vram || ''} ${componentFields.memoryType || ''}`.trim();
+          payload.ram = `${componentFields.vram || ''} VRAM`.trim();
+          payload.storage = componentFields.outputs || 'N/A';
+          payload.motherboard = componentFields.powerConnector || 'PCIe x16';
+        } else if (selectedComponentKey === 'psu') {
+          payload.cpu = `Fuente ${componentFields.wattage || ''}`.trim();
+          payload.ram = componentFields.certification || 'Estándar';
+          payload.storage = componentFields.modularity || 'N/A';
+          payload.motherboard = componentFields.psuFormat || 'ATX';
+        } else if (selectedComponentKey === 'nic') {
+          payload.macAddress = componentFields.macInfo || formData.macAddress || '00:00:00:00:00:00';
+          payload.cpu = componentFields.speedStandard || 'Adaptador de Red';
+          payload.ram = componentFields.busInterface || 'N/A';
+          payload.storage = 'Red / Conectividad';
+          payload.motherboard = componentFields.busInterface || 'PCIe / USB';
+        } else {
+          const vals = compDef.fields.map(f => componentFields[f.key] || '').filter(Boolean);
+          payload.cpu = compDef.shortLabel;
+          payload.ram = vals[0] || 'Estándar';
+          payload.storage = vals[1] || vals[0] || 'Componente';
+          payload.motherboard = vals[2] || compDef.shortLabel;
+        }
+      }
+
+      await api.createDevice(payload);
       onDeviceSaved();
       onClose();
     } catch (err: any) {
@@ -201,6 +336,14 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   const isEcran = currentType === 'ecran';
   const isMonitor = currentType === 'monitor';
   const isNetwork = currentType === 'network';
+  const isComponent = currentType === 'component';
+  const activeComponentDef = getHardwareComponentDef(selectedComponentKey);
+
+  const componentTypeSelectOptions: SelectOption<HardwareComponentKey>[] = HARDWARE_COMPONENTS_CATALOG.map(c => ({
+    value: c.id,
+    label: c.label,
+    dotColor: c.dotColor
+  }));
 
   return (
     <div className="modal-backdrop-acrylic">
@@ -240,16 +383,19 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
               {isEcran && <Projector size={22} color="#a855f7" />}
               {isMonitor && <Tv size={22} color="#06b6d4" />}
               {isNetwork && <Network size={22} color="var(--accent-rose)" />}
+              {isComponent && <HardDrive size={22} color={activeComponentDef.dotColor} />}
               {isComputer && <PlusCircle size={22} color="var(--accent-primary)" />}
               <span>
-                {isEcran ? 'Registro de Ecran / Pantalla de Proyección' :
+                {isComponent ? `Registro de Hardware: ${activeComponentDef.label}` :
+                 isEcran ? 'Registro de Ecran / Pantalla de Proyección' :
                  isSpeaker ? 'Registro de Parlantes / Sistema de Audio' :
                  isPrinter ? 'Registro de Impresora y Suministros' :
                  'Registro de Activo en Inventario TI'}
               </span>
             </h3>
             <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '3px 0 0 0' }}>
-              {isEcran ? 'Formulario simplificado: solo modelo, código patrimonial y ubicación' :
+              {isComponent ? `Formulario adaptado para ${activeComponentDef.shortLabel}: ${activeComponentDef.subtitle}` :
+               isEcran ? 'Formulario simplificado: solo modelo, código patrimonial y ubicación' :
                isSpeaker ? 'Formulario de audio: código de barras, número de serie y modelo' :
                isPrinter ? 'Base de datos inteligente: detección automática de cartuchos de tinta y tóner' :
                'Campos dinámicos adaptados según el tipo de bien seleccionado'}
@@ -294,16 +440,20 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           )}
 
           {/* SELECTOR MAESTRO: TIPO DE BIEN A INVENTARIAR */}
-          <div style={{
-            backgroundColor: 'var(--bg-canvas-subtle)',
-            padding: '14px 16px',
-            borderRadius: '12px',
-            border: '1px solid var(--border-acrylic)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div
+            ref={hwMenuRef}
+            style={{
+              backgroundColor: 'var(--bg-canvas-subtle)',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              border: '1px solid var(--border-acrylic)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              position: 'relative'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
               <label style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 ¿Qué tipo de bien vas a inventariar?
               </label>
@@ -355,8 +505,435 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                   </button>
                 );
               })}
+
+              {/* PESTAÑA DESPLEGABLE: COMPONENTES DE CÓMPUTO (HARDWARE) */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isComponent) {
+                    handleSelectHardwareComponent(selectedComponentKey);
+                    setIsHwMenuOpen(true);
+                  } else {
+                    setIsHwMenuOpen(prev => !prev);
+                  }
+                }}
+                className="btn-flat"
+                aria-haspopup="listbox"
+                aria-expanded={isHwMenuOpen}
+                style={{
+                  padding: '8px 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '6px',
+                  borderRadius: '8px',
+                  fontSize: '0.76rem',
+                  fontWeight: isComponent ? 800 : 600,
+                  backgroundColor: isComponent ? 'var(--accent-primary)' : 'var(--bg-canvas)',
+                  color: isComponent ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
+                  borderColor: isComponent || isHwMenuOpen ? 'var(--accent-primary)' : 'var(--border-acrylic)',
+                  boxShadow: isComponent ? '0 2px 10px var(--accent-glow)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Desplegar lista de Componentes de Cómputo (Hardware)"
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
+                  <HardDrive size={15} style={{ flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {isComponent ? activeComponentDef.shortLabel : 'Hardware'}
+                  </span>
+                </span>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    flexShrink: 0,
+                    transform: isHwMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.18s ease',
+                    opacity: 0.85
+                  }}
+                />
+              </button>
             </div>
+
+            {/* MENÚ DESPLEGABLE ACORDE A LA PÁGINA CON LA LISTA DE COMPONENTES DE HARDWARE */}
+            {isHwMenuOpen && (
+              <div
+                role="listbox"
+                className="acrylic-select-popover"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  right: 0,
+                  zIndex: 220,
+                  maxHeight: '340px',
+                  overflowY: 'auto',
+                  padding: '8px'
+                }}
+              >
+                <div style={{
+                  padding: '4px 8px 8px 8px',
+                  marginBottom: '6px',
+                  borderBottom: '1px solid var(--border-acrylic)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '6px'
+                }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Selecciona el Componente de Cómputo (Hardware)
+                  </span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    {HARDWARE_COMPONENTS_CATALOG.length} categorías disponibles
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                  gap: '4px'
+                }}>
+                  {HARDWARE_COMPONENTS_CATALOG.map(comp => {
+                    const isActiveComp = isComponent && selectedComponentKey === comp.id;
+                    return (
+                      <button
+                        key={comp.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isActiveComp}
+                        onClick={() => handleSelectHardwareComponent(comp.id)}
+                        className={`acrylic-select-option ${isActiveComp ? 'is-selected' : ''}`}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0 }}>
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: comp.dotColor,
+                              marginTop: '5px',
+                              flexShrink: 0
+                            }}
+                          />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{
+                              fontSize: '0.78rem',
+                              fontWeight: isActiveComp ? 800 : 700,
+                              color: isActiveComp ? 'var(--accent-primary)' : 'var(--text-primary)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {comp.label}
+                            </div>
+                            <div style={{
+                              fontSize: '0.66rem',
+                              color: 'var(--text-secondary)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginTop: '1px'
+                            }}>
+                              {comp.subtitle}
+                            </div>
+                          </div>
+                        </div>
+
+                        {isActiveComp && (
+                          <Check size={14} color="var(--accent-primary)" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* ============================================================== */}
+          {/* CASO 0: COMPONENTES DE CÓMPUTO / HARDWARE (CAMPOS DINÁMICOS)   */}
+          {/* ============================================================== */}
+          {isComponent && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Bloque 1: Selector de Componente, Código, Serie, Marca y Modelo */}
+              <div style={{
+                backgroundColor: 'var(--bg-canvas-subtle)',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    <HardDrive size={16} color={activeComponentDef.dotColor} />
+                    <span>1. Identificación de {activeComponentDef.label}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsHwMenuOpen(true)}
+                    className="btn-flat"
+                    style={{ padding: '4px 10px', fontSize: '0.7rem', borderRadius: '6px', gap: '5px' }}
+                  >
+                    <Layers size={12} color="var(--accent-primary)" />
+                    <span>Cambiar componente</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+                  {/* Selector directo sincronizado con el menú */}
+                  <div className="form-group">
+                    <label className="form-label">Categoría de Componente *</label>
+                    <CustomSelect<HardwareComponentKey>
+                      value={selectedComponentKey}
+                      onChange={(val) => handleSelectHardwareComponent(val)}
+                      options={componentTypeSelectOptions}
+                    />
+                  </div>
+
+                  {/* Estado Operativo */}
+                  <div className="form-group">
+                    <label className="form-label">Estado del Componente *</label>
+                    <CustomSelect<DeviceStatus>
+                      value={formData.status || 'custodia'}
+                      onChange={(val) => setFormData({ ...formData, status: val })}
+                      options={FORM_STATUS_OPTIONS}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                  {/* Código del Componente / Patrimonial */}
+                  <div className="form-group">
+                    <label className="form-label">Código Patrimonial / Identificador *</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        required
+                        className="form-input"
+                        placeholder={`Ej: ${activeComponentDef.codePrefix}-0015 o PAT-9041`}
+                        value={formData.hostname}
+                        onChange={(e) => setFormData({ ...formData, hostname: e.target.value.toUpperCase() })}
+                        style={{ fontFamily: 'monospace', fontWeight: 700, flex: 1, height: '38px' }}
+                      />
+                      {onOpenFieldScanner && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenFieldScanner('hostname')}
+                          className="btn-flat btn-primary"
+                          style={{ padding: '0 12px', height: '38px', fontSize: '0.74rem', gap: '5px' }}
+                          title="Escanear Código de Barras del Componente"
+                        >
+                          <Barcode size={15} />
+                          <span>Escanear</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Número de Serie / Part Number */}
+                  <div className="form-group">
+                    <label className="form-label">Número de Serie (S/N) / Part Number *</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <input
+                        type="text"
+                        required
+                        className="form-input"
+                        placeholder="Serial de fábrica o P/N"
+                        value={formData.serialNumber}
+                        onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                        style={{ fontFamily: 'monospace', fontWeight: 700, flex: 1, height: '38px' }}
+                      />
+                      {onOpenFieldScanner && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenFieldScanner('serialNumber')}
+                          className="btn-flat btn-primary"
+                          style={{ padding: '0 12px', height: '38px', fontSize: '0.74rem', gap: '5px' }}
+                          title="Escanear Número de Serie"
+                        >
+                          <Barcode size={15} />
+                          <span>Escanear</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  {/* Marca */}
+                  <div className="form-group">
+                    <label className="form-label">Marca *</label>
+                    <input
+                      type="text"
+                      required
+                      className="form-input"
+                      placeholder={activeComponentDef.brandPlaceholder}
+                      value={formData.brand}
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      style={{ height: '38px' }}
+                    />
+                  </div>
+
+                  {/* Modelo */}
+                  <div className="form-group">
+                    <label className="form-label">Modelo Exacto *</label>
+                    <input
+                      type="text"
+                      required
+                      className="form-input"
+                      placeholder={activeComponentDef.modelPlaceholder}
+                      value={formData.model}
+                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                      style={{ height: '38px' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Presets Rápidos Adaptados al Componente */}
+                {activeComponentDef.presets.length > 0 && (
+                  <div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                      Plantillas rápidas de {activeComponentDef.shortLabel}:
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {activeComponentDef.presets.map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, brand: preset.brand, model: preset.model }));
+                            setComponentFields(prev => ({ ...prev, ...preset.fields }));
+                          }}
+                          className="btn-flat"
+                          style={{ padding: '4px 10px', fontSize: '0.69rem', borderRadius: '6px' }}
+                        >
+                          <Sparkles size={11} color="var(--accent-primary)" />
+                          <span>{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bloque 2: Campos Técnicos Específicos según el Componente Elegido */}
+              <div style={{
+                backgroundColor: 'var(--bg-canvas-subtle)',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <Cpu size={16} color="var(--accent-primary)" />
+                  <span>2. Especificaciones Técnicas de {activeComponentDef.shortLabel}</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+                  {activeComponentDef.fields.map(field => {
+                    if (field.type === 'select' && field.options) {
+                      const selectOpts: SelectOption<string>[] = field.options.map(o => ({ value: o, label: o }));
+                      return (
+                        <div key={field.key} className="form-group">
+                          <label className="form-label">{field.label}</label>
+                          <CustomSelect<string>
+                            value={componentFields[field.key] || field.defaultValue}
+                            onChange={(val) => setComponentFields(prev => ({ ...prev, [field.key]: val }))}
+                            options={selectOpts}
+                          />
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={field.key} className="form-group">
+                        <label className="form-label">{field.label}</label>
+                        <input
+                          type="text"
+                          required={Boolean(field.required)}
+                          className="form-input"
+                          placeholder={field.placeholder || ''}
+                          value={componentFields[field.key] ?? ''}
+                          onChange={(e) => setComponentFields(prev => ({ ...prev, [field.key]: e.target.value }))}
+                          style={{ height: '38px' }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bloque 3: Ubicación, Stock de Almacén o Equipo donde está Instalado */}
+              <div style={{
+                backgroundColor: 'var(--bg-canvas-subtle)',
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <UserCheck size={16} color="var(--accent-secondary)" />
+                  <span>3. Ubicación en Almacén o Equipo Asignado</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Almacén o Equipo donde está instalado *</label>
+                    <input
+                      type="text"
+                      required
+                      className="form-input"
+                      placeholder="Ej: Almacén TI Estante B2 o Instalado en PC-CONTAB-01"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      style={{ height: '38px' }}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Área / Laboratorio</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Ej: Soporte TI, Laboratorio Cómputo 2"
+                      value={formData.department}
+                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                      style={{ height: '38px' }}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Responsable / Custodio</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Ej: Técnico de Soporte TI"
+                      value={formData.assignedUser}
+                      onChange={(e) => setFormData({ ...formData, assignedUser: e.target.value })}
+                      style={{ height: '38px' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ============================================================== */}
           {/* CASO 1: ECRAN / PANTALLA DE PROYECCIÓN (Solo modelo y código) */}
