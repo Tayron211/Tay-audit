@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#0B132B"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#FFB800"/>
+  <!-- Official UPN Twin-Pillar North Arrow with Flat Cut Top -->
+  <path d="M30.4 6.7H25.1L10.7 21.1V29.6L22.8 21.1V58.7H30.4V6.7Z" fill="#0B132B"/>
+  <path d="M33.6 6.7H38.9L53.3 21.1V29.6L41.2 21.1V58.7H33.6V6.7Z" fill="#0B132B"/>
+</svg>

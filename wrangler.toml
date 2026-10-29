@@ -1,0 +1,10 @@
+name = "tay-audit"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tay-audit-db"
+database_id = "9f024999-e346-4be8-b4ad-c7567a8c3a37"
+
