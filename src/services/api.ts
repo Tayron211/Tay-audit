@@ -200,11 +200,6 @@ export const api = {
     return `${API_BASE}/api/export/support-excel`;
   },
 
-  // URL for Full Database Backup (Descarga directa SQLite para producción)
-  getDatabaseBackupUrl(): string {
-    return `${API_BASE}/api/admin/backup-db`;
-  },
-
   // URL for Standalone Audit Batch download (Levantamiento Rápido Sin Instalación)
   getAgentDownloadUrl(): string {
     return `${API_BASE}/api/agent/download`;

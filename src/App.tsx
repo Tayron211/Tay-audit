@@ -7,8 +7,7 @@ import {
   Bot,
   ShieldCheck,
   Globe,
-  Wifi,
-  Database
+  Wifi
 } from 'lucide-react';
 import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge } from './types';
 import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
@@ -774,49 +773,6 @@ exit
                 }}>
                   {psOneLiner}
                 </pre>
-              </div>
-
-              {/* Opción 4: Respaldo y Migración de Base de Datos para Producción */}
-              <div className="acrylic-card" style={{ padding: '22px', border: '1px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: 'rgba(59, 130, 246, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#3b82f6'
-                    }}>
-                      <Database size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Opción 4: Respaldo y Migración de Base de Datos (Producción 24/7)
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#3b82f6', fontWeight: 700 }}>
-                        SQLite WAL Mode • Transaccional ACID • Exportable a PostgreSQL / MySQL
-                      </div>
-                    </div>
-                  </div>
-
-                  <a 
-                    href={api.getDatabaseBackupUrl()} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-flat"
-                    style={{ padding: '8px 16px', borderColor: 'rgba(59, 130, 246, 0.4)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Download size={15} color="#3b82f6" />
-                    <span>{serverInfo.isCloud ? 'Descargar Respaldo Cloud (.json)' : 'Descargar Backup BD (.db)'}</span>
-                  </a>
-                </div>
-
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                  Descarga una copia binaria exacta y congelada de la base de datos <code>tay_audit.db</code>. La base de datos opera con modo WAL (Write-Ahead Logging) y claves foráneas activas, garantizando máxima concurrencia y durabilidad sin riesgo de corrupción al migrar a servidores en la nube.
-                </p>
               </div>
             </div>
           </div>

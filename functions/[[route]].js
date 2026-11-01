@@ -1402,7 +1402,7 @@ exit /b 0
     }
 
     // ------------------------------------------------------------------------
-    // 6. EXCEL EXPORTS & FULL CLOUD DATABASE BACKUP
+    // 6. EXCEL EXPORTS
     // ------------------------------------------------------------------------
     if (method === 'GET' && (pathname === '/api/export/excel' || pathname === '/api/export/inventory-excel')) {
       const { results } = await db.prepare('SELECT * FROM devices ORDER BY hostname ASC').all();
@@ -1619,32 +1619,6 @@ exit /b 0
           ...CORS_HEADERS,
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'Content-Disposition': `attachment; filename="Reportes_Soporte_TI_${new Date().toISOString().slice(0, 10)}.xlsx"`
-        }
-      });
-    }
-
-    if (method === 'GET' && pathname === '/api/admin/backup-db') {
-      const [devs, tcks, know, lgs] = await Promise.all([
-        db.prepare('SELECT * FROM devices').all(),
-        db.prepare('SELECT * FROM support_tickets').all(),
-        db.prepare('SELECT * FROM stivie_knowledge').all(),
-        db.prepare('SELECT * FROM audit_logs ORDER BY datetime(timestamp) DESC LIMIT 500').all()
-      ]);
-      const snapshot = {
-        exportedAt: new Date().toISOString(),
-        platform: 'Cloudflare D1 Global SQLite 24/7',
-        devices: devs.results || [],
-        support_tickets: tcks.results || [],
-        stivie_knowledge: know.results || [],
-        audit_logs: lgs.results || []
-      };
-      const fileName = `tay_audit_cloud_backup_${new Date().toISOString().slice(0, 10)}.json`;
-      return new Response(JSON.stringify(snapshot, null, 2), {
-        status: 200,
-        headers: {
-          ...CORS_HEADERS,
-          'Content-Type': 'application/json; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${fileName}"`
         }
       });
     }

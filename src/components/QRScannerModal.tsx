@@ -133,7 +133,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         borderRadius: '26px 8px 26px 8px',
         border: '1.5px solid var(--accent-primary)',
         boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)',
-        position: 'relative'
+        position: 'relative',
+        animation: 'none'
       }}>
         {/* Prominent Close Button */}
         <button

@@ -150,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             style={{ position: 'relative' }}
           >
             <LifeBuoy size={14} />
-            <span>Asistencia</span>
+            <span>Asistencia TI</span>
             {openTicketsCount > 0 && (
               <span
                 className="nav-badge-pill"
@@ -466,7 +466,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="mobile-bottom-badge">{openTicketsCount}</span>
           )}
         </div>
-        <span>Asistencia</span>
+        <span>Asistencia TI</span>
       </button>
 
       {/* Central Floating Action: + Registrar */}

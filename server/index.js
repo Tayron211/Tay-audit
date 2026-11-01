@@ -2476,19 +2476,6 @@ app.post('/api/stivie/knowledge', (req, res) => {
   }
 });
 
-// Respaldo de Base de Datos para Producción (Descarga directa de tay_audit.db en 1-clic)
-app.get('/api/admin/backup-db', (req, res) => {
-  try {
-    const backupFileName = `tay_audit_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.db`;
-    res.setHeader('Content-Type', 'application/x-sqlite3');
-    res.setHeader('Content-Disposition', `attachment; filename="${backupFileName}"`);
-    const dbFile = path.resolve(__dirname, '..', 'tay_audit.db');
-    res.sendFile(dbFile);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Middleware centralizado de control de errores para Producción (OWASP: Previene fuga de stack traces)
 app.use((err, req, res, next) => {
   const errorId = randomUUID().slice(0, 8);
