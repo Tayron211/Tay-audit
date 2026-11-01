@@ -96,3 +96,12 @@ export interface AppNotification {
   read: boolean;
   attended: boolean;
 }
+
+export type UserRole = 'admin' | 'user';
+
+export interface AuthUser {
+  username: string;
+  role: UserRole;
+  displayName: string;
+  loginAt: string;
+}

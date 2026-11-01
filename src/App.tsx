@@ -9,7 +9,7 @@ import {
   Globe,
   Wifi
 } from 'lucide-react';
-import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification } from './types';
+import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification, AuthUser } from './types';
 import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
 import { Navbar, type NavTab } from './components/Navbar';
 import { DeviceModal } from './components/DeviceModal';
@@ -21,6 +21,7 @@ import { StivieClientApp } from './components/StivieClientApp';
 import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
 import { LiveNotificationToast } from './components/LiveNotificationToast';
+import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
 
@@ -79,6 +80,29 @@ const MainApp: React.FC = () => {
   // Navegación dirigida a tickets específicos o subpestañas de Soporte TI
   const [supportInitialSubTab, setSupportInitialSubTab] = useState<'dashboard' | 'tickets' | 'remote' | 'knowledge'>('dashboard');
   const [targetTicketId, setTargetTicketId] = useState<string | null>(null);
+
+  // Sesión y Autenticación Corporativa (Admin: 210391 / User: 1991)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('tay_audit_auth_user');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return null;
+  });
+
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('tay_audit_auth_user', JSON.stringify(user));
+    } catch {}
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('tay_audit_auth_user');
+    } catch {}
+  };
 
   // Modals
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -528,6 +552,11 @@ exit
     window.open(`${effectiveServerUrl}/api/stivie/download?server=${encodeURIComponent(effectiveServerUrl)}`, '_blank');
   };
 
+  // Si no hay sesión iniciada, mostrar Pantalla de Login Institucional UPN
+  if (!currentUser) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div
       className="main-app-outer-wrapper"
@@ -589,6 +618,8 @@ exit
           onClearAllNotifications={handleClearAllNotifications}
           onDismissNotification={handleDismissNotification}
           onGoToTickets={handleGoToTickets}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
 
         <main style={{ width: '100%', maxWidth: '100%', minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', paddingBottom: '120px' }}>
@@ -915,6 +946,7 @@ exit
       <DeviceModal
         device={selectedDevice}
         initialEditMode={deviceModalInitialEdit}
+        currentUserRole={currentUser?.role}
         onClose={() => {
           setSelectedDevice(null);
           setDeviceModalInitialEdit(false);

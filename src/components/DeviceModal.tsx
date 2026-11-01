@@ -15,10 +15,11 @@ import {
   Layers,
   FileText,
   ChevronDown,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 import QRCode from 'qrcode';
-import type { Device, DeviceStatus, DeviceType } from '../types';
+import type { Device, DeviceStatus, DeviceType, UserRole } from '../types';
 import { api } from '../services/api';
 import { getCategoryIcon } from './DeviceCard';
 import { CustomSelect, type SelectOption } from './CustomSelect';
@@ -49,13 +50,15 @@ interface DeviceModalProps {
   onClose: () => void;
   onDeviceUpdated: (updated?: Device) => void;
   onOpenSupportForDevice?: (device: Device) => void;
+  currentUserRole?: UserRole;
 }
 
 export const DeviceModal: React.FC<DeviceModalProps> = ({
   device: initialDevice,
   initialEditMode = false,
   onClose,
-  onDeviceUpdated
+  onDeviceUpdated,
+  currentUserRole = 'admin'
 }) => {
   const [device, setDevice] = useState<Device | null>(initialDevice);
   const prevDeviceIdRef = useRef<string | null>(null);
@@ -1162,27 +1165,48 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
           }}
         >
           <div className="device-modal-footer-danger">
-            {confirmDelete ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.78rem', color: '#f87171', fontWeight: 700 }}>¿Eliminar este equipo del inventario?</span>
-                <button onClick={handleDelete} className="btn-flat btn-danger" style={{ padding: '6px 12px', fontSize: '0.72rem' }}>
-                  Sí, Eliminar
+            {currentUserRole === 'admin' ? (
+              confirmDelete ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#f87171', fontWeight: 700 }}>¿Eliminar este equipo del inventario?</span>
+                  <button onClick={handleDelete} className="btn-flat btn-danger" style={{ padding: '6px 12px', fontSize: '0.72rem' }}>
+                    Sí, Eliminar
+                  </button>
+                  <button onClick={() => setConfirmDelete(false)} className="btn-flat" style={{ padding: '6px 10px', fontSize: '0.72rem' }}>
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="btn-flat btn-danger-soft"
+                  style={{ fontSize: '0.76rem', padding: '7px 14px', gap: '6px' }}
+                  title="Eliminar este equipo del inventario de forma permanente"
+                >
+                  <Trash2 size={13} />
+                  <span>Eliminar del Inventario</span>
                 </button>
-                <button onClick={() => setConfirmDelete(false)} className="btn-flat" style={{ padding: '6px 10px', fontSize: '0.72rem' }}>
-                  Cancelar
-                </button>
-              </div>
+              )
             ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="btn-flat btn-danger-soft"
-                style={{ fontSize: '0.76rem', padding: '7px 14px', gap: '6px' }}
-                title="Eliminar este equipo del inventario de forma permanente"
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  border: '1px dashed var(--border-acrylic)'
+                }}
+                title="Función protegida: la eliminación de activos está restringida exclusivamente a usuarios con rol Administrador"
               >
-                <Trash2 size={13} />
-                <span>Eliminar del Inventario</span>
-              </button>
+                <Lock size={12} color="#f59e0b" />
+                <span>Eliminación solo Administrador</span>
+              </div>
             )}
           </div>
 

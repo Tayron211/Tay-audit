@@ -9,11 +9,14 @@ import {
   Moon, 
   Bot, 
   Check,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  User,
+  LogOut
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
-import type { AppNotification } from '../types';
+import type { AppNotification, AuthUser } from '../types';
 
 // Logotipo Corporativo Oficial UPN (Universidad Privada del Norte - TI)
 // Emblema Vectorial Institucional con Corte Superior Horizontal y Alas Bipilares Hacia el Norte
@@ -56,6 +59,8 @@ interface NavbarProps {
   onClearAllNotifications?: () => void;
   onDismissNotification?: (id: string) => void;
   onGoToTickets?: () => void;
+  currentUser?: AuthUser | null;
+  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -78,7 +83,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onMarkAllAsRead,
   onClearAllNotifications,
   onDismissNotification,
-  onGoToTickets
+  onGoToTickets,
+  currentUser,
+  onLogout
 }) => {
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
@@ -458,6 +465,52 @@ export const Navbar: React.FC<NavbarProps> = ({
           onGoToTickets={onGoToTickets}
           openTicketsCount={openTicketsCount}
         />
+
+        {/* User Role Badge & Logout */}
+        {currentUser && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 8px',
+                borderRadius: '8px',
+                backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.14)' : 'rgba(56, 189, 248, 0.14)',
+                border: currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.35)' : '1px solid rgba(56, 189, 248, 0.35)',
+                color: currentUser.role === 'admin' ? '#FFB800' : '#38bdf8',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                userSelect: 'none'
+              }}
+              title={currentUser.role === 'admin' ? 'Sesión: Administrador (Acceso total)' : 'Sesión: Usuario Operador (Sin eliminación)'}
+            >
+              {currentUser.role === 'admin' ? <ShieldCheck size={13} /> : <User size={13} />}
+              <span>{currentUser.username}</span>
+            </div>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="btn-flat"
+                style={{
+                  padding: '4px 7px',
+                  borderRadius: '8px',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.72rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Cerrar sesión de usuario"
+              >
+                <LogOut size={13} />
+                <span className="hide-on-mobile">Salir</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Audit Device Button */}
         <button
