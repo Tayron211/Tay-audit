@@ -6,9 +6,11 @@ import {
   Clock, 
   X, 
   ChevronRight,
-  Headphones
+  Headphones,
+  BellRing
 } from 'lucide-react';
 import type { AppNotification } from '../types';
+import { getSystemNotificationPermission, requestPushNotificationPermission } from '../utils/pushNotifications';
 
 interface NotificationDropdownProps {
   notifications: AppNotification[];
@@ -50,6 +52,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   }, [isOpen]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermission());
+
+  const handleEnablePush = async () => {
+    const granted = await requestPushNotificationPermission();
+    setPushPermission(granted ? 'granted' : 'denied');
+  };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -213,6 +221,36 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               </div>
             )}
           </div>
+
+          {/* Banner de Activación de Notificaciones Push (Windows y Móviles) */}
+          {pushPermission !== 'granted' && pushPermission !== 'unsupported' && (
+            <div
+              style={{
+                padding: '8px 14px',
+                backgroundColor: 'rgba(255, 184, 0, 0.08)',
+                borderBottom: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BellRing size={14} color="#FFB800" />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                  Activar alertas Windows y Móvil
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleEnablePush}
+                className="btn-flat btn-primary"
+                style={{ padding: '3px 9px', fontSize: '0.68rem', fontWeight: 800, whiteSpace: 'nowrap' }}
+              >
+                Activar
+              </button>
+            </div>
+          )}
 
           {/* Lista de Notificaciones (Top 5 más recientes) */}
           <div style={{ maxHeight: '380px', overflowY: 'auto' }}>

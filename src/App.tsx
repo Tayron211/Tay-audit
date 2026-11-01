@@ -24,6 +24,7 @@ import { LiveNotificationToast } from './components/LiveNotificationToast';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
+import { registerNotificationServiceWorker, sendNativePushNotification } from './utils/pushNotifications';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
 
@@ -264,6 +265,9 @@ const MainApp: React.FC = () => {
           // Alerta toast flotante para el ticket más reciente
           setActiveToastNotification(newNotifs[0]);
 
+          // Notificación Push Nativa del Sistema Operativo (Windows Action Center y Bandeja Móvil con vibración)
+          sendNativePushNotification(newNotifs[0]);
+
           // Añadir al inicio y conservar un máximo de 5 (estilo Facebook)
           setNotifications(prev => {
             const combined = [...newNotifs, ...prev.filter(p => !brandNewTickets.some(b => b.id === p.ticketId))];
@@ -347,6 +351,50 @@ const MainApp: React.FC = () => {
       clearInterval(syncTimer);
       document.removeEventListener('visibilitychange', handleVisibility);
       if (eventSource) eventSource.close();
+    };
+  }, []);
+
+  // Inicialización de Service Worker y escucha de clics en notificaciones de Windows y Móvil
+  useEffect(() => {
+    registerNotificationServiceWorker();
+
+    const handleSwMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'OPEN_TICKET' && e.data.ticketId) {
+        setSupportInitialSubTab('tickets');
+        setTargetTicketId(e.data.ticketId);
+        setActiveTab('support');
+      }
+    };
+
+    const handleCustomOpen = (e: any) => {
+      if (e.detail && e.detail.ticketId) {
+        setSupportInitialSubTab('tickets');
+        setTargetTicketId(e.detail.ticketId);
+        setActiveTab('support');
+      }
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleSwMessage);
+    }
+    window.addEventListener('app-open-ticket', handleCustomOpen);
+
+    // Revisar si la URL trae un parámetro ticketId al hacer clic en notificación
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTicketId = urlParams.get('ticketId');
+      if (urlTicketId) {
+        setSupportInitialSubTab('tickets');
+        setTargetTicketId(urlTicketId);
+        setActiveTab('support');
+      }
+    }
+
+    return () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleSwMessage);
+      }
+      window.removeEventListener('app-open-ticket', handleCustomOpen);
     };
   }, []);
 
