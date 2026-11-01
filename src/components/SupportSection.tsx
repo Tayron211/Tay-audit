@@ -1533,7 +1533,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             <>
               <div className="report-recuadros-grid" style={{
                 gap: '16px',
-                paddingBottom: filteredTickets.some(t => expandedTicketIds.has(t.id)) ? '620px' : '40px'
+                paddingBottom: '40px'
               }}>
                 {paginatedTickets.map(ticket => (
                   <CompactReportCard

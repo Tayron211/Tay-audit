@@ -54,12 +54,10 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  // Expansión tipo overlay: la tarjeta mantiene un tamaño fijo en la grilla y,
-  // al desplegarse, crece por encima de las demás sin empujarlas.
+  // Expansión fluida en el flujo del documento: la tarjeta empuja naturalmente a las de abajo
   const cardRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState<number>(COLLAPSED_HEIGHT);
-  const [raised, setRaised] = useState(false);
 
   useLayoutEffect(() => {
     const el = measureRef.current;
@@ -70,10 +68,9 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Mantiene la tarjeta por encima mientras dura la animación de cierre y auto-scrolea al desplegar
+  // Auto-scrolea al desplegar para lectura cómoda
   useEffect(() => {
     if (isExpanded) {
-      setRaised(true);
       const measured = measureRef.current
         ? Math.max(measureRef.current.scrollHeight, measureRef.current.offsetHeight)
         : contentHeight;
@@ -81,10 +78,7 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
         targetHeight: Math.max(contentHeight, measured, COLLAPSED_HEIGHT),
         delay: 50
       });
-      return;
     }
-    const t = setTimeout(() => setRaised(false), 450);
-    return () => clearTimeout(t);
   }, [isExpanded, contentHeight]);
 
   // Si se abre el formulario de resolución de caso, asegurarse de que sea visible
@@ -179,34 +173,24 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
     <div
       key={ticket.id}
       ref={cardRef}
-      className="report-card-slot"
+      className="acrylic-card report-recuadro"
       style={{
         position: 'relative',
-        height: `${COLLAPSED_HEIGHT}px`,
-        zIndex: raised ? 40 : 1
+        height: isExpanded ? `${Math.max(contentHeight, COLLAPSED_HEIGHT)}px` : `${COLLAPSED_HEIGHT}px`,
+        overflow: 'hidden',
+        minWidth: 0,
+        borderRadius: '12px',
+        border: `1px solid ${isExpanded ? 'var(--accent-primary)' : 'var(--border-acrylic)'}`,
+        transition: 'height 0.38s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease',
+        boxShadow: isExpanded ? '0 16px 36px -6px rgba(15, 23, 42, 0.35)' : '0 4px 12px rgba(0,0,0,0.08)',
+        backgroundColor: 'var(--bg-canvas)',
+        backgroundImage: 'linear-gradient(var(--bg-canvas-subtle), var(--bg-canvas-subtle))',
+        backdropFilter: 'none',
+        transform: 'none',
+        zIndex: isExpanded ? 5 : 1
       }}
     >
-      <div
-        className="acrylic-card report-recuadro"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: `${isExpanded ? Math.max(contentHeight, COLLAPSED_HEIGHT) : COLLAPSED_HEIGHT}px`,
-          overflow: 'hidden',
-          minWidth: 0,
-          borderRadius: '12px',
-          border: `1px solid ${isExpanded ? 'var(--accent-primary)' : 'var(--border-acrylic)'}`,
-          transition: 'height 0.42s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease',
-          boxShadow: isExpanded ? '0 22px 48px -8px rgba(15, 23, 42, 0.45)' : '0 4px 12px rgba(0,0,0,0.1)',
-          backgroundColor: 'var(--bg-canvas)',
-          backgroundImage: 'linear-gradient(var(--bg-canvas-subtle), var(--bg-canvas-subtle))',
-          backdropFilter: 'none',
-          transform: 'none'
-        }}
-      >
-       <div ref={measureRef} data-auto-scroll-measure="true" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div ref={measureRef} data-auto-scroll-measure="true" style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Header: Categoría + Estado + Expandir (siempre visible) */}
         <div style={{
           display: 'flex',
@@ -616,58 +600,33 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
               ) : null
             )}
 
-            {/* Acciones rápidas */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '8px',
-              marginTop: '4px'
-            }}>
-              {ticket.status === 'abierto' && (
+            {/* Acciones adicionales: Ver en inventario si el equipo existe */}
+            {matchedDev && ticket.status !== 'resuelto' && !showResolveForm && (
+              <div style={{ marginTop: '4px' }}>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onUpdateStatus(ticket.id, 'en_progreso');
+                    onSelectDevice?.(matchedDev);
                   }}
                   className="btn-flat"
-                  style={{ padding: '8px 12px', fontSize: '0.72rem', fontWeight: 700, textAlign: 'left', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+                  style={{
+                    width: '100%',
+                    padding: '7px 12px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
                 >
-                  <Clock size={13} />
-                  <span>Tomar Caso</span>
+                  <ExternalLink size={13} />
+                  <span>Ver en Inventario</span>
                 </button>
-              )}
-              {ticket.status !== 'resuelto' && !showResolveForm && (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowResolveForm(true);
-                    }}
-                    className="btn-flat btn-primary"
-                    style={{ padding: '8px 12px', fontSize: '0.72rem', fontWeight: 700, textAlign: 'left' }}
-                  >
-                    <CheckCircle2 size={13} />
-                    <span>Resolver</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (matchedDev) {
-                        onSelectDevice?.(matchedDev);
-                      }
-                    }}
-                    className="btn-flat"
-                    style={{ padding: '8px 12px', fontSize: '0.72rem', fontWeight: 700, textAlign: 'left' }}
-                  >
-                    <ExternalLink size={13} />
-                    <span>Ver en Inventario</span>
-                  </button>
-                </>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Cerrar detalles */}
@@ -700,7 +659,6 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
             pointerEvents: 'none'
           }}
         />
-      </div>
     </div>
   );
 };
