@@ -217,7 +217,7 @@ app.post('/api/devices', (req, res) => {
     const hostname = (req.body.hostname || `EQUIPO-${Date.now().toString().slice(-4)}`).toUpperCase().trim();
     const deviceType = req.body.deviceType || 'pc';
     const status = req.body.status || 'instalado';
-    const qrCodeData = req.body.qrCodeData || `TAY-${hostname}-${req.body.serialNumber || 'SN'}`;
+    const qrCodeData = req.body.qrCodeData || `TAY-${hostname}-${id.replace('dev-', '').toUpperCase()}`;
 
     const insert = db.prepare(`
       INSERT INTO devices (
@@ -448,7 +448,7 @@ app.post('/api/agent/report', (req, res) => {
             : 'pc'
       );
 
-      const qrCode = `TAY-${cleanHostname}-${serialNumber || 'SN'}`;
+      const qrCode = `TAY-${cleanHostname}-${deviceId.replace('dev-', '').toUpperCase()}`;
       const isStivie = Boolean(notes && notes.includes('STIVIE'));
 
       db.prepare(`

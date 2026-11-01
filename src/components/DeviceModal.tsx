@@ -157,13 +157,19 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         notes: device.notes || ''
       });
 
+      const uniqueAssetTag = device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`;
       const qrPayload = JSON.stringify({
         id: device.id,
+        tag: uniqueAssetTag,
         hostname: device.hostname,
-        serial: device.serialNumber,
-        ip: device.ipAddress
+        serial: device.serialNumber || 'N/A'
       });
-      QRCode.toDataURL(qrPayload, { width: 220, margin: 2, color: { dark: '#0a0f1d', light: '#ffffff' } })
+      QRCode.toDataURL(qrPayload, {
+        width: 400,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+        color: { dark: '#0a0f1d', light: '#ffffff' }
+      })
         .then(setQrDataUrl)
         .catch(console.error);
     }
@@ -240,30 +246,163 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    const uniqueAssetTag = device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`;
+
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="utf-8">
           <title>Etiqueta de Activo - ${device.hostname}</title>
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; text-align: center; }
-            .card { border: 2px solid #000; padding: 18px; border-radius: 10px; width: 330px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-            h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; }
-            p { margin: 4px 0; font-size: 12px; }
-            img { margin: 10px 0; }
-            .badge { background: #000; color: #fff; padding: 3px 8px; font-weight: bold; font-size: 11px; border-radius: 4px; }
+            @page {
+              size: auto;
+              margin: 0;
+            }
+            * {
+              box-sizing: border-box;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              height: 100%;
+              min-height: 100vh;
+              background: #ffffff;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-sheet {
+              width: 100%;
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 24px;
+            }
+            .label-card {
+              width: 460px;
+              max-width: 95vw;
+              border: 3.5px solid #0f172a;
+              border-radius: 18px;
+              padding: 28px 30px 26px;
+              text-align: center;
+              background: #ffffff;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+              page-break-inside: avoid;
+            }
+            @media print {
+              body {
+                min-height: 100vh;
+              }
+              .label-card {
+                box-shadow: none !important;
+                border: 3.5px solid #000000 !important;
+              }
+            }
+            .header-badge {
+              display: inline-block;
+              background: #0f172a;
+              color: #ffffff;
+              padding: 6px 16px;
+              border-radius: 6px;
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 0.1em;
+              text-transform: uppercase;
+              margin-bottom: 12px;
+            }
+            .hostname-title {
+              font-size: 26px;
+              font-weight: 900;
+              color: #0f172a;
+              margin: 0 0 12px 0;
+              letter-spacing: -0.02em;
+              word-break: break-all;
+            }
+            .qr-container {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin: 10px 0 14px;
+            }
+            .qr-img {
+              width: 250px;
+              height: 250px;
+              display: block;
+              image-rendering: pixelated;
+            }
+            .asset-code-badge {
+              display: inline-block;
+              background: #f1f5f9;
+              border: 1.5px dashed #64748b;
+              color: #0f172a;
+              font-family: 'Consolas', 'Courier New', monospace;
+              font-size: 13px;
+              font-weight: 800;
+              padding: 5px 14px;
+              border-radius: 6px;
+              letter-spacing: 0.06em;
+              margin-bottom: 14px;
+            }
+            .info-table {
+              width: 100%;
+              border-top: 1.5px solid #e2e8f0;
+              padding-top: 12px;
+              margin-top: 4px;
+              font-size: 13.5px;
+              line-height: 1.6;
+              color: #1e293b;
+              text-align: left;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 4px;
+            }
+            .info-label {
+              font-weight: 700;
+              color: #475569;
+            }
+            .info-val {
+              font-weight: 600;
+              color: #0f172a;
+              text-align: right;
+              max-width: 65%;
+              word-break: break-word;
+            }
           </style>
         </head>
         <body>
-          <div class="card">
-            <span class="badge">TAY-AUDIT • CONTROL CORPORATIVO</span>
-            <h2>${device.hostname}</h2>
-            <img src="${qrDataUrl}" width="165" height="165" />
-            <p><strong>S/N:</strong> ${device.serialNumber || 'N/A'}</p>
-            <p><strong>Ubicación:</strong> ${device.location || 'Sede Central'}</p>
-            <p><strong>IP:</strong> ${device.ipAddress || 'N/A'}</p>
-            <p><strong>Usuario:</strong> ${device.assignedUser || 'General'}</p>
+          <div class="print-sheet">
+            <div class="label-card">
+              <div class="header-badge">TAY-AUDIT • CONTROL CORPORATIVO</div>
+              <div class="hostname-title">${device.hostname}</div>
+              <div class="qr-container">
+                <img class="qr-img" src="${qrDataUrl}" alt="QR Activo ${device.hostname}" />
+              </div>
+              <div class="asset-code-badge">ID ÚNICO: ${uniqueAssetTag}</div>
+              <div class="info-table">
+                <div class="info-row"><span class="info-label">S/N:</span><span class="info-val">${device.serialNumber || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">Tipo:</span><span class="info-val">${(device.deviceType || 'pc').toUpperCase()}</span></div>
+                <div class="info-row"><span class="info-label">Ubicación:</span><span class="info-val">${device.location || 'Sede Central'}</span></div>
+                <div class="info-row"><span class="info-label">IP:</span><span class="info-val">${device.ipAddress || 'N/A'}</span></div>
+                <div class="info-row"><span class="info-label">Usuario:</span><span class="info-val">${device.assignedUser || 'General'}</span></div>
+              </div>
+            </div>
           </div>
-          <script>window.onload = function() { window.print(); window.close(); }</script>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 250);
+            };
+          </script>
         </body>
       </html>
     `);

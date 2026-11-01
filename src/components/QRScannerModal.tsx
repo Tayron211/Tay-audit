@@ -84,14 +84,65 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       return;
     }
 
-    // Flujo general de auditoría: vincular activo existente o crear nuevo
-    const matched = devices.find(d => 
-      d.serialNumber.toLowerCase() === clean.toLowerCase() ||
-      d.hostname.toLowerCase() === clean.toLowerCase() ||
-      d.qrCodeData?.toLowerCase().includes(clean.toLowerCase()) ||
-      clean.toLowerCase().includes(d.hostname.toLowerCase()) ||
-      clean.toLowerCase().includes(d.serialNumber.toLowerCase())
-    );
+    // Flujo general de auditoría: vincular activo existente de forma 100% precisa
+    let parsed: any = null;
+    try {
+      if (clean.startsWith('{') && clean.endsWith('}')) {
+        parsed = JSON.parse(clean);
+      }
+    } catch {}
+
+    let matched: any = null;
+
+    // 1. Si es QR estructurado con ID único o tag de activo
+    if (parsed) {
+      if (parsed.id) {
+        matched = devices.find(d => d.id === parsed.id || d.id.toLowerCase() === String(parsed.id).toLowerCase());
+      }
+      if (!matched && parsed.tag) {
+        matched = devices.find(d => d.qrCodeData === parsed.tag || d.qrCodeData?.toLowerCase() === String(parsed.tag).toLowerCase());
+      }
+      if (!matched && parsed.hostname) {
+        matched = devices.find(d => d.hostname.toLowerCase() === String(parsed.hostname).toLowerCase());
+      }
+    }
+
+    // 2. Coincidencia exacta por ID de dispositivo (dev-xxxx)
+    if (!matched) {
+      matched = devices.find(d => d.id.toLowerCase() === clean.toLowerCase() || `dev-${d.id.toLowerCase()}` === clean.toLowerCase());
+    }
+
+    // 3. Coincidencia exacta por Código de Etiqueta / QR registrado
+    if (!matched) {
+      matched = devices.find(d => d.qrCodeData && d.qrCodeData.toLowerCase() === clean.toLowerCase());
+    }
+
+    // 4. Coincidencia exacta por Hostname (nombre corporativo único)
+    if (!matched) {
+      matched = devices.find(d => d.hostname.toLowerCase() === clean.toLowerCase());
+    }
+
+    // 5. Coincidencia por Número de Serie (excluyendo genéricos/vacíos/repetidos)
+    if (!matched) {
+      const isGenericSerial = ['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie', '0', ''].includes(clean.toLowerCase());
+      if (!isGenericSerial) {
+        matched = devices.find(d => 
+          d.serialNumber && 
+          !['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie'].includes(d.serialNumber.toLowerCase()) &&
+          d.serialNumber.toLowerCase() === clean.toLowerCase()
+        );
+      }
+    }
+
+    // 6. Si el string escaneado contiene explícitamente el ID único del dispositivo
+    if (!matched) {
+      matched = devices.find(d => clean.toLowerCase().includes(d.id.toLowerCase()));
+    }
+
+    // 7. Si el string escaneado contiene la etiqueta de activo única
+    if (!matched) {
+      matched = devices.find(d => d.qrCodeData && d.qrCodeData.length >= 6 && clean.toLowerCase().includes(d.qrCodeData.toLowerCase()));
+    }
 
     if (matched) {
       onDeviceFound(matched);

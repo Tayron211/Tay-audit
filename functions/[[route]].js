@@ -804,7 +804,7 @@ exit /b 0
       const hostname = (body.hostname || `EQUIPO-${Date.now().toString().slice(-4)}`).toUpperCase().trim();
       const deviceType = body.deviceType || 'pc';
       const status = body.status || 'instalado';
-      const qrCodeData = body.qrCodeData || `TAY-${hostname}-${body.serialNumber || 'SN'}`;
+      const qrCodeData = body.qrCodeData || `TAY-${hostname}-${id.replace('dev-', '').toUpperCase()}`;
 
       await db.batch([
         db.prepare(`
@@ -1124,7 +1124,7 @@ exit /b 0
           (cleanHostname.includes('SRV') || cleanHostname.includes('SERVER')) ? 'server'
             : (cleanHostname.includes('LAP') || cleanHostname.includes('NOTE')) ? 'laptop' : 'pc'
         );
-        const qrCode = `TAY-${cleanHostname}-${serialNumber || 'SN'}`;
+        const qrCode = `TAY-${cleanHostname}-${deviceId.replace('dev-', '').toUpperCase()}`;
         await db.prepare(`
           INSERT INTO devices (
             id, hostname, deviceType, status, os, ram, cpu, storage,
@@ -1196,7 +1196,7 @@ exit /b 0
             assignedUser, department, location, lastAuditDate, notes, qrCodeData,
             stivieInstalled, lastAgentPing, createdAt, updatedAt
           ) VALUES (?, ?, 'pc', 'instalado', 'Windows', 'Auto', 'Auto', 'Auto', '0.0.0.0', '00:00:00:00:00:00', 'SN-STIVIE', 'Auto', 'Compatible', 'Estación', 'Windows PC', ?, 'Operaciones', 'Conexión Cloud 24/7', ?, 'Conectado automáticamente vía STIVIE Cloud', ?, 1, ?, ?, ?)
-        `).bind(devId, cleanHostname, user || 'Usuario', now, `TAY-${cleanHostname}`, now, now, now).run();
+        `).bind(devId, cleanHostname, user || 'Usuario', now, `TAY-${cleanHostname}-${devId.replace('dev-', '').toUpperCase()}`, now, now, now).run();
         await touchSyncVersion(db);
       }
 
