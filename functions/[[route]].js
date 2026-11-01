@@ -954,7 +954,7 @@ exit /b 0
         let isStivieActive = false;
         if (device.lastAgentPing) {
           secondsSinceLastPing = Math.max(0, Math.round((Date.now() - new Date(device.lastAgentPing).getTime()) / 1000));
-          isStivieActive = secondsSinceLastPing <= 45;
+          isStivieActive = secondsSinceLastPing <= 60;
         }
 
         const statusSummary = isStivieActive
@@ -1172,9 +1172,9 @@ exit /b 0
 
       if (existing) {
         const prevPingMs = existing.lastAgentPing ? Date.parse(existing.lastAgentPing) : 0;
-        const wasOffline = !prevPingMs || (nowMs - prevPingMs) > 45000 || existing.stivieInstalled !== 1;
-        // Write to D1 only every 25s or when state transitions (protects free-tier daily quota for hundreds of PCs!)
-        if (wasOffline || (nowMs - prevPingMs) >= 25000) {
+        const wasOffline = !prevPingMs || (nowMs - prevPingMs) > 60000 || existing.stivieInstalled !== 1;
+        // Write to D1 every 10s or when state transitions for true real-time accuracy
+        if (wasOffline || (nowMs - prevPingMs) >= 10000) {
           await db.prepare(`
             UPDATE devices SET
               status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,

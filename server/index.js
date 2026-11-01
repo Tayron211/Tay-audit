@@ -650,7 +650,7 @@ app.post('/api/devices/:id/check-connection', async (req, res) => {
 
     if (device.lastAgentPing) {
       secondsSinceLastPing = Math.round((now - new Date(device.lastAgentPing).getTime()) / 1000);
-      isStivieActive = secondsSinceLastPing <= 15;
+      isStivieActive = secondsSinceLastPing <= 60;
     }
 
     let statusSummary = '';

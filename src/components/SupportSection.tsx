@@ -430,19 +430,28 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     return interactiveDevices[0] || null;
   }, [interactiveDevices, selectedRemoteDeviceId]);
 
-  // Ticker en vivo cada 3 segundos para evaluar expiración de latidos en tiempo real
+  // Ticker en vivo cada 2 segundos para evaluar expiración de latidos en tiempo real
   const [clockTick, setClockTick] = useState<number>(Date.now());
   useEffect(() => {
-    const timer = setInterval(() => setClockTick(Date.now()), 3000);
+    const timer = setInterval(() => setClockTick(Date.now()), 2000);
     return () => clearInterval(timer);
   }, []);
 
-  // Detección REAL de presencia en línea mediante heartbeat de STIVIE (estricto: 15s)
-  // REGLA: STIVIE TIENE QUE ESTAR INSTALADO EN EL EQUIPO PARA RECIÉN DAR SEÑAL DE CONECTADO
+  // Auto-refresco en vivo cada 6 segundos en la Consola Remota para mantener los latidos de STIVIE en tiempo real
+  useEffect(() => {
+    const pollTimer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        onRefresh();
+      }
+    }, 6000);
+    return () => clearInterval(pollTimer);
+  }, [onRefresh]);
+
+  // Detección REAL de presencia en línea mediante heartbeat de STIVIE (latidos activos en los últimos 60s)
   const isDeviceOnline = (d: Device | null | undefined) => {
     if (!d || !d.stivieInstalled || !d.lastAgentPing) return false;
     const diffSeconds = (clockTick - new Date(d.lastAgentPing).getTime()) / 1000;
-    return diffSeconds >= 0 && diffSeconds <= 15; // Solo está en línea si STIVIE está instalado y transmitió en los últimos 15s
+    return diffSeconds >= 0 && diffSeconds <= 60; // En línea si STIVIE está instalado y transmitió en los últimos 60s
   };
 
   // Vincular o retirar máquina de la consola remota sin tocar el inventario físico
@@ -1997,8 +2006,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                           <span>Última Señal: <strong style={{ color: isDeviceOnline(activeRemoteDevice) ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
                             {(() => {
                               const sec = Math.max(0, Math.round((clockTick - new Date(activeRemoteDevice.lastAgentPing).getTime()) / 1000));
-                              if (sec <= 15) return `Hace ${sec}s (En vivo)`;
-                              if (sec < 60) return `Hace ${sec}s (Inactivo)`;
+                              if (sec <= 60) return `Hace ${sec}s (En vivo)`;
+                              if (sec < 180) return `Hace ${Math.round(sec / 60)} min (Reciente)`;
                               const min = Math.round(sec / 60);
                               return `Hace ${min} min (Desconectado)`;
                             })()}

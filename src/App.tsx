@@ -189,7 +189,7 @@ const MainApp: React.FC = () => {
         const now = Date.now();
         if (lastSyncVersionRef.current === null) {
           lastSyncVersionRef.current = sync.version;
-        } else if (sync.version !== lastSyncVersionRef.current || now - lastFullLoadTsRef.current > 30000) {
+        } else if (sync.version !== lastSyncVersionRef.current || now - lastFullLoadTsRef.current > 12000) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
           loadData();
