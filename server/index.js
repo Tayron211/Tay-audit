@@ -1600,18 +1600,16 @@ function populateStyledWorksheet(ws, columns, rows) {
     cell.border = EXCEL_HEADER_BORDER;
   });
 
-  // Populate data rows (all text strictly uppercase)
+  // Populate data rows (all content centered horizontally and vertically)
   rows.forEach((rowData) => {
     const row = ws.addRow(rowData);
-    row.height = 21;
-    row.eachCell((cell, colNumber) => {
+    row.height = 22;
+    row.eachCell((cell) => {
       cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF1F2937' } };
       cell.border = EXCEL_CELL_BORDER;
-      const key = columns[colNumber - 1]?.key?.toLowerCase() || '';
-      const isCenter = ['bloque', 'serie', 'ip', 'estado', 'ram', 'urgencia', 'fecha', 'id'].some(k => key.includes(k));
       cell.alignment = {
         vertical: 'middle',
-        horizontal: isCenter ? 'center' : 'left',
+        horizontal: 'center',
         wrapText: false
       };
     });
@@ -1624,16 +1622,34 @@ function populateStyledWorksheet(ws, columns, rows) {
     ws.autoFilter = { from: 'A1', to: `${lastLetter}1` };
   }
 
-  // Auto-fit column widths with padding
+  // Auto-fit column widths dynamically adapting to content + header with padding
   ws.columns.forEach((column) => {
-    let maxLength = column.header ? column.header.length : 12;
-    column.eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-      if (rowNumber > 1 && cell.value) {
-        const len = String(cell.value).length;
-        if (len > maxLength) maxLength = len;
+    let maxLength = 0;
+    if (column.header) {
+      const headerStr = String(column.header);
+      headerStr.split(/\r?\n/).forEach(line => {
+        const clean = line.trim();
+        if (clean.length > maxLength) maxLength = clean.length;
+      });
+    }
+
+    column.eachCell({ includeEmpty: false }, (cell) => {
+      if (cell.value !== undefined && cell.value !== null) {
+        let valStr = '';
+        if (cell.value instanceof Date) {
+          valStr = cell.value.toLocaleDateString();
+        } else if (typeof cell.value === 'object') {
+          valStr = cell.value.text || cell.value.result || String(cell.value);
+        } else {
+          valStr = String(cell.value);
+        }
+        valStr.split(/\r?\n/).forEach(line => {
+          if (line.length > maxLength) maxLength = line.length;
+        });
       }
     });
-    column.width = Math.max(maxLength + 4, column.width || 14);
+
+    column.width = Math.max(maxLength + 4, 12);
   });
 }
 

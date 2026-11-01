@@ -570,13 +570,11 @@ function populateStyledWorksheet(ws, columns, rows) {
 
   rows.forEach((rowData) => {
     const row = ws.addRow(rowData);
-    row.height = 21;
-    row.eachCell((cell, colNumber) => {
+    row.height = 22;
+    row.eachCell((cell) => {
       cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF1F2937' } };
       cell.border = EXCEL_CELL_BORDER;
-      const key = columns[colNumber - 1]?.key?.toLowerCase() || '';
-      const isCenter = ['bloque', 'serie', 'ip', 'estado', 'ram', 'urgencia', 'fecha', 'id'].some(k => key.includes(k));
-      cell.alignment = { vertical: 'middle', horizontal: isCenter ? 'center' : 'left', wrapText: false };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: false };
     });
   });
 
@@ -585,15 +583,35 @@ function populateStyledWorksheet(ws, columns, rows) {
     const lastLetter = ws.getColumn(columns.length).letter;
     ws.autoFilter = { from: 'A1', to: `${lastLetter}1` };
   }
+
+  // Auto-fit column widths dynamically adapting to content + header with padding
   ws.columns.forEach((column) => {
-    let maxLength = column.header ? column.header.length : 12;
-    column.eachCell({ includeEmpty: false }, (cell, rowNumber) => {
-      if (rowNumber > 1 && cell.value) {
-        const len = String(cell.value).length;
-        if (len > maxLength) maxLength = len;
+    let maxLength = 0;
+    if (column.header) {
+      const headerStr = String(column.header);
+      headerStr.split(/\r?\n/).forEach(line => {
+        const clean = line.trim();
+        if (clean.length > maxLength) maxLength = clean.length;
+      });
+    }
+
+    column.eachCell({ includeEmpty: false }, (cell) => {
+      if (cell.value !== undefined && cell.value !== null) {
+        let valStr = '';
+        if (cell.value instanceof Date) {
+          valStr = cell.value.toLocaleDateString();
+        } else if (typeof cell.value === 'object') {
+          valStr = cell.value.text || cell.value.result || String(cell.value);
+        } else {
+          valStr = String(cell.value);
+        }
+        valStr.split(/\r?\n/).forEach(line => {
+          if (line.length > maxLength) maxLength = line.length;
+        });
       }
     });
-    column.width = Math.max(maxLength + 4, column.width || 14);
+
+    column.width = Math.max(maxLength + 4, 12);
   });
 }
 
@@ -1649,6 +1667,45 @@ exit /b 0
       populateStyledWorksheet(wb.addWorksheet('CASOS ABIERTOS'), ticketColumns, tickets.filter(t => t.status?.toLowerCase() === 'abierto').map(mapTicketRow));
       populateStyledWorksheet(wb.addWorksheet('EN ATENCIÓN'), ticketColumns, tickets.filter(t => t.status?.toLowerCase() === 'en_progreso').map(mapTicketRow));
       populateStyledWorksheet(wb.addWorksheet('RESUELTOS'), ticketColumns, tickets.filter(t => t.status?.toLowerCase() === 'resuelto').map(mapTicketRow));
+
+      // 5. SHEET: RANKING EQUIPOS
+      const hostColumns = [
+        { header: 'HOSTNAME', key: 'hostname', width: 24 },
+        { header: 'TOTAL INCIDENCIAS', key: 'total', width: 20 },
+        { header: 'CASOS PENDIENTES', key: 'abiertos', width: 20 },
+        { header: 'CASOS RESUELTOS', key: 'resueltos', width: 20 },
+        { header: 'FALLA MÁS COMÚN', key: 'topCat', width: 28 },
+        { header: 'USUARIOS REPORTANTES', key: 'usuarios', width: 36 }
+      ];
+
+      const hostMap = {};
+      tickets.forEach(t => {
+        const h = toUpperStr(t.hostname, 'DESCONOCIDO');
+        if (!hostMap[h]) {
+          hostMap[h] = { hostname: h, total: 0, abiertos: 0, resueltos: 0, categories: {}, users: new Set() };
+        }
+        hostMap[h].total++;
+        if (t.status === 'resuelto') hostMap[h].resueltos++;
+        else hostMap[h].abiertos++;
+        hostMap[h].categories[t.category] = (hostMap[h].categories[t.category] || 0) + 1;
+        if (t.userName) hostMap[h].users.add(toUpperStr(t.userName));
+      });
+
+      const hostRankingRows = Object.values(hostMap)
+        .sort((a, b) => b.total - a.total)
+        .map(h => {
+          const topCat = Object.entries(h.categories).sort((a, b) => b[1] - a[1])[0]?.[0] || 'GENERAL';
+          return {
+            hostname: h.hostname,
+            total: h.total,
+            abiertos: h.abiertos,
+            resueltos: h.resueltos,
+            topCat: toUpperStr(topCat),
+            usuarios: Array.from(h.users).join(', ')
+          };
+        });
+
+      populateStyledWorksheet(wb.addWorksheet('RANKING EQUIPOS'), hostColumns, hostRankingRows);
 
       const buffer = await wb.xlsx.writeBuffer();
       return new Response(buffer, {
