@@ -107,8 +107,12 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsHwMenuOpen(false);
-        setShowPrinterSuggestions(false);
+        if (isHwMenuOpen || showPrinterSuggestions) {
+          setIsHwMenuOpen(false);
+          setShowPrinterSuggestions(false);
+        } else {
+          onClose();
+        }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -346,7 +350,14 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   }));
 
   return (
-    <div className="modal-backdrop-acrylic">
+    <div 
+      className="modal-backdrop-acrylic"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div className="modal-window-acrylic" style={{
         width: '100%',
         maxWidth: isEcran || isSpeaker ? '640px' : '780px',

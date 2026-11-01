@@ -116,6 +116,27 @@ const MainApp: React.FC = () => {
   const [scannedCodePrefill, setScannedCodePrefill] = useState<string | undefined>(undefined);
   const [copiedPs, setCopiedPs] = useState(false);
 
+  // Historial de navegación y gestión de retroceso (Atrás / Swipe en móviles / Botón Atrás en PC)
+  const [ticketsNavTrigger, setTicketsNavTrigger] = useState(0);
+  const modalHistoryPushedRef = useRef(false);
+  const ignorePopstateRef = useRef(false);
+  const isPopstateNavRef = useRef(false);
+  const selectedDeviceRef = useRef<Device | null>(null);
+  const isAuditModalOpenRef = useRef<boolean>(false);
+  const isScannerOpenRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    selectedDeviceRef.current = selectedDevice;
+  }, [selectedDevice]);
+
+  useEffect(() => {
+    isAuditModalOpenRef.current = isAuditModalOpen;
+  }, [isAuditModalOpen]);
+
+  useEffect(() => {
+    isScannerOpenRef.current = isScannerOpen;
+  }, [isScannerOpen]);
+
   // Active color theme & Dark/Light mode state (Default: UPN Oro Lúcuma Institucional)
   const [currentTheme, setCurrentTheme] = useState<string>(() => {
     const saved = localStorage.getItem('tay_audit_theme');
@@ -398,20 +419,75 @@ const MainApp: React.FC = () => {
     };
   }, []);
 
+  // Controladores de apertura y cierre de ventanas modales con sincronización de Historial
+  const handleOpenDeviceModal = (device: Device, initialEdit: boolean = false) => {
+    setIsScannerOpen(false);
+    setSelectedDevice(device);
+    setDeviceModalInitialEdit(initialEdit);
+    if (!modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = true;
+      window.history.pushState({ modal: 'device', tab: activeTab }, '', window.location.href);
+    }
+  };
+
+  const handleCloseDeviceModal = () => {
+    setSelectedDevice(null);
+    setDeviceModalInitialEdit(false);
+    if (!isAuditModalOpen && !isScannerOpen && modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = false;
+      ignorePopstateRef.current = true;
+      window.history.back();
+    }
+  };
+
+  const handleOpenAuditModal = (prefill?: string) => {
+    setIsScannerOpen(false);
+    setScannedCodePrefill(prefill);
+    setIsAuditModalOpen(true);
+    if (!modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = true;
+      window.history.pushState({ modal: 'audit', tab: activeTab }, '', window.location.href);
+    }
+  };
+
+  const handleCloseAuditModal = () => {
+    setIsAuditModalOpen(false);
+    if (!selectedDevice && !isScannerOpen && modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = false;
+      ignorePopstateRef.current = true;
+      window.history.back();
+    }
+  };
+
+  const handleOpenScannerModal = (title?: string, callback?: (code: string) => void) => {
+    setScannerCustomTitle(title);
+    setScannerCustomCallback(() => callback);
+    setIsScannerOpen(true);
+    if (!modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = true;
+      window.history.pushState({ modal: 'scanner', tab: activeTab }, '', window.location.href);
+    }
+  };
+
+  const handleCloseScannerModal = () => {
+    setIsScannerOpen(false);
+    if (!selectedDevice && !isAuditModalOpen && modalHistoryPushedRef.current) {
+      modalHistoryPushedRef.current = false;
+      ignorePopstateRef.current = true;
+      window.history.back();
+    }
+  };
+
   // General scanner open
   const handleOpenGeneralScanner = () => {
-    setScannerCustomTitle('Escáner de Activos (QR / Código de Barras)');
-    setScannerCustomCallback(undefined);
-    setIsScannerOpen(true);
+    handleOpenScannerModal('Escáner de Activos (QR / Código de Barras)', undefined);
   };
 
   // Form field scanner open
   const handleOpenFieldScanner = (field: 'hostname' | 'serialNumber') => {
-    setScannerCustomTitle(`Escanear ${field === 'hostname' ? 'Hostname' : 'Número de Serie (S/N)'}`);
-    setScannerCustomCallback(() => (code: string) => {
+    handleOpenScannerModal(`Escanear ${field === 'hostname' ? 'Hostname' : 'Número de Serie (S/N)'}`, (code: string) => {
       setScannedCodePrefill(code);
     });
-    setIsScannerOpen(true);
   };
 
   // Disparador para resetear vista a inicio al hacer clic en el botón de marca/logo
@@ -427,8 +503,9 @@ const MainApp: React.FC = () => {
     params.set('tab', 'audit');
     params.set('view', 'dashboard');
     params.delete('subtab');
+    params.delete('ticketId');
     const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({ path: newUrl }, '', newUrl);
+    window.history.pushState({ tab: 'audit' }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -443,13 +520,30 @@ const MainApp: React.FC = () => {
     setActiveToastNotification(null);
     setSupportInitialSubTab('tickets');
     setTargetTicketId(notif.ticketId);
+    setTicketsNavTrigger(prev => prev + 1);
     setActiveTab('support');
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', 'support');
+    params.set('subtab', 'tickets');
+    params.set('ticketId', notif.ticketId);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ tab: 'support', subtab: 'tickets', ticketId: notif.ticketId }, '', newUrl);
   };
 
   const handleGoToTickets = () => {
+    setActiveTab('support');
     setSupportInitialSubTab('tickets');
     setTargetTicketId(null);
-    setActiveTab('support');
+    setTicketsNavTrigger(prev => prev + 1);
+    localStorage.setItem('tay_audit_active_tab', 'support');
+    localStorage.setItem('tay_audit_support_subtab', 'tickets');
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', 'support');
+    params.set('subtab', 'tickets');
+    params.delete('ticketId');
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ tab: 'support', subtab: 'tickets' }, '', newUrl);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleMarkAllNotificationsAsRead = () => {
@@ -464,36 +558,97 @@ const MainApp: React.FC = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Sincronizar activeTab con la URL para navegación del navegador (atrás/adelante)
+  // Sincronizar activeTab y modales con la navegación del navegador (botón atrás en PC y swipe atrás en móvil)
   useEffect(() => {
-    const handlePopState = () => {
-      setActiveTab(getInitialTab());
+    if (typeof window !== 'undefined' && (!window.history.state || !window.history.state.tab)) {
+      window.history.replaceState({ tab: getInitialTab() }, '', window.location.href);
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Si el retroceso fue disparado programáticamente por el botón "Cerrar" / "X", no duplicar acción
+      if (ignorePopstateRef.current) {
+        ignorePopstateRef.current = false;
+        return;
+      }
+
+      // REGLA 1: Si hay alguna ventana o modal abierto, el botón atrás / swipe atrás DEBE CERRAR LA VENTANA sin cerrar la app
+      if (modalHistoryPushedRef.current || selectedDeviceRef.current || isAuditModalOpenRef.current || isScannerOpenRef.current) {
+        // Si el escáner estaba abierto sobre el formulario de auditoría, cerramos primero el escáner
+        if (isScannerOpenRef.current && isAuditModalOpenRef.current) {
+          setIsScannerOpen(false);
+          modalHistoryPushedRef.current = true;
+          window.history.pushState({ modal: 'audit', tab: activeTab }, '', window.location.href);
+          return;
+        }
+
+        modalHistoryPushedRef.current = false;
+        setSelectedDevice(null);
+        setDeviceModalInitialEdit(false);
+        setIsAuditModalOpen(false);
+        setIsScannerOpen(false);
+        return; // Detener aquí: NO salirse de la aplicación ni cambiar de pestaña
+      }
+
+      // REGLA 2: No hay ventana abierta -> navegar a la pestaña o página anterior del historial
+      const stateTab = e.state?.tab;
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTab = urlParams.get('tab') as NavTab;
+      const targetTab = (stateTab && VALID_TABS.includes(stateTab))
+        ? stateTab
+        : (urlTab && VALID_TABS.includes(urlTab))
+          ? urlTab
+          : getInitialTab();
+
+      isPopstateNavRef.current = true;
+      setActiveTab(targetTab);
+
+      const urlSubTab = urlParams.get('subtab') as any;
+      if (urlSubTab && ['dashboard', 'tickets', 'remote', 'knowledge'].includes(urlSubTab)) {
+        setSupportInitialSubTab(urlSubTab);
+      }
     };
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [activeTab]);
 
-  // Sincronizar URL y localStorage cuando cambia activeTab (mantiene la misma pestaña al recargar)
+  // Sincronizar URL y localStorage cuando cambia activeTab (soporta historial atrás/adelante en PC)
   useEffect(() => {
     localStorage.setItem('tay_audit_active_tab', activeTab);
     const params = new URLSearchParams(window.location.search);
-    if (params.get('tab') !== activeTab) {
+    const currentUrlTab = params.get('tab');
+    if (currentUrlTab !== activeTab) {
       params.set('tab', activeTab);
       const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({ path: newUrl }, '', newUrl);
+      if (isPopstateNavRef.current) {
+        // Provino de un botón Atrás / Adelante del navegador: reemplazar URL sin duplicar entrada
+        isPopstateNavRef.current = false;
+        window.history.replaceState({ tab: activeTab }, '', newUrl);
+      } else {
+        // Clic deliberado en una pestaña: guardar en historial para poder volver atrás con el navegador
+        window.history.pushState({ tab: activeTab }, '', newUrl);
+      }
     }
   }, [activeTab]);
 
-  // Detección de swipe para navegar entre pestañas en móvil
+  // Detección de swipe para navegar entre pestañas en móvil (Desactivado cuando hay un modal abierto)
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    // Si hay un modal abierto, no registrar swipe para evitar cambiar de pestaña accidentalmente
+    if (modalHistoryPushedRef.current || selectedDevice || isAuditModalOpen || isScannerOpen) return;
     setTouchStartX(e.touches[0].clientX);
     setTouchStartY(e.touches[0].clientY);
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    // Si hay un modal abierto, ignorar gestos de navegación
+    if (modalHistoryPushedRef.current || selectedDevice || isAuditModalOpen || isScannerOpen) {
+      setTouchStartX(null);
+      setTouchStartY(null);
+      return;
+    }
     if (touchStartX === null || touchStartY === null) return;
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
@@ -645,8 +800,7 @@ exit
           onGoHome={handleGoHome}
           onOpenScanner={handleOpenGeneralScanner}
           onOpenAuditModal={() => {
-            setScannedCodePrefill(undefined);
-            setIsAuditModalOpen(true);
+            handleOpenAuditModal();
           }}
           isLiveConnected={isLiveConnected}
           totalDevices={devices.length}
@@ -678,12 +832,10 @@ exit
             stats={stats}
             logs={logs}
             onSelectDevice={(d) => {
-              setSelectedDevice(d);
-              setDeviceModalInitialEdit(false);
+              handleOpenDeviceModal(d, false);
             }}
             onOpenAuditModal={() => {
-              setScannedCodePrefill(undefined);
-              setIsAuditModalOpen(true);
+              handleOpenAuditModal();
             }}
             onOpenScanner={handleOpenGeneralScanner}
             onExportExcel={handleExportExcel}
@@ -699,13 +851,14 @@ exit
             knowledgeList={knowledgeList}
             devices={devices}
             onRefresh={loadData}
-            onSelectDevice={(d) => setSelectedDevice(d)}
+            onSelectDevice={(d) => handleOpenDeviceModal(d)}
             onSwitchToAudit={() => setActiveTab('audit')}
             serverInfo={serverInfo}
             effectiveServerUrl={effectiveServerUrl}
             initialSubTab={supportInitialSubTab}
             targetTicketId={targetTicketId}
             onClearTargetTicket={() => setTargetTicketId(null)}
+            ticketsNavTrigger={ticketsNavTrigger}
           />
         )}
 
@@ -995,30 +1148,27 @@ exit
         device={selectedDevice}
         initialEditMode={deviceModalInitialEdit}
         currentUserRole={currentUser?.role}
-        onClose={() => {
-          setSelectedDevice(null);
-          setDeviceModalInitialEdit(false);
-        }}
+        onClose={handleCloseDeviceModal}
         onDeviceUpdated={(updated) => {
           if (updated) setSelectedDevice(updated);
           setDeviceModalInitialEdit(false);
           loadData();
         }}
         onOpenSupportForDevice={() => {
-          setSelectedDevice(null);
-          setDeviceModalInitialEdit(false);
+          handleCloseDeviceModal();
           setActiveTab('support');
         }}
       />
 
       <QRScannerModal
         isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
+        onClose={handleCloseScannerModal}
         devices={devices}
-        onDeviceFound={(d) => setSelectedDevice(d)}
+        onDeviceFound={(d) => {
+          handleOpenDeviceModal(d);
+        }}
         onNewCodeScanned={(code) => {
-          setScannedCodePrefill(code);
-          setIsAuditModalOpen(true);
+          handleOpenAuditModal(code);
         }}
         customTitle={scannerCustomTitle}
         onCustomScan={scannerCustomCallback}
@@ -1026,7 +1176,7 @@ exit
 
       <AuditFormModal
         isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
+        onClose={handleCloseAuditModal}
         onDeviceSaved={loadData}
         prefillCode={scannedCodePrefill}
         onOpenFieldScanner={handleOpenFieldScanner}

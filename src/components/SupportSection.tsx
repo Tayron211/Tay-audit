@@ -86,6 +86,7 @@ interface SupportSectionProps {
   initialSubTab?: SupportSubTab;
   targetTicketId?: string | null;
   onClearTargetTicket?: () => void;
+  ticketsNavTrigger?: number;
 }
 
 const VALID_SUBTABS = ['dashboard', 'tickets', 'remote', 'knowledge'] as const;
@@ -113,7 +114,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   effectiveServerUrl,
   initialSubTab,
   targetTicketId,
-  onClearTargetTicket
+  onClearTargetTicket,
+  ticketsNavTrigger
 }) => {
   const [supportSubTab, setSupportSubTab] = useState<SupportSubTab>(() => initialSubTab || getInitialSupportSubTab());
 
@@ -123,6 +125,16 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       setSupportSubTab(initialSubTab);
     }
   }, [initialSubTab]);
+
+  // Forzar cambio directo a subpestaña de tickets al presionar "Ver todos los tickets"
+  useEffect(() => {
+    if (ticketsNavTrigger && ticketsNavTrigger > 0) {
+      setSupportSubTab('tickets');
+      setStatusFilter('all');
+      setTicketSearchQuery('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [ticketsNavTrigger]);
 
   useEffect(() => {
     localStorage.setItem('tay_audit_support_subtab', supportSubTab);

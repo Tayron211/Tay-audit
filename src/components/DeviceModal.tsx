@@ -186,6 +186,18 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
       .catch(console.error);
   }, [initialDevice, initialEditMode]);
 
+  // Cerrar ventana con tecla Escape
+  useEffect(() => {
+    if (!device) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [device, onClose]);
+
   if (!device) return null;
 
   const { icon: CategoryIcon, color: categoryColor } = getCategoryIcon(isEditing ? editForm.deviceType : device.deviceType);
@@ -421,7 +433,14 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop-acrylic">
+    <div 
+      className="modal-backdrop-acrylic"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div className="modal-window-acrylic device-modal-window" style={{
         width: '100%',
         maxWidth: '860px',

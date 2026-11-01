@@ -72,6 +72,18 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     onClose();
   }, [onClose, stopScanner]);
 
+  // Cerrar escáner al presionar tecla Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleClose]);
+
   const handleCodeScanned = useCallback((code: string) => {
     const clean = code.trim();
     if (!clean) return;
