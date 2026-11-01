@@ -12,6 +12,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
+import { NotificationDropdown } from './NotificationDropdown';
+import type { AppNotification } from '../types';
 
 // Logotipo Corporativo Oficial UPN (Universidad Privada del Norte - TI)
 // Emblema Vectorial Institucional con Corte Superior Horizontal y Alas Bipilares Hacia el Norte
@@ -48,6 +50,11 @@ interface NavbarProps {
   onSelectCustomColor?: (color: string) => void;
   colorMode: 'dark' | 'light';
   onToggleColorMode: () => void;
+  notifications?: AppNotification[];
+  onSelectNotification?: (notification: AppNotification) => void;
+  onMarkAllAsRead?: () => void;
+  onClearAllNotifications?: () => void;
+  onDismissNotification?: (id: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -64,7 +71,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   customColor = '#8b5cf6',
   onSelectCustomColor,
   colorMode,
-  onToggleColorMode
+  onToggleColorMode,
+  notifications = [],
+  onSelectNotification,
+  onMarkAllAsRead,
+  onClearAllNotifications,
+  onDismissNotification
 }) => {
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
@@ -426,6 +438,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
         </div>
+
+        {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK (MÁXIMO 5 CON ALERTA TEMPORAL) */}
+        <NotificationDropdown
+          notifications={notifications}
+          onSelectNotification={(n) => onSelectNotification?.(n)}
+          onMarkAllAsRead={() => onMarkAllAsRead?.()}
+          onClearAll={() => onClearAllNotifications?.()}
+          onDismissNotification={(id) => onDismissNotification?.(id)}
+          onGoToSupport={() => onChangeTab('support')}
+          openTicketsCount={openTicketsCount}
+        />
 
         {/* Audit Device Button */}
         <button

@@ -172,6 +172,7 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
   return (
     <div
       key={ticket.id}
+      id={`ticket-card-${ticket.id}`}
       ref={cardRef}
       className="acrylic-card report-recuadro"
       style={{

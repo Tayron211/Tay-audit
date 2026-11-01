@@ -9,7 +9,7 @@ import {
   Globe,
   Wifi
 } from 'lucide-react';
-import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge } from './types';
+import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification } from './types';
 import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
 import { Navbar, type NavTab } from './components/Navbar';
 import { DeviceModal } from './components/DeviceModal';
@@ -20,6 +20,8 @@ import { SupportSection } from './components/SupportSection';
 import { StivieClientApp } from './components/StivieClientApp';
 import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
+import { LiveNotificationToast } from './components/LiveNotificationToast';
+import { playNotificationChime } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
@@ -56,6 +58,23 @@ const MainApp: React.FC = () => {
 
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [isAppLoading, setIsAppLoading] = useState(true);
+
+  // Sistema de Notificaciones en Vivo estilo Facebook (Máximo 5 notificaciones)
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    try {
+      const saved = localStorage.getItem('tay_audit_notifications');
+      if (saved) return JSON.parse(saved).slice(0, 5);
+    } catch {}
+    return [];
+  });
+  const [activeToastNotification, setActiveToastNotification] = useState<AppNotification | null>(null);
+  const knownTicketIdsRef = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('tay_audit_notifications', JSON.stringify(notifications.slice(0, 5)));
+    } catch {}
+  }, [notifications]);
 
   // Modals
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -164,6 +183,71 @@ const MainApp: React.FC = () => {
         }
         return fresh;
       });
+
+      // Sistema de Notificaciones de Tickets en Vivo estilo FB (Máximo 5)
+      const openTickets = fetchedTickets.filter(t => t.status !== 'resuelto');
+      const activeTicketIds = new Set(openTickets.map(t => t.id));
+
+      if (knownTicketIdsRef.current === null) {
+        // Carga inicial: registrar IDs conocidos
+        knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
+        setNotifications(prev => {
+          if (prev.length > 0) {
+            return prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5);
+          }
+          return openTickets.slice(0, 5).map(t => ({
+            id: `notif-${t.id}`,
+            ticketId: t.id,
+            title: `Nuevo Ticket TI: ${t.category}`,
+            userName: t.userName || 'Usuario / Docente',
+            hostname: t.hostname,
+            category: t.category,
+            description: t.description,
+            urgency: t.urgency,
+            timestamp: t.createdAt || new Date().toISOString(),
+            read: false,
+            attended: false
+          }));
+        });
+      } else {
+        // Detección de nuevos tickets enviados en tiempo real (por STIVIE o web)
+        const brandNewTickets = fetchedTickets.filter(
+          t => !knownTicketIdsRef.current!.has(t.id) && t.status !== 'resuelto'
+        );
+
+        if (brandNewTickets.length > 0) {
+          // Sonido de campana en tiempo real
+          playNotificationChime();
+
+          const newNotifs: AppNotification[] = brandNewTickets.map(t => ({
+            id: `notif-${t.id}-${Date.now()}`,
+            ticketId: t.id,
+            title: `Nuevo Ticket TI: ${t.category}`,
+            userName: t.userName || 'Usuario / Docente',
+            hostname: t.hostname,
+            category: t.category,
+            description: t.description,
+            urgency: t.urgency,
+            timestamp: t.createdAt || new Date().toISOString(),
+            read: false,
+            attended: false
+          }));
+
+          // Alerta toast flotante para el ticket más reciente
+          setActiveToastNotification(newNotifs[0]);
+
+          // Añadir al inicio y conservar un máximo de 5 (estilo Facebook)
+          setNotifications(prev => {
+            const combined = [...newNotifs, ...prev.filter(p => !brandNewTickets.some(b => b.id === p.ticketId))];
+            return combined.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5);
+          });
+        } else {
+          // Si cambian a resuelto o se les da atención, se limpian automáticamente
+          setNotifications(prev => prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5));
+        }
+
+        knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
+      }
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -274,6 +358,41 @@ const MainApp: React.FC = () => {
 
   const handleExportExcel = () => {
     window.open(api.getInventoryExcelDownloadUrl(), '_blank');
+  };
+
+  // Handlers para Notificaciones en Vivo estilo Facebook (Máximo 5 y auto-limpieza)
+  const handleSelectNotification = (notif: AppNotification) => {
+    // Al dar atención al ticket, removerlo de la lista de notificaciones activas
+    setNotifications(prev => prev.filter(n => n.id !== notif.id));
+    setActiveToastNotification(null);
+    setActiveTab('support');
+
+    // Desplazamiento y resaltado visual del ticket en la pestaña Soporte TI
+    setTimeout(() => {
+      const card = document.getElementById(`ticket-card-${notif.ticketId}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.transition = 'all 0.4s ease';
+        card.style.outline = '3px solid var(--accent-primary)';
+        card.style.boxShadow = '0 0 24px var(--accent-glow)';
+        setTimeout(() => {
+          card.style.outline = 'none';
+          card.style.boxShadow = 'none';
+        }, 3000);
+      }
+    }, 350);
+  };
+
+  const handleMarkAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const handleClearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleDismissNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   // Sincronizar activeTab con la URL para navegación del navegador (atrás/adelante)
@@ -467,6 +586,11 @@ exit
           }}
           colorMode={colorMode}
           onToggleColorMode={() => setColorMode(prev => prev === 'dark' ? 'light' : 'dark')}
+          notifications={notifications}
+          onSelectNotification={handleSelectNotification}
+          onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+          onClearAllNotifications={handleClearAllNotifications}
+          onDismissNotification={handleDismissNotification}
         />
 
         <main style={{ width: '100%', maxWidth: '100%', minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', paddingBottom: '120px' }}>
@@ -825,6 +949,13 @@ exit
         onDeviceSaved={loadData}
         prefillCode={scannedCodePrefill}
         onOpenFieldScanner={handleOpenFieldScanner}
+      />
+
+      {/* Alerta Notificación Flotante en Tiempo Real con Sonido y Barra de Progreso */}
+      <LiveNotificationToast
+        notification={activeToastNotification}
+        onClose={() => setActiveToastNotification(null)}
+        onAtender={handleSelectNotification}
       />
 
       {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen) */}

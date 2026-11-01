@@ -82,3 +82,17 @@ export interface StivieKnowledge {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AppNotification {
+  id: string;
+  ticketId: string;
+  title: string;
+  userName: string;
+  hostname: string;
+  category: string;
+  description: string;
+  urgency: 'baja' | 'media' | 'alta' | 'critica';
+  timestamp: string;
+  read: boolean;
+  attended: boolean;
+}
