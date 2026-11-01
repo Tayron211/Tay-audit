@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
-  Download, 
+  Printer, 
   Trash2, 
   CheckCircle2, 
   AlertTriangle, 
@@ -1059,33 +1059,60 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
 
                 {/* QR Label Generator */}
                 <div style={{
-                  marginTop: '12px',
-                  paddingTop: '10px',
+                  marginTop: '16px',
+                  paddingTop: '12px',
                   borderTop: '1px solid rgba(255, 255, 255, 0.08)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '16px'
                 }}>
                   {qrDataUrl && (
-                    <img
-                      src={qrDataUrl}
-                      alt="QR Code"
+                    <div 
+                      onClick={handlePrintLabel}
+                      title="Clic para imprimir etiqueta de este activo"
                       style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '6px',
+                        padding: '4px',
                         backgroundColor: '#ffffff',
-                        padding: '2px'
+                        borderRadius: '10px',
+                        border: '1.5px solid var(--border-acrylic)',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
                       }}
-                    />
+                    >
+                      <img
+                        src={qrDataUrl}
+                        alt="QR Code"
+                        style={{
+                          width: '105px',
+                          height: '105px',
+                          display: 'block',
+                          borderRadius: '6px'
+                        }}
+                      />
+                    </div>
                   )}
-                  <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      Etiqueta Corporativa
+                    </span>
                     <button
                       onClick={handlePrintLabel}
                       className="btn-flat"
-                      style={{ padding: '5px 12px', fontSize: '0.72rem' }}
+                      style={{ 
+                        padding: '8px 16px', 
+                        fontSize: '0.84rem', 
+                        fontWeight: 700, 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '8px',
+                        borderRadius: '8px' 
+                      }}
                     >
-                      <Download size={13} /> Imprimir Etiqueta
+                      <Printer size={16} /> Imprimir Etiqueta
                     </button>
                   </div>
                 </div>
