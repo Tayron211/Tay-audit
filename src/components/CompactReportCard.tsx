@@ -442,10 +442,21 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
             </div>
           )}
 
-          {/* Acciones rápidas TI (1-CLIC) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginTop: '4px' }}>
+          {/* Acciones rápidas TI (1-CLIC) - Solo iconos para optimizar espacio */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            flexWrap: 'wrap', 
+            gap: '6px', 
+            marginTop: '6px',
+            padding: '5px 8px',
+            borderRadius: '10px',
+            background: 'var(--bg-canvas-subtle)',
+            border: '1px solid var(--border-acrylic)'
+          }}>
             {ticket.status !== 'resuelto' && (
-              <>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                 <button
                   type="button"
                   disabled={remoteLoading !== null}
@@ -455,20 +466,23 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   }}
                   className="btn-flat btn-remote btn-remote--primary"
                   style={{
-                    padding: '8px 12px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textAlign: 'left',
+                    width: '32px',
+                    height: '32px',
+                    minWidth: '32px',
+                    padding: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     background: 'rgba(139, 92, 246, 0.1)',
                     color: 'var(--accent-primary)',
                     border: '1px solid rgba(139, 92, 246, 0.3)',
-                    borderRadius: '10px',
-                    boxShadow: remoteLoading === 'display_clone' ? '0 0 12px rgba(139, 92, 246, 0.4)' : 'none'
+                    borderRadius: '8px',
+                    boxShadow: remoteLoading === 'display_clone' ? '0 0 10px rgba(139, 92, 246, 0.4)' : 'none'
                   }}
                   title="Duplicar Pantalla (Win+P /clone)"
+                  aria-label="Duplicar Pantalla (Win+P)"
                 >
-                  <ScreenShare size={14} />
-                  <span>Duplicar Pantalla</span>
+                  <ScreenShare size={15} />
                 </button>
 
                 <button
@@ -480,20 +494,23 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   }}
                   className="btn-flat btn-remote btn-remote--cyan"
                   style={{
-                    padding: '8px 12px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textAlign: 'left',
+                    width: '32px',
+                    height: '32px',
+                    minWidth: '32px',
+                    padding: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     background: 'rgba(56, 189, 248, 0.1)',
                     color: 'var(--accent-cyan)',
                     border: '1px solid rgba(56, 189, 248, 0.3)',
-                    borderRadius: '10px',
-                    boxShadow: remoteLoading === 'remote_access' ? '0 0 12px rgba(56, 189, 248, 0.4)' : 'none'
+                    borderRadius: '8px',
+                    boxShadow: remoteLoading === 'remote_access' ? '0 0 10px rgba(56, 189, 248, 0.4)' : 'none'
                   }}
-                  title="Acceso Remoto RDP"
+                  title="Acceso Remoto RDP (mstsc.exe)"
+                  aria-label="Acceso Remoto RDP"
                 >
-                  <Monitor size={14} />
-                  <span>Acceso Remoto</span>
+                  <Monitor size={15} />
                 </button>
 
                 <button
@@ -505,20 +522,23 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   }}
                   className="btn-flat btn-remote btn-remote--amber"
                   style={{
-                    padding: '8px 12px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textAlign: 'left',
+                    width: '32px',
+                    height: '32px',
+                    minWidth: '32px',
+                    padding: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     background: 'rgba(245, 158, 11, 0.1)',
                     color: '#f59e0b',
                     border: '1px solid rgba(245, 158, 11, 0.3)',
-                    borderRadius: '10px',
-                    boxShadow: remoteLoading === 'restart' ? '0 0 12px rgba(245, 158, 11, 0.4)' : 'none'
+                    borderRadius: '8px',
+                    boxShadow: remoteLoading === 'restart' ? '0 0 10px rgba(245, 158, 11, 0.4)' : 'none'
                   }}
                   title="Reiniciar Equipo"
+                  aria-label="Reiniciar Equipo"
                 >
-                  <RotateCw size={14} />
-                  <span>Reiniciar</span>
+                  <RotateCw size={15} />
                 </button>
 
                 <button
@@ -530,67 +550,70 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   }}
                   className="btn-flat btn-remote btn-remote--rose"
                   style={{
-                    padding: '8px 12px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textAlign: 'left',
+                    width: '32px',
+                    height: '32px',
+                    minWidth: '32px',
+                    padding: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     background: 'rgba(239, 68, 68, 0.1)',
                     color: '#ef4444',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
-                    borderRadius: '10px',
-                    boxShadow: remoteLoading === 'shutdown' ? '0 0 12px rgba(239, 68, 68, 0.4)' : 'none'
+                    borderRadius: '8px',
+                    boxShadow: remoteLoading === 'shutdown' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none'
                   }}
                   title="Apagar Equipo"
+                  aria-label="Apagar Equipo"
                 >
-                  <Power size={14} />
-                  <span>Apagar</span>
+                  <Power size={15} />
                 </button>
-              </>
+              </div>
             )}
 
-            {ticket.status === 'abierto' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUpdateStatus(ticket.id, 'en_progreso');
-                }}
-                className="btn-flat btn-remote btn-remote--amber"
-                style={{
-                  padding: '8px 12px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  textAlign: 'left',
-                  background: 'rgba(245, 158, 11, 0.1)',
-                  color: '#f59e0b',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                  borderRadius: '10px'
-                }}
-              >
-                <Clock size={13} />
-                <span>Tomar Caso</span>
-              </button>
-            )}
+            {/* Acciones de resolución a la derecha */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginLeft: 'auto' }}>
+              {ticket.status === 'abierto' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUpdateStatus(ticket.id, 'en_progreso');
+                  }}
+                  className="btn-flat btn-remote btn-remote--amber"
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    gap: '4px'
+                  }}
+                  title="Tomar caso para atención"
+                >
+                  <Clock size={12} />
+                  <span>Tomar Caso</span>
+                </button>
+              )}
 
-            {!ticket.solutionNotes && (
-              <button
-                type="button"
-                onClick={() => setShowResolveForm(true)}
-                className="btn-flat btn-remote btn-remote--primary"
-                style={{
-                  padding: '8px 12px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  textAlign: 'left',
-                  background: 'rgba(139, 92, 246, 0.1)',
-                  color: 'var(--accent-primary)',
-                  border: '1px solid rgba(139, 92, 246, 0.3)',
-                  borderRadius: '10px'
-                }}
-              >
-                <Sparkles size={13} />
-                <span>Enseñar a STIVIE</span>
-              </button>
-            )}
+              {!ticket.solutionNotes && (
+                <button
+                  type="button"
+                  onClick={() => setShowResolveForm(true)}
+                  className="btn-flat btn-remote btn-primary"
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    gap: '4px'
+                  }}
+                  title="Resolver y Enseñar a STIVIE"
+                >
+                  <Sparkles size={12} />
+                  <span>Resolver</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Solución (si existe) o Formulario de resolución */}
