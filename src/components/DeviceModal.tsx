@@ -58,10 +58,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   onDeviceUpdated
 }) => {
   const [device, setDevice] = useState<Device | null>(initialDevice);
-
-  useEffect(() => {
-    setDevice(initialDevice);
-  }, [initialDevice]);
+  const prevDeviceIdRef = useRef<string | null>(null);
 
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string; details?: string } | null>(null);
@@ -129,51 +126,62 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   }, [isStatusDropdownOpen]);
 
   useEffect(() => {
-    if (device) {
+    if (!initialDevice) {
+      prevDeviceIdRef.current = null;
+      setDevice(null);
+      setIsEditing(false);
+      return;
+    }
+
+    const isNewDevice = initialDevice.id !== prevDeviceIdRef.current;
+    prevDeviceIdRef.current = initialDevice.id;
+    setDevice(initialDevice);
+
+    if (isNewDevice) {
       setActionMessage(null);
       setConfirmDelete(false);
       setIsStatusDropdownOpen(false);
       setIsEditing(initialEditMode);
 
       setEditForm({
-        hostname: device.hostname || '',
-        deviceType: device.deviceType || 'pc',
-        status: device.status || 'instalado',
-        brand: device.brand || '',
-        model: device.model || '',
-        serialNumber: device.serialNumber || '',
-        motherboard: device.motherboard || '',
-        cpu: device.cpu || '',
-        ram: device.ram || '',
-        storage: device.storage || '',
-        os: device.os || '',
-        ipAddress: device.ipAddress || '',
-        macAddress: device.macAddress || '',
-        assignedUser: device.assignedUser || '',
-        department: device.department || '',
-        location: device.location || '',
-        supplies: device.supplies || '',
-        specs: device.specs || '',
-        notes: device.notes || ''
+        hostname: initialDevice.hostname || '',
+        deviceType: initialDevice.deviceType || 'pc',
+        status: initialDevice.status || 'instalado',
+        brand: initialDevice.brand || '',
+        model: initialDevice.model || '',
+        serialNumber: initialDevice.serialNumber || '',
+        motherboard: initialDevice.motherboard || '',
+        cpu: initialDevice.cpu || '',
+        ram: initialDevice.ram || '',
+        storage: initialDevice.storage || '',
+        os: initialDevice.os || '',
+        ipAddress: initialDevice.ipAddress || '',
+        macAddress: initialDevice.macAddress || '',
+        assignedUser: initialDevice.assignedUser || '',
+        department: initialDevice.department || '',
+        location: initialDevice.location || '',
+        supplies: initialDevice.supplies || '',
+        specs: initialDevice.specs || '',
+        notes: initialDevice.notes || ''
       });
-
-      const uniqueAssetTag = device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`;
-      const qrPayload = JSON.stringify({
-        id: device.id,
-        tag: uniqueAssetTag,
-        hostname: device.hostname,
-        serial: device.serialNumber || 'N/A'
-      });
-      QRCode.toDataURL(qrPayload, {
-        width: 400,
-        margin: 1,
-        errorCorrectionLevel: 'M',
-        color: { dark: '#0a0f1d', light: '#ffffff' }
-      })
-        .then(setQrDataUrl)
-        .catch(console.error);
     }
-  }, [device, initialEditMode]);
+
+    const uniqueAssetTag = initialDevice.qrCodeData || `TAY-${(initialDevice.hostname || 'ACT').toUpperCase()}-${initialDevice.id.replace('dev-', '').toUpperCase()}`;
+    const qrPayload = JSON.stringify({
+      id: initialDevice.id,
+      tag: uniqueAssetTag,
+      hostname: initialDevice.hostname,
+      serial: initialDevice.serialNumber || 'N/A'
+    });
+    QRCode.toDataURL(qrPayload, {
+      width: 400,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#0a0f1d', light: '#ffffff' }
+    })
+      .then(setQrDataUrl)
+      .catch(console.error);
+  }, [initialDevice, initialEditMode]);
 
   if (!device) return null;
 
@@ -1029,94 +1037,112 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               </div>
 
               {/* Assignment & Location column */}
-              <div className="device-modal-section" style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
-                    <MapPin size={15} /> UBICACIÓN & RESPONSABLE
-                  </h4>
+              <div className="device-modal-section">
+                <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                  <MapPin size={15} /> UBICACIÓN & RESPONSABLE
+                </h4>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
-                    <div>
-                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Ubicación Física</span>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.85rem' }}>
-                        {device.location || 'Sede Central'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Departamento / Área</span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{device.department || 'General'}</span>
-                    </div>
-                    <div>
-                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Usuario Asignado</span>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{device.assignedUser || 'Sin Asignar'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* QR Label Generator */}
-                <div style={{
-                  marginTop: '16px',
-                  paddingTop: '12px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px'
-                }}>
-                  {qrDataUrl && (
-                    <div 
-                      onClick={handlePrintLabel}
-                      title="Clic para imprimir etiqueta de este activo"
-                      style={{
-                        padding: '4px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '10px',
-                        border: '1.5px solid var(--border-acrylic)',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}
-                    >
-                      <img
-                        src={qrDataUrl}
-                        alt="QR Code"
-                        style={{
-                          width: '105px',
-                          height: '105px',
-                          display: 'block',
-                          borderRadius: '6px'
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      Etiqueta Corporativa
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Ubicación Física</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.85rem' }}>
+                      {device.location || 'Sede Central'}
                     </span>
-                    <button
-                      onClick={handlePrintLabel}
-                      className="btn-flat"
-                      style={{ 
-                        padding: '8px 16px', 
-                        fontSize: '0.84rem', 
-                        fontWeight: 700, 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        borderRadius: '8px' 
-                      }}
-                    >
-                      <Printer size={16} /> Imprimir Etiqueta
-                    </button>
+                  </div>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Departamento / Área</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{device.department || 'General'}</span>
+                  </div>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Usuario Asignado</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{device.assignedUser || 'Sin Asignar'}</span>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Tarjeta Exclusiva de Etiqueta Corporativa y Código QR */}
+            <div className="device-modal-section" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px',
+              padding: '14px 18px',
+              marginBottom: '16px',
+              backgroundColor: 'var(--bg-canvas-subtle)',
+              border: '1px solid var(--border-acrylic)',
+              borderRadius: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {qrDataUrl && (
+                  <div 
+                    onClick={handlePrintLabel}
+                    title="Clic para imprimir etiqueta de este activo"
+                    style={{
+                      padding: '4px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '8px',
+                      border: '1.5px solid var(--border-acrylic)',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    <img
+                      src={qrDataUrl}
+                      alt="QR Code"
+                      style={{
+                        width: '84px',
+                        height: '84px',
+                        display: 'block',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  </div>
+                )}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      Etiqueta Corporativa & QR
+                    </span>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                      color: 'var(--accent-primary)',
+                      fontFamily: 'JetBrains Mono, monospace'
+                    }}>
+                      {device.qrCodeData || `TAY-${device.hostname}`}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.35 }}>
+                    Código QR único del activo para auditoría, control patrimonial e inventario físico.
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handlePrintLabel}
+                className="btn-flat btn-primary"
+                style={{ 
+                  padding: '8px 18px', 
+                  fontSize: '0.82rem', 
+                  fontWeight: 700, 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  borderRadius: '7px' 
+                }}
+              >
+                <Printer size={15} /> Imprimir Etiqueta
+              </button>
             </div>
 
             {/* Notes if present */}

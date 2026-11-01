@@ -158,7 +158,11 @@ const MainApp: React.FC = () => {
       setSelectedDevice(prev => {
         if (!prev) return null;
         const fresh = fetchedDevices.find(d => d.id === prev.id);
-        return fresh || prev;
+        if (!fresh) return prev;
+        if (fresh.updatedAt === prev.updatedAt && fresh.lastAgentPing === prev.lastAgentPing) {
+          return prev;
+        }
+        return fresh;
       });
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -792,10 +796,12 @@ exit
         }}
         onDeviceUpdated={(updated) => {
           if (updated) setSelectedDevice(updated);
+          setDeviceModalInitialEdit(false);
           loadData();
         }}
         onOpenSupportForDevice={() => {
           setSelectedDevice(null);
+          setDeviceModalInitialEdit(false);
           setActiveTab('support');
         }}
       />
