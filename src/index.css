@@ -3482,31 +3482,27 @@ div.desktop-inventory-table.force-visible {
 }
 
 /* ==================================================================== */
-/* FIRMA DEL DESARROLLADOR (PIE DE PÁGINA)                              */
+/* FIRMA DEL DESARROLLADOR DISCRETA (PIE DE PÁGINA)                    */
 /* ==================================================================== */
 .tay-developer-footer {
   margin-top: auto;
   user-select: none;
 }
 
-.tay-signature-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.tay-discreet-signature {
+  transition: opacity 0.2s ease, border-color 0.2s ease;
 }
 
-.tay-signature-card:hover {
-  box-shadow: 0 6px 24px var(--accent-glow) !important;
+.tay-discreet-signature:hover {
+  opacity: 1 !important;
+  border-color: var(--accent-primary) !important;
 }
 
 @media (max-width: 768px) {
   .tay-developer-footer {
-    margin-top: 24px;
-    margin-bottom: 12px;
-    padding: 0 8px;
-  }
-  
-  .tay-signature-card {
-    padding: 14px 12px !important;
-    gap: 6px !important;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    padding: 8px 6px 4px;
   }
 }
 
