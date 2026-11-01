@@ -442,179 +442,104 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
             </div>
           )}
 
-          {/* Acciones rápidas TI (1-CLIC) - Solo iconos para optimizar espacio */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            flexWrap: 'wrap', 
-            gap: '6px', 
-            marginTop: '6px',
-            padding: '5px 8px',
-            borderRadius: '10px',
-            background: 'var(--bg-canvas-subtle)',
-            border: '1px solid var(--border-acrylic)'
-          }}>
-            {ticket.status !== 'resuelto' && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <button
-                  type="button"
-                  disabled={remoteLoading !== null}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoteAction('display_clone');
-                  }}
-                  className="btn-flat btn-remote btn-remote--primary"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    minWidth: '32px',
-                    padding: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(139, 92, 246, 0.1)',
-                    color: 'var(--accent-primary)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                    borderRadius: '8px',
-                    boxShadow: remoteLoading === 'display_clone' ? '0 0 10px rgba(139, 92, 246, 0.4)' : 'none'
-                  }}
-                  title="Duplicar Pantalla (Win+P /clone)"
-                  aria-label="Duplicar Pantalla (Win+P)"
-                >
-                  <ScreenShare size={15} />
-                </button>
+          {/* Acciones rápidas TI & Gestión de Caso (Diseño 100% ordenado y simétrico) */}
+          {(ticket.status !== 'resuelto' || !ticket.solutionNotes) && (
+            <div className="report-card-toolbar">
+              {ticket.status !== 'resuelto' && (
+                <div className="report-card-toolbar__remote-grid">
+                  <button
+                    type="button"
+                    disabled={remoteLoading !== null}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoteAction('display_clone');
+                    }}
+                    className="btn-flat btn-remote btn-remote--primary"
+                    title="Duplicar Pantalla (Win+P /clone)"
+                    aria-label="Duplicar Pantalla (Win+P)"
+                  >
+                    <ScreenShare size={15} />
+                  </button>
 
-                <button
-                  type="button"
-                  disabled={remoteLoading !== null}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoteAction('remote_access');
-                  }}
-                  className="btn-flat btn-remote btn-remote--cyan"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    minWidth: '32px',
-                    padding: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(56, 189, 248, 0.1)',
-                    color: 'var(--accent-cyan)',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    borderRadius: '8px',
-                    boxShadow: remoteLoading === 'remote_access' ? '0 0 10px rgba(56, 189, 248, 0.4)' : 'none'
-                  }}
-                  title="Acceso Remoto RDP (mstsc.exe)"
-                  aria-label="Acceso Remoto RDP"
-                >
-                  <Monitor size={15} />
-                </button>
+                  <button
+                    type="button"
+                    disabled={remoteLoading !== null}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoteAction('remote_access');
+                    }}
+                    className="btn-flat btn-remote btn-remote--cyan"
+                    title="Acceso Remoto RDP (mstsc.exe)"
+                    aria-label="Acceso Remoto RDP"
+                  >
+                    <Monitor size={15} />
+                  </button>
 
-                <button
-                  type="button"
-                  disabled={remoteLoading !== null}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoteAction('restart');
-                  }}
-                  className="btn-flat btn-remote btn-remote--amber"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    minWidth: '32px',
-                    padding: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(245, 158, 11, 0.1)',
-                    color: '#f59e0b',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    borderRadius: '8px',
-                    boxShadow: remoteLoading === 'restart' ? '0 0 10px rgba(245, 158, 11, 0.4)' : 'none'
-                  }}
-                  title="Reiniciar Equipo"
-                  aria-label="Reiniciar Equipo"
-                >
-                  <RotateCw size={15} />
-                </button>
+                  <button
+                    type="button"
+                    disabled={remoteLoading !== null}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoteAction('restart');
+                    }}
+                    className="btn-flat btn-remote btn-remote--amber"
+                    title="Reiniciar Equipo"
+                    aria-label="Reiniciar Equipo"
+                  >
+                    <RotateCw size={15} />
+                  </button>
 
-                <button
-                  type="button"
-                  disabled={remoteLoading !== null}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoteAction('shutdown');
-                  }}
-                  className="btn-flat btn-remote btn-remote--rose"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    minWidth: '32px',
-                    padding: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    color: '#ef4444',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    borderRadius: '8px',
-                    boxShadow: remoteLoading === 'shutdown' ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none'
-                  }}
-                  title="Apagar Equipo"
-                  aria-label="Apagar Equipo"
-                >
-                  <Power size={15} />
-                </button>
-              </div>
-            )}
-
-            {/* Acciones de resolución a la derecha */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginLeft: 'auto' }}>
-              {ticket.status === 'abierto' && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdateStatus(ticket.id, 'en_progreso');
-                  }}
-                  className="btn-flat btn-remote btn-remote--amber"
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    borderRadius: '8px',
-                    gap: '4px'
-                  }}
-                  title="Tomar caso para atención"
-                >
-                  <Clock size={12} />
-                  <span>Tomar Caso</span>
-                </button>
+                  <button
+                    type="button"
+                    disabled={remoteLoading !== null}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoteAction('shutdown');
+                    }}
+                    className="btn-flat btn-remote btn-remote--rose"
+                    title="Apagar Equipo"
+                    aria-label="Apagar Equipo"
+                  >
+                    <Power size={15} />
+                  </button>
+                </div>
               )}
 
-              {!ticket.solutionNotes && (
-                <button
-                  type="button"
-                  onClick={() => setShowResolveForm(true)}
-                  className="btn-flat btn-remote btn-primary"
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    borderRadius: '8px',
-                    gap: '4px'
-                  }}
-                  title="Resolver y Enseñar a STIVIE"
-                >
-                  <Sparkles size={12} />
-                  <span>Resolver</span>
-                </button>
+              {(ticket.status === 'abierto' || !ticket.solutionNotes) && (
+                <div className="report-card-toolbar__case-row">
+                  {ticket.status === 'abierto' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateStatus(ticket.id, 'en_progreso');
+                      }}
+                      className="btn-flat btn-remote btn-remote--amber"
+                      title="Tomar caso para atención"
+                    >
+                      <Clock size={13} />
+                      <span>Tomar Caso</span>
+                    </button>
+                  )}
+
+                  {!ticket.solutionNotes && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowResolveForm(true);
+                      }}
+                      className="btn-flat btn-remote btn-primary"
+                      title="Resolver y Enseñar a STIVIE"
+                    >
+                      <Sparkles size={13} />
+                      <span>Resolver</span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-          </div>
+          )}
 
           {/* Solución (si existe) o Formulario de resolución */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -2872,6 +2872,63 @@ div.desktop-inventory-table.force-visible {
   background: color-mix(in srgb, var(--rc) 12%, #ffffff) !important;
 }
 
+/* ==================================================================== */
+/* COMPACT REPORT CARD ACTION TOOLBAR (ORDENADO Y BALANCEADO)           */
+/* ==================================================================== */
+.report-card-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-canvas-subtle);
+  border: 1px solid var(--border-acrylic);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.report-card-toolbar__remote-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.report-card-toolbar__remote-grid .btn-remote {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.report-card-toolbar__case-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.report-card-toolbar__case-row > button {
+  flex: 1;
+  height: 32px !important;
+  padding: 0 10px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
 
 /* ==================================================================== */
 /* MODO CLARO - AUDITORIA DE LEGIBILIDAD (iconos y textos)              */
