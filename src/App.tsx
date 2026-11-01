@@ -607,12 +607,12 @@ exit
                       }}
                       className={`btn-flat ${!customServerHost ? 'btn-primary' : ''}`}
                       style={{ padding: '4px 10px', fontSize: '0.74rem' }}
-                      title={serverInfo.isCloud ? 'Conectado al Dominio Público Cloud 24/7' : 'Usar la IP de red local Wi-Fi / LAN detectada en esta máquina'}
+                      title={serverInfo.isCloud ? 'Conectado al Dominio Cloud' : 'Usar la IP de red local Wi-Fi / LAN detectada en esta máquina'}
                     >
                       {serverInfo.isCloud ? <Globe size={13} /> : <Wifi size={13} />}
                       <span>
                         {serverInfo.isCloud || serverInfo.primaryUrl.startsWith('https://')
-                          ? `Nube 24/7 (${serverInfo.hostname || 'tay-audit.pages.dev'})`
+                          ? (serverInfo.hostname || 'tay-audit.pages.dev')
                           : `Red Local (${serverInfo.primaryIp}:3001)`}
                       </span>
                     </button>
