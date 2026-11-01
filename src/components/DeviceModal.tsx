@@ -1037,112 +1037,99 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               </div>
 
               {/* Assignment & Location column */}
-              <div className="device-modal-section">
-                <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
-                  <MapPin size={15} /> UBICACIÓN & RESPONSABLE
-                </h4>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Ubicación Física</span>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.85rem' }}>
-                      {device.location || 'Sede Central'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Departamento / Área</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{device.department || 'General'}</span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Usuario Asignado</span>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{device.assignedUser || 'Sin Asignar'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tarjeta Exclusiva de Etiqueta Corporativa y Código QR */}
-            <div className="device-modal-section" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '16px',
-              padding: '14px 18px',
-              marginBottom: '16px',
-              backgroundColor: 'var(--bg-canvas-subtle)',
-              border: '1px solid var(--border-acrylic)',
-              borderRadius: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                {qrDataUrl && (
-                  <div 
-                    onClick={handlePrintLabel}
-                    title="Clic para imprimir etiqueta de este activo"
-                    style={{
-                      padding: '4px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '8px',
-                      border: '1.5px solid var(--border-acrylic)',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    <img
-                      src={qrDataUrl}
-                      alt="QR Code"
-                      style={{
-                        width: '84px',
-                        height: '84px',
-                        display: 'block',
-                        borderRadius: '4px'
-                      }}
-                    />
-                  </div>
-                )}
+              <div className="device-modal-section" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      Etiqueta Corporativa & QR
-                    </span>
-                    <span style={{
-                      fontSize: '0.68rem',
-                      fontWeight: 800,
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.12)',
-                      color: 'var(--accent-primary)',
-                      fontFamily: 'JetBrains Mono, monospace'
-                    }}>
-                      {device.qrCodeData || `TAY-${device.hostname}`}
-                    </span>
+                  <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                    <MapPin size={15} /> UBICACIÓN & RESPONSABLE
+                  </h4>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                    <div>
+                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Ubicación Física</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.85rem' }}>
+                        {device.location || 'Sede Central'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Departamento / Área</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{device.department || 'General'}</span>
+                    </div>
+                    <div>
+                      <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Usuario Asignado</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{device.assignedUser || 'Sin Asignar'}</span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.35 }}>
-                    Código QR único del activo para auditoría, control patrimonial e inventario físico.
+                </div>
+
+                {/* QR Label Generator - Proporción compacta y simétrica */}
+                <div style={{
+                  marginTop: '12px',
+                  paddingTop: '10px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  {qrDataUrl && (
+                    <div 
+                      onClick={handlePrintLabel}
+                      title="Clic para imprimir etiqueta oficial de este activo"
+                      style={{
+                        padding: '3px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-acrylic)',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      <img
+                        src={qrDataUrl}
+                        alt="QR Code"
+                        style={{
+                          width: '68px',
+                          height: '68px',
+                          display: 'block',
+                          borderRadius: '4px'
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0, flex: 1 }}>
+                    <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      Etiqueta Corporativa
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handlePrintLabel}
+                      className="btn-flat"
+                      style={{ 
+                        padding: '5px 10px', 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        borderRadius: '6px',
+                        whiteSpace: 'nowrap',
+                        width: 'fit-content'
+                      }}
+                      title="Imprimir etiqueta oficial"
+                    >
+                      <Printer size={13} style={{ flexShrink: 0 }} />
+                      <span>Imprimir Etiqueta</span>
+                    </button>
                   </div>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={handlePrintLabel}
-                className="btn-flat btn-primary"
-                style={{ 
-                  padding: '8px 18px', 
-                  fontSize: '0.82rem', 
-                  fontWeight: 700, 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  gap: '8px',
-                  borderRadius: '7px' 
-                }}
-              >
-                <Printer size={15} /> Imprimir Etiqueta
-              </button>
             </div>
 
             {/* Notes if present */}
