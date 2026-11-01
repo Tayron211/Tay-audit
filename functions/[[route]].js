@@ -705,12 +705,50 @@ exit
     if (method === 'GET' && (pathname === '/api/stivie/download' || pathname === '/api/agent/stivie-installer.bat')) {
       const apiBase = resolveCloudServerHost(request, url);
       const stivieScript = `@echo off
-setlocal
-rem ====================================================================
-rem STIVIE CLOUD 24/7 - Instalador Silencioso en Segundo Plano
-rem Sin accesos directos en el escritorio y ejecucion no visible
-rem ====================================================================
-powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; $ErrorActionPreference='SilentlyContinue'; try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}; $u='${apiBase}/api/stivie/install.ps1'; $p=Join-Path $env:TEMP 'stivie-install.ps1'; try { $wc=New-Object Net.WebClient; $wc.Headers.Add('User-Agent','Mozilla/5.0 TayAudit/2.0'); $wc.DownloadFile($u, $p) } catch { Invoke-WebRequest -Uri $u -OutFile $p -UseBasicParsing }; if (Test-Path $p) { & powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File $p; Remove-Item $p -Force -ErrorAction SilentlyContinue }"
+setlocal enabledelayedexpansion
+title STIVIE - Asistente Virtual TI
+color 0b
+
+echo ====================================================================
+echo   STIVIE - ASISTENTE DE OPERACIONES TI Y MONITOREO VIRTUAL
+echo ====================================================================
+echo.
+echo [1/3] Preparando directorio de instalacion en AppData...
+set "APP_DIR=%LOCALAPPDATA%\\STIVIE"
+if not exist "%APP_DIR%" mkdir "%APP_DIR%" >nul 2>&1
+
+echo [2/3] Descargando componentes oficiales de STIVIE...
+curl.exe -s -f -L -o "%APP_DIR%\\STIVIE.exe" "${apiBase}/STIVIE.exe"
+curl.exe -s -f -L -o "%APP_DIR%\\stivie-icon.ico" "${apiBase}/stivie-icon.ico"
+
+if not exist "%APP_DIR%\\STIVIE.exe" (
+    echo [INFO] Descarga alternativa mediante canal seguro de Windows...
+    powershell.exe -NoProfile -Command "try { [Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri '${apiBase}/STIVIE.exe' -OutFile '$env:LOCALAPPDATA\\STIVIE\\STIVIE.exe' -UseBasicParsing; Invoke-WebRequest -Uri '${apiBase}/stivie-icon.ico' -OutFile '$env:LOCALAPPDATA\\STIVIE\\stivie-icon.ico' -UseBasicParsing } catch {}" >nul 2>&1
+)
+
+if not exist "%APP_DIR%\\STIVIE.exe" (
+    echo.
+    echo [ERROR] No se pudo descargar STIVIE.exe.
+    echo Verifique su conexion a Internet y que la URL ${apiBase} sea accesible.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo [3/3] Registrando inicio automatico con Windows...
+reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "STIVIE" /t REG_SZ /d "\\"%APP_DIR%\\STIVIE.exe\\" \\"${apiBase}\\"" /f >nul 2>&1
+
+rem Registro de inventario inicial de hardware en segundo plano
+powershell.exe -NoProfile -Command "try { [Net.ServicePointManager]::SecurityProtocol = 3072; irm '${apiBase}/audit' | iex } catch {}" >nul 2>&1
+
+echo.
+echo ====================================================================
+echo   ^!INSTALACION FINALIZADA CON EXITO^!
+echo   Iniciando STIVIE en el lateral de la pantalla...
+echo ====================================================================
+start "" "%APP_DIR%\\STIVIE.exe" "${apiBase}"
+
+timeout /t 2 /nobreak >nul 2>&1
 exit /b 0
 `;
       return textResponse(stivieScript, 'application/x-bat; charset=utf-8', 200, {

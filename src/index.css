@@ -434,6 +434,32 @@ code, pre, .font-mono {
   color: #ef4444 !important;
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-fast {
+  animation: spin 0.85s linear infinite !important;
+}
+
+#tay-qr-reader {
+  width: 100% !important;
+  border: none !important;
+}
+
+#tay-qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 52vh !important;
+  object-fit: cover !important;
+  border-radius: 12px;
+}
+
 @keyframes modalBackdropFadeIn {
   from {
     opacity: 0;

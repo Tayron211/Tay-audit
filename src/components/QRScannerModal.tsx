@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { X, AlertCircle, Search, Barcode } from 'lucide-react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { X, AlertCircle, Search, Barcode, Camera, Loader2, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import type { Device } from '../types';
 
@@ -24,33 +24,67 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 }) => {
   const [manualCode, setManualCode] = useState('');
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCameraStarting, setIsCameraStarting] = useState(true);
+  const [activeCameraLabel, setActiveCameraLabel] = useState<string>('Iniciando lente de la cámara...');
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const isCancelledRef = useRef<boolean>(false);
+  const isStartingRef = useRef<boolean>(false);
 
-  const stopScanner = React.useCallback(() => {
+  // Detención segura del escáner liberando hardware y evitando excepciones si aún no ha iniciado
+  const stopScanner = useCallback(async () => {
+    isCancelledRef.current = true;
+
+    // Liberar directamente los tracks de medios de video en el DOM
+    try {
+      const videoElem = document.querySelector('#tay-qr-reader video') as HTMLVideoElement | null;
+      if (videoElem && videoElem.srcObject) {
+        const stream = videoElem.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch {}
+        });
+        videoElem.srcObject = null;
+      }
+    } catch {}
+
     if (scannerRef.current) {
       try {
-        scannerRef.current.stop().then(() => {
-          scannerRef.current?.clear();
-          scannerRef.current = null;
-        }).catch(() => {});
-      } catch {
-        // Ignore
+        if (scannerRef.current.isScanning) {
+          await scannerRef.current.stop();
+        }
+      } catch (err) {
+        // Ignorar excepciones al detener un escáner en transición o ya detenido
       }
+
+      try {
+        scannerRef.current.clear();
+      } catch {}
+
+      scannerRef.current = null;
     }
   }, []);
 
-  const handleCodeScanned = React.useCallback((code: string) => {
-    const clean = code.trim();
+  // Cierre inmediato del modal para que la interfaz móvil responda instantáneamente al toque
+  const handleClose = useCallback(() => {
+    isCancelledRef.current = true;
     stopScanner();
+    onClose();
+  }, [onClose, stopScanner]);
 
-    // If custom scan callback provided (e.g. search bar or manual audit form field)
+  const handleCodeScanned = useCallback((code: string) => {
+    const clean = code.trim();
+    if (!clean) return;
+
+    handleClose();
+
+    // Si se especificó callback personalizado (ej: campos específicos en formularios o barra de búsqueda)
     if (onCustomScan) {
       onCustomScan(clean);
-      onClose();
       return;
     }
 
-    // Default flow: Match existing device or create new
+    // Flujo general de auditoría: vincular activo existente o crear nuevo
     const matched = devices.find(d => 
       d.serialNumber.toLowerCase() === clean.toLowerCase() ||
       d.hostname.toLowerCase() === clean.toLowerCase() ||
@@ -61,12 +95,99 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
     if (matched) {
       onDeviceFound(matched);
-      onClose();
     } else {
       onNewCodeScanned(clean);
-      onClose();
     }
-  }, [devices, onClose, onCustomScan, onDeviceFound, onNewCodeScanned, stopScanner]);
+  }, [devices, handleClose, onCustomScan, onDeviceFound, onNewCodeScanned]);
+
+  const startCamera = useCallback(async () => {
+    try {
+      isCancelledRef.current = false;
+      isStartingRef.current = true;
+      setIsCameraStarting(true);
+      setCameraError(null);
+      setActiveCameraLabel('Iniciando lente trasero...');
+
+      // Limpieza preventiva de instancias previas
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) {
+            await scannerRef.current.stop();
+          }
+          scannerRef.current.clear();
+        } catch {}
+        scannerRef.current = null;
+      }
+
+      const scannerElementId = 'tay-qr-reader';
+      const container = document.getElementById(scannerElementId);
+      if (!container) return;
+
+      const html5QrCode = new Html5Qrcode(scannerElementId);
+      scannerRef.current = html5QrCode;
+
+      const qrConfig = {
+        fps: 15,
+        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const qrboxEdgeSize = Math.floor(minEdge * 0.72);
+          return {
+            width: Math.max(qrboxEdgeSize, 180),
+            height: Math.max(qrboxEdgeSize, 180)
+          };
+        },
+        aspectRatio: 1.0
+      };
+
+      let started = false;
+
+      // Intento 1: Cámara trasera (ideal para teléfonos móviles)
+      try {
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          qrConfig,
+          (decodedText) => handleCodeScanned(decodedText),
+          () => {}
+        );
+        started = true;
+      } catch (errEnv) {
+        console.warn('Lente trasero no disponible o bloqueado, intentando cámara general:', errEnv);
+        setActiveCameraLabel('Intentando cámara general...');
+
+        if (!isCancelledRef.current) {
+          // Intento 2: Cualquier cámara disponible (frontal o predeterminada)
+          await html5QrCode.start(
+            { facingMode: 'user' },
+            qrConfig,
+            (decodedText) => handleCodeScanned(decodedText),
+            () => {}
+          );
+          started = true;
+        }
+      }
+
+      // Si el usuario presionó cerrar mientras la cámara se inicializaba, cancelar limpiamente
+      if (isCancelledRef.current) {
+        if (started && html5QrCode.isScanning) {
+          await html5QrCode.stop();
+        }
+        try { html5QrCode.clear(); } catch {}
+        scannerRef.current = null;
+        return;
+      }
+
+      setIsCameraStarting(false);
+    } catch (err: any) {
+      if (isCancelledRef.current) return;
+      console.warn('Error al activar cámara:', err);
+      setIsCameraStarting(false);
+      setCameraError(
+        'No se pudo activar la cámara directamente (posible permiso denegado o conexión no segura). Puedes ingresar el código o número de serie manualmente abajo.'
+      );
+    } finally {
+      isStartingRef.current = false;
+    }
+  }, [handleCodeScanned]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -74,42 +195,22 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       return;
     }
 
-    let html5QrCode: Html5Qrcode | null = null;
-    const scannerElementId = 'tay-qr-reader';
+    isCancelledRef.current = false;
+    const timeout = setTimeout(startCamera, 120);
 
-    const startCamera = async () => {
-      try {
-        setCameraError(null);
-        html5QrCode = new Html5Qrcode(scannerElementId);
-        scannerRef.current = html5QrCode;
-
-        await html5QrCode.start(
-          { facingMode: 'environment' },
-          {
-            fps: 15,
-            qrbox: { width: 260, height: 260 },
-            aspectRatio: 1.0
-          },
-          (decodedText) => {
-            handleCodeScanned(decodedText);
-          },
-          () => {}
-        );
-      } catch (err: any) {
-        console.warn('Camera error:', err);
-        setCameraError(
-          'No se pudo activar la cámara directamente (o permiso denegado). Puedes ingresar el código o número de serie manualmente abajo.'
-        );
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
       }
     };
-
-    const timeout = setTimeout(startCamera, 250);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       clearTimeout(timeout);
+      window.removeEventListener('keydown', handleKeyDown);
       stopScanner();
     };
-  }, [isOpen, handleCodeScanned, stopScanner]);
+  }, [isOpen, startCamera, stopScanner, handleClose]);
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,6 +224,12 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     <div 
       className="modal-backdrop-acrylic"
       style={{ zIndex: 10000, padding: '12px' }}
+      onClick={(e) => {
+        // Cerrar al tocar fuera de la ventana del modal
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
     >
       <div className="modal-window-acrylic" style={{
         width: '100%',
@@ -136,25 +243,38 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         position: 'relative',
         animation: 'none'
       }}>
-        {/* Prominent Close Button */}
+        {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleClose();
+          }}
           title="Cerrar escáner"
           aria-label="Cerrar escáner"
           className="modal-close-btn"
           style={{
             position: 'absolute',
-            top: '14px',
-            right: '14px',
-            zIndex: 20
+            top: '12px',
+            right: '12px',
+            zIndex: 100,
+            width: '42px',
+            height: '42px',
+            minWidth: '42px',
+            minHeight: '42px',
+            touchAction: 'manipulation'
           }}
         >
-          <X size={18} strokeWidth={2.4} />
+          <X size={20} strokeWidth={2.4} />
         </button>
 
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          {/* 100% Flat Icon (No gradient, no 3D sheen) */}
+          {/* Icono de Escáner */}
           <div style={{
             width: '42px',
             height: '42px',
@@ -172,41 +292,122 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             {customTitle || 'Escanear Código / QR'}
           </h3>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0 }}>
-            Apunta la cámara del celular o laptop al código de barras o número de serie del equipo
+            Apunta la cámara del celular al código de barras o número de serie del equipo
           </p>
         </div>
 
-        {/* Video / Camera Scanner Viewport */}
+        {/* Visor de Cámara con Estado de Carga Elegante (Sin Pantalla Negra) */}
         <div style={{
           position: 'relative',
           width: '100%',
-          minHeight: '250px',
-          borderRadius: '14px 6px 14px 6px',
+          minHeight: '260px',
+          borderRadius: '16px',
           overflow: 'hidden',
-          backgroundColor: '#050811',
-          border: '1px solid var(--border-acrylic)',
+          backgroundColor: '#0a0f1d',
+          border: '1.5px solid var(--border-acrylic)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '16px'
         }}>
+          {/* Contenedor del escáner HTML5 */}
           <div id="tay-qr-reader" style={{ width: '100%' }} />
 
+          {/* Overlay de Carga Visual: Se muestra mientras la cámara se activa */}
+          {isCameraStarting && !cameraError && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(180deg, #0b1120 0%, #030712 100%)',
+              padding: '24px 16px',
+              textAlign: 'center',
+              zIndex: 10,
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '18px',
+                background: 'rgba(56, 189, 248, 0.08)',
+                border: '1.5px solid var(--accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 24px rgba(56, 189, 248, 0.2)'
+              }}>
+                <Camera size={30} color="var(--accent-primary)" strokeWidth={2.2} />
+              </div>
+
+              <div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  marginBottom: '4px'
+                }}>
+                  <Loader2 size={16} className="spin-fast" />
+                  <span>{activeCameraLabel}</span>
+                </div>
+                <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: 0, maxWidth: '280px' }}>
+                  Si tu navegador solicita permiso de cámara, pulsa <strong>"Permitir"</strong>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Estado de Error con Botón para Reintentar */}
           {cameraError && (
             <div style={{
-              padding: '24px',
+              position: 'absolute',
+              inset: 0,
+              padding: '24px 18px',
               textAlign: 'center',
-              color: '#94a3b8',
-              fontSize: '0.82rem'
+              color: '#cbd5e1',
+              fontSize: '0.82rem',
+              background: 'linear-gradient(180deg, #0b1120 0%, #030712 100%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              zIndex: 10
             }}>
-              <AlertCircle size={32} color="#f59e0b" style={{ margin: '0 auto 8px' }} />
-              <div>{cameraError}</div>
+              <AlertCircle size={36} color="#f59e0b" />
+              <div style={{ maxWidth: '300px', lineHeight: 1.45 }}>{cameraError}</div>
+              <button
+                type="button"
+                onClick={startCamera}
+                className="btn-flat"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-acrylic)',
+                  background: 'var(--bg-canvas)',
+                  cursor: 'pointer'
+                }}
+              >
+                <RefreshCw size={14} />
+                <span>Reintentar cámara</span>
+              </button>
             </div>
           )}
         </div>
 
-        {/* Manual Code Input Form */}
+        {/* Formulario de Ingreso Manual de Código / Serial */}
         <form onSubmit={handleManualSubmit}>
           <div className="form-label" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>O ingresa el Código / Serial manualmente:</span>
@@ -228,6 +429,38 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Botón Inferior de Cancelar y Cerrar (Acceso Rápido para Pulgares en Móvil) */}
+        <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
+          <button
+            type="button"
+            onClick={handleClose}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              handleClose();
+            }}
+            className="btn-flat"
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-acrylic)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              touchAction: 'manipulation',
+              background: 'transparent',
+              cursor: 'pointer'
+            }}
+          >
+            <X size={16} />
+            <span>Cancelar y cerrar escáner</span>
+          </button>
+        </div>
       </div>
     </div>
   );
