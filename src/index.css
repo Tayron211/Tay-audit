@@ -3539,20 +3539,19 @@ div.desktop-inventory-table.force-visible {
 }
 
 /* ==================================================================== */
-/* FIRMA DEL DESARROLLADOR DISCRETA (PIE DE PÁGINA)                    */
+/* MARCA DE AGUA DEL DESARROLLADOR (PIE DE PÁGINA INERTE / NO CLICKABLE) */
 /* ==================================================================== */
 .tay-developer-footer {
   margin-top: auto;
   user-select: none;
+  pointer-events: none;
+  cursor: default;
 }
 
 .tay-discreet-signature {
-  transition: opacity 0.2s ease, border-color 0.2s ease;
-}
-
-.tay-discreet-signature:hover {
-  opacity: 1 !important;
-  border-color: var(--accent-primary) !important;
+  user-select: none;
+  pointer-events: none;
+  cursor: default;
 }
 
 @media (max-width: 768px) {
