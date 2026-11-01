@@ -76,6 +76,10 @@ const MainApp: React.FC = () => {
     } catch {}
   }, [notifications]);
 
+  // Navegación dirigida a tickets específicos o subpestañas de Soporte TI
+  const [supportInitialSubTab, setSupportInitialSubTab] = useState<'dashboard' | 'tickets' | 'remote' | 'knowledge'>('dashboard');
+  const [targetTicketId, setTargetTicketId] = useState<string | null>(null);
+
   // Modals
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceModalInitialEdit, setDeviceModalInitialEdit] = useState(false);
@@ -365,22 +369,15 @@ const MainApp: React.FC = () => {
     // Al dar atención al ticket, removerlo de la lista de notificaciones activas
     setNotifications(prev => prev.filter(n => n.id !== notif.id));
     setActiveToastNotification(null);
+    setSupportInitialSubTab('tickets');
+    setTargetTicketId(notif.ticketId);
     setActiveTab('support');
+  };
 
-    // Desplazamiento y resaltado visual del ticket en la pestaña Soporte TI
-    setTimeout(() => {
-      const card = document.getElementById(`ticket-card-${notif.ticketId}`);
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.transition = 'all 0.4s ease';
-        card.style.outline = '3px solid var(--accent-primary)';
-        card.style.boxShadow = '0 0 24px var(--accent-glow)';
-        setTimeout(() => {
-          card.style.outline = 'none';
-          card.style.boxShadow = 'none';
-        }, 3000);
-      }
-    }, 350);
+  const handleGoToTickets = () => {
+    setSupportInitialSubTab('tickets');
+    setTargetTicketId(null);
+    setActiveTab('support');
   };
 
   const handleMarkAllNotificationsAsRead = () => {
@@ -591,6 +588,7 @@ exit
           onMarkAllAsRead={handleMarkAllNotificationsAsRead}
           onClearAllNotifications={handleClearAllNotifications}
           onDismissNotification={handleDismissNotification}
+          onGoToTickets={handleGoToTickets}
         />
 
         <main style={{ width: '100%', maxWidth: '100%', minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', paddingBottom: '120px' }}>
@@ -626,6 +624,9 @@ exit
             onSwitchToAudit={() => setActiveTab('audit')}
             serverInfo={serverInfo}
             effectiveServerUrl={effectiveServerUrl}
+            initialSubTab={supportInitialSubTab}
+            targetTicketId={targetTicketId}
+            onClearTargetTicket={() => setTargetTicketId(null)}
           />
         )}
 

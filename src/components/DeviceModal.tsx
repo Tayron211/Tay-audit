@@ -419,10 +419,10 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
 
   return (
     <div className="modal-backdrop-acrylic">
-      <div className="modal-window-acrylic" style={{
+      <div className="modal-window-acrylic device-modal-window" style={{
         width: '100%',
         maxWidth: '860px',
-        maxHeight: '94vh',
+        maxHeight: 'min(92dvh, 880px)',
         overflowY: 'auto',
         padding: '24px 28px',
         position: 'relative'
@@ -436,8 +436,8 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
           className="modal-close-btn"
           style={{
             position: 'absolute',
-            top: '18px',
-            right: '18px',
+            top: '16px',
+            right: '16px',
             zIndex: 10
           }}
         >
@@ -445,7 +445,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         </button>
 
         {/* Header with Hostname, Status & Action Mode Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', paddingRight: '36px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div style={{
               width: '48px',
@@ -1150,21 +1150,25 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         )}
 
         {/* Footer */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: '14px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)'
-        }}>
-          <div>
+        <div 
+          className="device-modal-footer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '16px',
+            borderTop: '1px solid var(--border-acrylic)',
+            marginTop: '20px'
+          }}
+        >
+          <div className="device-modal-footer-danger">
             {confirmDelete ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.78rem', color: '#f87171' }}>¿Eliminar este equipo del inventario?</span>
-                <button onClick={handleDelete} className="btn-flat btn-danger" style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.78rem', color: '#f87171', fontWeight: 700 }}>¿Eliminar este equipo del inventario?</span>
+                <button onClick={handleDelete} className="btn-flat btn-danger" style={{ padding: '6px 12px', fontSize: '0.72rem' }}>
                   Sí, Eliminar
                 </button>
-                <button onClick={() => setConfirmDelete(false)} className="btn-flat" style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
+                <button onClick={() => setConfirmDelete(false)} className="btn-flat" style={{ padding: '6px 10px', fontSize: '0.72rem' }}>
                   Cancelar
                 </button>
               </div>
@@ -1182,7 +1186,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="device-modal-footer-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {isEditing ? (
               <>
                 <button

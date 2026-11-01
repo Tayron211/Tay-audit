@@ -350,7 +350,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
       <div className="modal-window-acrylic" style={{
         width: '100%',
         maxWidth: isEcran || isSpeaker ? '640px' : '780px',
-        maxHeight: '90vh',
+        maxHeight: 'min(92dvh, 900px)',
         display: 'flex',
         flexDirection: 'column',
         borderRadius: '20px',
@@ -1874,15 +1874,18 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           )}
 
           {/* Botones de Acción Inferiores */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '10px',
-            paddingTop: '8px',
-            borderTop: '1px solid var(--border-acrylic)',
-            marginTop: 'auto'
-          }}>
+          <div 
+            className="audit-modal-footer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              paddingTop: '8px',
+              borderTop: '1px solid var(--border-acrylic)',
+              marginTop: 'auto'
+            }}
+          >
             <button
               type="button"
               onClick={onClose}

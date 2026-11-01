@@ -83,6 +83,9 @@ interface SupportSectionProps {
     isCloud?: boolean;
   } | null;
   effectiveServerUrl?: string;
+  initialSubTab?: SupportSubTab;
+  targetTicketId?: string | null;
+  onClearTargetTicket?: () => void;
 }
 
 const VALID_SUBTABS = ['dashboard', 'tickets', 'remote', 'knowledge'] as const;
@@ -107,9 +110,19 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   onSelectDevice,
   onSwitchToAudit: _onSwitchToAudit,
   serverInfo,
-  effectiveServerUrl
+  effectiveServerUrl,
+  initialSubTab,
+  targetTicketId,
+  onClearTargetTicket
 }) => {
-  const [supportSubTab, setSupportSubTab] = useState<SupportSubTab>(() => getInitialSupportSubTab());
+  const [supportSubTab, setSupportSubTab] = useState<SupportSubTab>(() => initialSubTab || getInitialSupportSubTab());
+
+  // Sincronizar subtab cuando cambia externamente (ej: clic en "Ver todas" o al llegar de una notificación)
+  useEffect(() => {
+    if (initialSubTab) {
+      setSupportSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   useEffect(() => {
     localStorage.setItem('tay_audit_support_subtab', supportSubTab);
@@ -237,6 +250,37 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       return next;
     });
   };
+
+  // Navegación directa a un ticket específico solicitado externamente (notificaciones)
+  useEffect(() => {
+    if (targetTicketId) {
+      // 1. Asegurar que estamos en la subpestaña de tickets
+      setSupportSubTab('tickets');
+      // 2. Limpiar filtros de estado y de búsqueda para que no se oculte
+      setStatusFilter('all');
+      setTicketSearchQuery('');
+      // 3. Expandir la tarjeta del ticket
+      setExpandedTicketIds(prev => new Set(prev).add(targetTicketId));
+
+      // 4. Desplazamiento suave y efecto de pulso / foco en la tarjeta
+      const timer = setTimeout(() => {
+        const card = document.getElementById(`ticket-card-${targetTicketId}`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.style.transition = 'all 0.35s ease';
+          card.style.outline = '3px solid var(--accent-primary)';
+          card.style.boxShadow = '0 0 26px var(--accent-glow)';
+          setTimeout(() => {
+            card.style.outline = 'none';
+            card.style.boxShadow = 'none';
+          }, 3500);
+        }
+        onClearTargetTicket?.();
+      }, 400);
+
+      return () => clearTimeout(timer);
+    }
+  }, [targetTicketId, onClearTargetTicket]);
 
   // New rule teach form state
   const [isTeaching, setIsTeaching] = useState(false);

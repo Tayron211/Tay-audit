@@ -350,8 +350,10 @@ code, pre, .font-mono {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 10000 !important; /* Siempre por encima de la barra de navegación móvil (z-index: 1000) */
   padding: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: modalBackdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: opacity 0.2s ease;
 }
@@ -369,6 +371,77 @@ code, pre, .font-mono {
   box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic) !important;
   animation: modalScaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: center center;
+  box-sizing: border-box !important;
+  margin: auto !important; /* Mantiene la ventana siempre perfectamente centrada en vertical y horizontal */
+}
+
+/* Adaptación fluida de ventanas modales en pantallas móviles y tablets */
+@media (max-width: 768px) {
+  .modal-backdrop-acrylic {
+    padding: 12px 10px calc(24px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    align-items: flex-start !important; /* Evita que el encabezado quede cortado arriba al hacer overflow */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .modal-window-acrylic {
+    margin: auto 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 18px 14px 20px 14px !important;
+    border-radius: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Footer de botones de acción en modales para que no se apachurren en móvil */
+  .device-modal-footer {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+    padding-top: 14px !important;
+  }
+
+  .device-modal-footer-danger {
+    width: 100% !important;
+  }
+
+  .device-modal-footer-danger button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 12px !important;
+  }
+
+  .device-modal-footer-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .device-modal-footer-actions button {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 10px 12px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Popover de Notificaciones responsivo en móvil */
+@media (max-width: 480px) {
+  .notification-popover {
+    position: fixed !important;
+    top: 56px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 75px) !important;
+    border-radius: 14px !important;
+    z-index: 9999 !important;
+  }
 }
 
 .modal-window-acrylic.closing {

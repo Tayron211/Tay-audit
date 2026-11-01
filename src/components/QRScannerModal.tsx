@@ -285,7 +285,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       <div className="modal-window-acrylic" style={{
         width: '100%',
         maxWidth: '480px',
-        maxHeight: '94vh',
+        maxHeight: 'min(92dvh, 750px)',
         overflowY: 'auto',
         padding: '22px 20px',
         borderRadius: '26px 8px 26px 8px',

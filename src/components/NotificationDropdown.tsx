@@ -17,6 +17,7 @@ interface NotificationDropdownProps {
   onClearAll: () => void;
   onDismissNotification: (id: string) => void;
   onGoToSupport: () => void;
+  onGoToTickets?: () => void;
   openTicketsCount: number;
 }
 
@@ -27,6 +28,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onClearAll,
   onDismissNotification,
   onGoToSupport,
+  onGoToTickets,
   openTicketsCount
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -135,7 +137,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {/* Menú Desplegable Estilo Facebook (Máximo 5 notificaciones) */}
       {isOpen && (
         <div
-          className="acrylic-popover"
+          className="acrylic-popover notification-popover"
           style={{
             position: 'absolute',
             top: 'calc(100% + 8px)',
@@ -419,7 +421,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                onGoToSupport();
+                if (onGoToTickets) {
+                  onGoToTickets();
+                } else {
+                  onGoToSupport();
+                }
               }}
               style={{
                 background: 'none',
@@ -436,7 +442,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 justifyContent: 'center'
               }}
             >
-              <span>Ver todas las incidencias de Soporte TI ({openTicketsCount} abiertas)</span>
+              <span>Ver todos los tickets de soporte ({openTicketsCount} abiertos)</span>
               <ChevronRight size={13} />
             </button>
           </div>

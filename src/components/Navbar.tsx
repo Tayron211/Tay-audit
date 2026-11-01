@@ -55,6 +55,7 @@ interface NavbarProps {
   onMarkAllAsRead?: () => void;
   onClearAllNotifications?: () => void;
   onDismissNotification?: (id: string) => void;
+  onGoToTickets?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -76,7 +77,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectNotification,
   onMarkAllAsRead,
   onClearAllNotifications,
-  onDismissNotification
+  onDismissNotification,
+  onGoToTickets
 }) => {
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
@@ -446,7 +448,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           onMarkAllAsRead={() => onMarkAllAsRead?.()}
           onClearAll={() => onClearAllNotifications?.()}
           onDismissNotification={(id) => onDismissNotification?.(id)}
-          onGoToSupport={() => onChangeTab('support')}
+          onGoToSupport={() => {
+            if (onGoToTickets) {
+              onGoToTickets();
+            } else {
+              onChangeTab('support');
+            }
+          }}
+          onGoToTickets={onGoToTickets}
           openTicketsCount={openTicketsCount}
         />
 
