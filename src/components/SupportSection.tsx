@@ -164,9 +164,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     return API_BASE || CLOUD_DEFAULT_URL;
   }, [effectiveServerUrl, serverInfo, localServerInfo]);
 
-  const remotePowerShellCmd = effectiveLanUrl.startsWith('https://')
-    ? `[Net.ServicePointManager]::SecurityProtocol = 3072; irm ${effectiveLanUrl}/api/agent/run | iex`
-    : `irm ${effectiveLanUrl}/api/agent/run | iex`;
+  const remotePowerShellCmd = `irm ${effectiveLanUrl}/api/agent/run | iex`;
 
   const copyRemoteCmd = () => {
     navigator.clipboard.writeText(remotePowerShellCmd);

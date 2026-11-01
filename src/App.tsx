@@ -365,9 +365,7 @@ const MainApp: React.FC = () => {
     return API_BASE || CLOUD_DEFAULT_URL;
   }, [customServerHost, serverInfo]);
 
-  const psOneLiner = effectiveServerUrl.startsWith('https://')
-    ? `[Net.ServicePointManager]::SecurityProtocol = 3072; irm ${effectiveServerUrl}/audit | iex`
-    : `irm ${effectiveServerUrl}/audit | iex`;
+  const psOneLiner = `irm ${effectiveServerUrl}/audit | iex`;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -385,7 +383,7 @@ echo ====================================================================
 echo Conectando con servidor central: ${effectiveServerUrl}
 echo.
 echo Extrayendo especificaciones completas de hardware...
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; irm ${effectiveServerUrl}/audit | iex"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm ${effectiveServerUrl}/audit | iex"
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [ERROR] Se produjo un error durante el levantamiento.
