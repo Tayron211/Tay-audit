@@ -41,11 +41,12 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
 
   return (
     <div
+      className="live-toast-notification"
       style={{
         position: 'fixed',
         top: '20px',
         right: '20px',
-        zIndex: 9999,
+        zIndex: 10002,
         maxWidth: '380px',
         width: 'calc(100vw - 40px)',
         borderRadius: '14px',

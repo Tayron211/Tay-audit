@@ -144,26 +144,31 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
       {/* Menú Desplegable Estilo Facebook (Máximo 5 notificaciones) */}
       {isOpen && (
-        <div
-          className="acrylic-popover notification-popover"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            width: '360px',
-            maxWidth: '92vw',
-            borderRadius: '16px',
-            boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic)',
-            backgroundColor: 'var(--bg-acrylic-popover)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            zIndex: 1100,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            animation: 'fadeIn 0.18s ease'
-          }}
-        >
+        <>
+          <div
+            className="notification-backdrop-mobile"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="acrylic-popover notification-popover"
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              right: 0,
+              width: '360px',
+              maxWidth: '92vw',
+              borderRadius: '16px',
+              boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic)',
+              backgroundColor: 'var(--bg-acrylic-popover)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              zIndex: 1100,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              animation: 'fadeIn 0.18s ease'
+            }}
+          >
           {/* Header estilo Facebook */}
           <div
             style={{
@@ -485,6 +490,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             </button>
           </div>
         </div>
+        </>
       )}
     </div>
   );
