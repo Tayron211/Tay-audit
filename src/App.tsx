@@ -476,9 +476,9 @@ exit
             devices={devices}
             stats={stats}
             logs={logs}
-            onSelectDevice={(d, initialEdit) => {
+            onSelectDevice={(d) => {
               setSelectedDevice(d);
-              setDeviceModalInitialEdit(!!initialEdit);
+              setDeviceModalInitialEdit(false);
             }}
             onOpenAuditModal={() => {
               setScannedCodePrefill(undefined);

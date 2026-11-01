@@ -9,7 +9,6 @@ import {
   User, 
   Check, 
   FileSpreadsheet, 
-  Edit3,
   Monitor,
   MapPin,
   Network,
@@ -437,13 +436,13 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
         }}>
           <button
             type="button"
-            onClick={() => onSelectDevice(device, true)}
+            onClick={() => onSelectDevice(device)}
             className="btn-flat btn-primary"
             style={{ padding: '5px 12px', fontSize: '0.72rem', fontWeight: 700, gap: '5px', borderRadius: '6px' }}
-            title="Editar todos los datos del equipo y su ubicación física"
+            title="Ver ficha técnica completa y código QR del equipo"
           >
-            <Edit3 size={12} />
-            <span>Editar Datos y Ubicación</span>
+            <Monitor size={12} />
+            <span>Ver Ficha Técnica Completa</span>
           </button>
         </div>
       </div>
@@ -991,12 +990,12 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
 
                     {/* COLUMNA 7: ACCIONES */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                      {/* Botón Editar Equipo */}
+                      {/* Botón Ver Ficha Técnica del Equipo */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectDevice(device, true);
+                          onSelectDevice(device);
                         }}
                         className="btn-flat"
                         style={{
@@ -1011,9 +1010,9 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
                           backgroundColor: 'var(--bg-canvas-subtle)',
                           color: 'var(--text-primary)'
                         }}
-                        title="Editar equipo y ubicación"
+                        title="Ver ficha técnica y código QR"
                       >
-                        <Edit3 size={11} />
+                        <Monitor size={11} />
                       </button>
 
                       {/* Botón Detalles / Desplegar Drawer */}
@@ -1128,13 +1127,13 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onSelectDevice(device, true);
+                        onSelectDevice(device);
                       }}
                       className="btn-flat"
                       style={{ width: '26px', height: '26px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '5px' }}
-                      title="Editar"
+                      title="Ver Ficha Técnica"
                     >
-                      <Edit3 size={12} />
+                      <Monitor size={12} />
                     </button>
                     <button
                       type="button"

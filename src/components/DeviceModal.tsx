@@ -141,7 +141,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
       setActionMessage(null);
       setConfirmDelete(false);
       setIsStatusDropdownOpen(false);
-      setIsEditing(initialEditMode);
+      setIsEditing(false);
 
       setEditForm({
         hostname: initialDevice.hostname || '',
