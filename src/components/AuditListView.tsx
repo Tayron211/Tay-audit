@@ -20,6 +20,7 @@ import type { Device } from '../types';
 import { getCategoryIcon } from './DeviceCard';
 import { api } from '../services/api';
 import { scrollElementIntoView } from '../utils/autoScroll';
+import { Pagination } from './Pagination';
 
 interface AuditListViewProps {
   devices: Device[];
@@ -153,6 +154,30 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
       return true;
     });
   }, [devices, categoryFilter, statusFilter, searchQuery]);
+
+  // Multipagina Numerada (Pagination)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 8;
+    return 12;
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, statusFilter, searchQuery]);
+
+  const paginatedList = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredList.slice(start, start + pageSize);
+  }, [filteredList, currentPage, pageSize]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    const topEl = document.getElementById('inventory-list-top');
+    if (topEl) {
+      topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Counts for filter pills
   const counts = useMemo(() => {
@@ -426,7 +451,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+    <div id="inventory-list-top" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
       
       {/* 1. FILTER & SEARCH TOOLBAR (COMPACTO & RESPONSIVO) */}
       <div className="acrylic-panel" style={{
@@ -763,7 +788,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               </p>
             </div>
           ) : (
-            filteredList.map((device) => {
+            paginatedList.map((device) => {
               const isExpanded = expandedIds.has(device.id);
               const { icon: CatIcon, color: catColor } = getCategoryIcon(device.deviceType);
               const sb = getDeviceStatusBadge(device.status);
@@ -1048,7 +1073,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
             </h3>
           </div>
         ) : (
-          filteredList.map((device) => {
+          paginatedList.map((device) => {
             const isExpanded = expandedIds.has(device.id);
             const { icon: CatIcon, color: catColor } = getCategoryIcon(device.deviceType);
             const sb = getDeviceStatusBadge(device.status);
@@ -1175,6 +1200,20 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
           })
         )}
       </div>
+
+      {/* Controles de Navegación Multipágina Numerada */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredList.length}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        itemName="equipos"
+        pageSizeOptions={[8, 12, 24, 48]}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setCurrentPage(1);
+        }}
+      />
     </div>
   );
 };

@@ -2211,7 +2211,7 @@ select option {
   }
 
   main {
-    padding-bottom: 12px !important;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 24px)) !important;
     overflow-x: hidden !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -3435,6 +3435,81 @@ div.desktop-inventory-table.force-visible {
   background: #ffffff !important;
   box-shadow: 0 10px 24px -3px rgba(15, 23, 42, 0.16) !important;
 }
+
+/* ==================================================================== */
+/* MULTIPÁGINA NUMERADA & CONTROLES DE PAGINACIÓN                       */
+/* ==================================================================== */
+.pagination-nav-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-acrylic);
+  background: var(--bg-canvas-subtle);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pagination-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--bg-acrylic-elevated);
+  transform: translateY(-1px);
+}
+
+.pagination-num-btn:hover:not(.is-active) {
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+  background: var(--bg-canvas-subtle) !important;
+}
+
+@media (max-width: 768px) {
+  .tay-pagination-container {
+    padding: 0 4px;
+  }
+
+  .pagination-nav-btn,
+  .pagination-num-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.82rem !important;
+  }
+}
+
+/* ==================================================================== */
+/* FIRMA DEL DESARROLLADOR (PIE DE PÁGINA)                              */
+/* ==================================================================== */
+.tay-developer-footer {
+  margin-top: auto;
+  user-select: none;
+}
+
+.tay-signature-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tay-signature-card:hover {
+  box-shadow: 0 6px 24px var(--accent-glow) !important;
+}
+
+@media (max-width: 768px) {
+  .tay-developer-footer {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding: 0 8px;
+  }
+  
+  .tay-signature-card {
+    padding: 14px 12px !important;
+    gap: 6px !important;
+  }
+}
+
 
 
 

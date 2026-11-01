@@ -36,6 +36,7 @@ import { CompactReportCard } from './CompactReportCard';
 import { OverlayCard } from './OverlayCard';
 import { scrollElementIntoView } from '../utils/autoScroll';
 import { CustomSelect, type SelectOption } from './CustomSelect';
+import { Pagination } from './Pagination';
 
 const TICKET_CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Pantalla / Proyector', label: 'Pantalla / Proyector' },
@@ -597,6 +598,30 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       return true;
     });
   }, [tickets, statusFilter, ticketSearchQuery]);
+
+  // Multipagina Numerada para Tickets de Soporte
+  const [ticketPage, setTicketPage] = useState(1);
+  const [ticketPageSize, setTicketPageSize] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 6;
+    return 9;
+  });
+
+  useEffect(() => {
+    setTicketPage(1);
+  }, [statusFilter, ticketSearchQuery]);
+
+  const paginatedTickets = useMemo(() => {
+    const start = (ticketPage - 1) * ticketPageSize;
+    return filteredTickets.slice(start, start + ticketPageSize);
+  }, [filteredTickets, ticketPage, ticketPageSize]);
+
+  const handleTicketPageChange = (newPage: number) => {
+    setTicketPage(newPage);
+    const topEl = document.getElementById('support-tickets-top');
+    if (topEl) {
+      topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1161,7 +1186,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
       {/* VIEW 2: TICKET STREAM & RESOLUTION DESK */}
       {supportSubTab === 'tickets' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div id="support-tickets-top" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Search & Filter Bar */}
           <div className="acrylic-panel" style={{
             padding: '12px 16px',
@@ -1505,23 +1530,39 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
               )}
             </div>
           ) : (
-            <div className="report-recuadros-grid" style={{
-              gap: '16px',
-              paddingBottom: filteredTickets.some(t => expandedTicketIds.has(t.id)) ? '620px' : '90px'
-            }}>
-              {filteredTickets.map(ticket => (
-                <CompactReportCard
-                  key={ticket.id}
-                  ticket={ticket}
-                  devices={devices}
-                  isExpanded={expandedTicketIds.has(ticket.id)}
-                  onToggleExpand={() => toggleExpandTicket(ticket.id)}
-                  onUpdateStatus={handleUpdateStatus}
-                  onDuplicateScreen={handleDuplicateScreen}
-                  onSelectDevice={onSelectDevice}
-                />
-              ))}
-            </div>
+            <>
+              <div className="report-recuadros-grid" style={{
+                gap: '16px',
+                paddingBottom: filteredTickets.some(t => expandedTicketIds.has(t.id)) ? '620px' : '40px'
+              }}>
+                {paginatedTickets.map(ticket => (
+                  <CompactReportCard
+                    key={ticket.id}
+                    ticket={ticket}
+                    devices={devices}
+                    isExpanded={expandedTicketIds.has(ticket.id)}
+                    onToggleExpand={() => toggleExpandTicket(ticket.id)}
+                    onUpdateStatus={handleUpdateStatus}
+                    onDuplicateScreen={handleDuplicateScreen}
+                    onSelectDevice={onSelectDevice}
+                  />
+                ))}
+              </div>
+
+              {/* Controles de Navegación Multipágina Numerada para Tickets */}
+              <Pagination
+                currentPage={ticketPage}
+                totalItems={filteredTickets.length}
+                pageSize={ticketPageSize}
+                onPageChange={handleTicketPageChange}
+                itemName="reportes"
+                pageSizeOptions={[6, 9, 18, 36]}
+                onPageSizeChange={(newSize) => {
+                  setTicketPageSize(newSize);
+                  setTicketPage(1);
+                }}
+              />
+            </>
           )}
         </div>
       )}

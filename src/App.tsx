@@ -19,6 +19,7 @@ import { AuditSection } from './components/AuditSection';
 import { SupportSection } from './components/SupportSection';
 import { StivieClientApp } from './components/StivieClientApp';
 import { SplashScreen } from './components/SplashScreen';
+import { DeveloperFooter } from './components/DeveloperFooter';
 import { computeIntelligentContrast } from './utils/theme';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
@@ -777,6 +778,9 @@ exit
             </div>
           </div>
         )}
+
+        {/* Firma del Desarrollador (Pie de Página Institucional) */}
+        <DeveloperFooter />
       </main>
       </div>
 
