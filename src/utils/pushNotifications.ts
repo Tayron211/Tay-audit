@@ -37,20 +37,26 @@ export const registerNotificationServiceWorker = async (): Promise<ServiceWorker
 /**
  * Suscribe este dispositivo móvil o PC al servidor Cloudflare / Express para recibir Web Push en segundo plano
  */
-export const subscribeDeviceToPush = async (): Promise<boolean> => {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return false;
+export const subscribeDeviceToPush = async (): Promise<{ success: boolean; error?: string; endpoint?: string }> => {
+  if (typeof window === 'undefined') {
+    return { success: false, error: 'Entorno no es navegador' };
+  }
+  if (!('serviceWorker' in navigator)) {
+    return { success: false, error: 'ServiceWorker no soportado en este dispositivo' };
+  }
+  if (!('PushManager' in window)) {
+    return { success: false, error: 'PushManager no disponible en este navegador' };
   }
 
   try {
-    let reg: ServiceWorkerRegistration | null | undefined = await navigator.serviceWorker.getRegistration();
-    if (!reg) {
-      reg = await registerNotificationServiceWorker();
-    }
-    if (!reg) return false;
+    // 1. Asegurar registro del Service Worker y aguardar a que esté ACTIVO
+    await registerNotificationServiceWorker();
+    const reg = await navigator.serviceWorker.ready;
 
-    // Verificar si ya existe una suscripción activa
+    // 2. Verificar suscripción existente
     let subscription = await reg.pushManager.getSubscription();
+
+    // 3. Si no existe, crear nueva suscripción con la clave VAPID actual
     if (!subscription) {
       const appKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       subscription = await reg.pushManager.subscribe({
@@ -65,7 +71,7 @@ export const subscribeDeviceToPush = async (): Promise<boolean> => {
       const p256dh = subJson.keys?.p256dh || '';
       const auth = subJson.keys?.auth || '';
 
-      await fetch(`${API_BASE}/api/push/subscribe`, {
+      const resp = await fetch(`${API_BASE}/api/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -75,12 +81,24 @@ export const subscribeDeviceToPush = async (): Promise<boolean> => {
           userAgent: navigator.userAgent
         })
       });
-      return true;
+
+      if (!resp.ok) {
+        const errTxt = await resp.text();
+        console.warn('Servidor rechazó registro push:', resp.status, errTxt);
+        return { success: false, error: `Servidor HTTP ${resp.status}` };
+      }
+
+      try {
+        localStorage.setItem('tay_push_registered', 'true');
+      } catch {}
+
+      return { success: true, endpoint };
     }
-    return false;
-  } catch (err) {
-    console.warn('Error al suscribir el dispositivo a Web Push:', err);
-    return false;
+
+    return { success: false, error: 'No se pudo obtener objeto de suscripción' };
+  } catch (err: any) {
+    console.error('Error al suscribir el dispositivo a Web Push:', err);
+    return { success: false, error: err?.message || String(err) };
   }
 };
 
@@ -106,8 +124,8 @@ export const requestPushNotificationPermission = async (): Promise<boolean> => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       await registerNotificationServiceWorker();
-      await subscribeDeviceToPush();
-      return true;
+      const res = await subscribeDeviceToPush();
+      return res.success;
     }
     return false;
   } catch (err) {

@@ -21,6 +21,7 @@ import { StivieClientApp } from './components/StivieClientApp';
 import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
 import { LiveNotificationToast } from './components/LiveNotificationToast';
+import { MobileNotificationBanner } from './components/MobileNotificationBanner';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
@@ -919,6 +920,9 @@ exit
           flex: 1,
           boxSizing: 'border-box'
         }}>
+        {/* Banner de Activación Rápida de Notificaciones para Móviles */}
+        <MobileNotificationBanner />
+
         {/* Top Acrylic Navbar */}
         <Navbar
           currentTab={activeTab}

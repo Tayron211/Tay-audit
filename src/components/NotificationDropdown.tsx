@@ -245,7 +245,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </div>
 
           {/* Banner de Activación de Notificaciones Push (Windows y Móviles) */}
-          {pushPermission !== 'granted' && pushPermission !== 'unsupported' && (
+          {pushPermission !== 'granted' && pushPermission !== 'unsupported' ? (
             <div
               style={{
                 padding: '8px 14px',
@@ -272,7 +272,23 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 Activar
               </button>
             </div>
-          )}
+          ) : pushPermission === 'granted' ? (
+            <div
+              style={{
+                padding: '6px 14px',
+                backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                borderBottom: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
+              <span style={{ fontSize: '0.70rem', color: '#22c55e', fontWeight: 700 }}>
+                Alertas en segundo plano activas
+              </span>
+            </div>
+          ) : null}
 
           {/* Lista de Notificaciones (Top 5 más recientes) */}
           <div style={{ maxHeight: '380px', overflowY: 'auto' }}>
