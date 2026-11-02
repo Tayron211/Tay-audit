@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { X, AlertCircle, Search, Barcode, Camera, Loader2, RefreshCw } from 'lucide-react';
+import { X, AlertCircle, Barcode, Camera, Loader2, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import type { Device } from '../types';
 
@@ -22,7 +22,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   customTitle,
   onCustomScan
 }) => {
-  const [manualCode, setManualCode] = useState('');
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraStarting, setIsCameraStarting] = useState(true);
   const [activeCameraLabel, setActiveCameraLabel] = useState<string>('Iniciando lente de la cámara...');
@@ -275,12 +274,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     };
   }, [isOpen, startCamera, stopScanner, handleClose]);
 
-  const handleManualSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!manualCode.trim()) return;
-    handleCodeScanned(manualCode);
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -469,29 +462,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             </div>
           )}
         </div>
-
-        {/* Formulario de Ingreso Manual de Código / Serial */}
-        <form onSubmit={handleManualSubmit}>
-          <div className="form-label" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>O ingresa el Código / Serial manualmente:</span>
-            <span style={{ color: 'var(--accent-primary)', fontSize: '0.74rem', fontWeight: 800 }}>Ingreso Manual</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Ej: LNV-M70Q-9912 o PC-CONTAB-01"
-              value={manualCode}
-              onChange={(e) => setManualCode(e.target.value)}
-              style={{ flex: 1, fontFamily: 'monospace' }}
-            />
-            <button type="submit" className="btn-flat btn-primary" style={{ padding: '0 16px', gap: '6px' }}>
-              <Search size={14} />
-              <span>Aplicar</span>
-            </button>
-          </div>
-        </form>
 
         {/* Botón Inferior de Cancelar y Cerrar (Acceso Rápido para Pulgares en Móvil) */}
         <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
