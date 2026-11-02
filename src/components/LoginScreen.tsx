@@ -6,8 +6,7 @@ import {
   Eye, 
   EyeOff, 
   ArrowRight, 
-  AlertCircle,
-  Cpu
+  AlertCircle
 } from 'lucide-react';
 import { UpnBrandLogo } from './Navbar';
 import type { AuthUser, UserRole } from '../types';
@@ -92,7 +91,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               <circle cx="200" cy="220" r="110" stroke="#FFB800" strokeWidth="1.5" strokeOpacity="0.4" />
               <circle cx="200" cy="220" r="60" stroke="#FFB800" strokeWidth="1" strokeDasharray="3 6" />
               <path d="M40 220 H360 M200 60 V380" stroke="rgba(255,184,0,0.18)" strokeWidth="1" />
-              <path d="M80 100 L320 340 M80 340 L320 100" stroke="rgba(56,189,248,0.12)" strokeWidth="1" strokeDasharray="2 6" />
             </svg>
           </div>
 
@@ -111,24 +109,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               </div>
             </div>
 
-            {/* Titular e identidad institucional */}
+            {/* Titular e identidad institucional nítida y visible */}
             <div className="login-visual-hero">
-              <h1 className="login-visual-title">
-                Portal Corporativo de <span className="text-gradient-upn">Auditoría TI & STIVIE</span>
-              </h1>
-              <p className="login-visual-desc">
-                Gestión centralizada de infraestructura de cómputo, diagnóstico de red en tiempo real y asistencia técnica inteligente en campus.
-              </p>
-            </div>
-
-            {/* Pie institucional continuo */}
-            <div className="login-visual-footer">
-              <div className="login-status-indicator">
-                <span className="login-status-dot" />
-                <span>Servidor Cloud Activo 24/7 • Sede Central</span>
+              <div className="login-visual-title">
+                <span className="login-title-white">Portal Corporativo de</span>
+                <span className="text-gradient-upn">Auditoría TI & STIVIE</span>
               </div>
-              <div className="login-campus-caption">
-                UPN TI • Departamento de Tecnologías de la Información
+              <div className="login-visual-subtitle">
+                Sistema Central de Control y Asistencia TI • Campus UPN
               </div>
             </div>
           </div>
@@ -153,7 +141,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             {/* Campo: Usuario con Detección Automática de Rol */}
             <div className="login-input-group">
               <div className="login-label-row">
-                <label className="login-label">
+                <label className="login-label" htmlFor="login-username">
                   Usuario del Sistema
                 </label>
                 {/* Indicador inteligente de rol detectado automáticamente */}
@@ -174,18 +162,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               <div className="login-input-wrapper">
                 <div className="login-input-icon">
                   {detectedRole === 'admin' ? (
-                    <ShieldCheck size={16} color="#FFB800" />
+                    <ShieldCheck size={18} color="#FFB800" />
                   ) : (
-                    <User size={16} color="var(--text-muted)" />
+                    <User size={18} color="#94a3b8" />
                   )}
                 </div>
                 <input
+                  id="login-username"
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
                   placeholder="Ingresa tu usuario (ej: Admin o tu nombre)"
                   required
                   className="login-input"
+                  style={{ paddingLeft: '44px', paddingRight: '16px' }}
                   autoComplete="username"
                   autoFocus
                 />
@@ -195,15 +185,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             {/* Campo: Contraseña (Sin revelar claves ni texto explícito) */}
             <div className="login-input-group">
               <div className="login-label-row">
-                <label className="login-label">
+                <label className="login-label" htmlFor="login-password">
                   Contraseña de Acceso
                 </label>
               </div>
               <div className="login-input-wrapper">
                 <div className="login-input-icon">
-                  <Lock size={16} />
+                  <Lock size={18} color="#94a3b8" />
                 </div>
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => {
@@ -213,6 +204,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   placeholder="••••••••••••"
                   required
                   className="login-input"
+                  style={{ paddingLeft: '44px', paddingRight: '44px' }}
                   autoComplete="current-password"
                 />
                 <button
@@ -222,7 +214,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -235,29 +227,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               </div>
             )}
 
-            {/* Resumen sutil y limpio del acceso detectado */}
-            <div className="login-permissions-box">
-              <div className="login-permissions-title">
-                {detectedRole === 'admin' ? (
-                  <>
-                    <ShieldCheck size={13} color="#FFB800" />
-                    <span>Nivel de Acceso: Administrador</span>
-                  </>
-                ) : (
-                  <>
-                    <User size={13} color="#0284c7" />
-                    <span>Nivel de Acceso: Operador TI</span>
-                  </>
-                )}
-              </div>
-              <p className="login-permissions-text">
-                {detectedRole === 'admin' 
-                  ? 'Acceso irrestricto: Auditoría de hardware, edición completa, control remoto y eliminación de activos.'
-                  : 'Acceso estándar: Auditoría, edición, registro y soporte. (La eliminación de equipos requiere cuenta Admin).'
-                }
-              </p>
-            </div>
-
             {/* Botón Principal de Acceso */}
             <button
               type="submit"
@@ -268,17 +237,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               <ArrowRight size={17} />
             </button>
           </form>
-
-          {/* Footer del Formulario */}
-          <div className="login-form-footer">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              <Cpu size={12} color="#FFB800" />
-              <span>Universidad Privada del Norte • División TI</span>
-            </div>
-            <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Tay-Audit & STIVIE v2.5 • Control Corporativo
-            </div>
-          </div>
         </div>
 
       </div>
