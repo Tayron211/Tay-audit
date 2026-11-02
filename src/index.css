@@ -1352,12 +1352,23 @@ code, pre {
 }
 
 .nav-register-btn {
-  padding: 5px 12px !important;
-  font-size: 0.74rem !important;
+  height: 36px !important;
+  padding: 0 13px !important;
+  font-size: 0.75rem !important;
   font-weight: 800 !important;
-  border-radius: 8px !important;
-  gap: 5px !important;
+  border-radius: 10px !important;
+  gap: 6px !important;
   white-space: nowrap;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease;
+}
+
+.nav-user-capsule {
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Tablet & Compact Screen Refinements (<= 1200px) */

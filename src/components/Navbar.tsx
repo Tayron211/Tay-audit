@@ -207,37 +207,52 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Right Controls: Grouped cleanly into Appearance Capsule and Action Tools */}
+        {/* Right Controls: Grouped cleanly into Action Tools, Appearance, Notifications, and Unified User Capsule */}
         <div className="nav-controls-container">
-        {/* UN SOLO BOTÓN: APARIENCIA Y TEMA */}
-        <div style={{ position: 'relative' }} ref={colorDropdownRef}>
+          {/* Audit Device Button (Primary Action - First on desktop, hidden on mobile) */}
           <button
             type="button"
-            onClick={() => setIsColorDropdownOpen(prev => !prev)}
-            className="btn-flat"
-            style={{
-              padding: '7px 9px',
-              borderRadius: '10px',
-              gap: '6px',
-              border: isColorDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
-              backgroundColor: isColorDropdownOpen ? 'rgba(148, 163, 184, 0.16)' : 'rgba(148, 163, 184, 0.08)'
-            }}
-            title="Personalizar apariencia y colores"
-            aria-haspopup="true"
-            aria-expanded={isColorDropdownOpen}
+            onClick={onOpenAuditModal}
+            className="btn-flat btn-primary hide-on-mobile nav-register-btn"
+            title="Registrar nuevo equipo en inventario"
           >
-            <Palette size={16} color={currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')} />
-            <span 
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6'),
-                boxShadow: `0 0 6px ${currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')}`,
-                display: 'inline-block'
-              }}
-            />
+            <Plus size={14} />
+            <span>Registrar</span>
           </button>
+
+          {/* UN SOLO BOTÓN: APARIENCIA Y TEMA */}
+          <div style={{ position: 'relative' }} ref={colorDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsColorDropdownOpen(prev => !prev)}
+              className="btn-flat"
+              style={{
+                height: '36px',
+                padding: '0 9px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '10px',
+                gap: '6px',
+                border: isColorDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
+                backgroundColor: isColorDropdownOpen ? 'rgba(148, 163, 184, 0.16)' : 'rgba(148, 163, 184, 0.08)'
+              }}
+              title="Personalizar apariencia y colores"
+              aria-haspopup="true"
+              aria-expanded={isColorDropdownOpen}
+            >
+              <Palette size={16} color={currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')} />
+              <span 
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6'),
+                  boxShadow: `0 0 6px ${currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')}`,
+                  display: 'inline-block'
+                }}
+              />
+            </button>
 
           {/* Desplegable de Apariencia & Tema (Limpio, sin texto de pantone ni botón aplicar) */}
           {isColorDropdownOpen && (
@@ -466,62 +481,81 @@ export const Navbar: React.FC<NavbarProps> = ({
           openTicketsCount={openTicketsCount}
         />
 
-        {/* User Role Badge & Logout */}
+        {/* Unified User Profile & Session Capsule */}
         {currentUser && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div
+            className="nav-user-capsule"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              height: '36px',
+              padding: '0 5px 0 10px',
+              borderRadius: '10px',
+              backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.12)' : 'rgba(56, 189, 248, 0.12)',
+              border: currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)',
+              gap: '8px',
+              userSelect: 'none'
+            }}
+          >
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                padding: '4px 8px',
-                borderRadius: '8px',
-                backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.14)' : 'rgba(56, 189, 248, 0.14)',
-                border: currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.35)' : '1px solid rgba(56, 189, 248, 0.35)',
-                color: currentUser.role === 'admin' ? '#FFB800' : '#38bdf8',
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                userSelect: 'none'
+                color: currentUser.role === 'admin' ? 'var(--accent-primary, #FFB800)' : '#38bdf8',
+                fontSize: '0.74rem',
+                fontWeight: 800
               }}
-              title={currentUser.role === 'admin' ? 'Sesión: Administrador (Acceso total)' : 'Sesión: Usuario Operador (Sin eliminación)'}
+              title={currentUser.role === 'admin' ? 'Sesión activa: Administrador (Acceso total)' : 'Sesión activa: Operador TI'}
             >
               {currentUser.role === 'admin' ? <ShieldCheck size={13} /> : <User size={13} />}
               <span>{currentUser.username}</span>
             </div>
 
             {onLogout && (
-              <button
-                type="button"
-                onClick={onLogout}
-                className="btn-flat"
-                style={{
-                  padding: '4px 7px',
-                  borderRadius: '8px',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.72rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Cerrar sesión de usuario"
-              >
-                <LogOut size={13} />
-                <span className="hide-on-mobile">Salir</span>
-              </button>
+              <>
+                <div
+                  style={{
+                    width: '1px',
+                    height: '16px',
+                    backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.28)' : 'rgba(56, 189, 248, 0.28)'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 6px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                  title="Cerrar sesión de usuario"
+                  aria-label="Cerrar sesión"
+                >
+                  <LogOut size={12} />
+                  <span className="hide-on-mobile">Salir</span>
+                </button>
+              </>
             )}
           </div>
         )}
-
-        {/* Audit Device Button */}
-        <button
-          type="button"
-          onClick={onOpenAuditModal}
-          className="btn-flat btn-primary hide-on-mobile nav-register-btn"
-          title="Registrar nuevo equipo en inventario"
-        >
-          <Plus size={14} />
-          <span>Registrar</span>
-        </button>
       </div>
     </header>
 
