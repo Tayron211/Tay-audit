@@ -3971,46 +3971,60 @@ div.desktop-inventory-table.force-visible {
 }
 
 .login-input-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
+  position: absolute !important;
+  left: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #94a3b8 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  z-index: 5 !important;
 }
 
-.login-input {
+.login-input,
+input.login-input {
   width: 100% !important;
   height: 48px !important;
-  padding-left: 44px !important;
-  padding-right: 44px !important;
+  padding-left: 52px !important;
+  padding-right: 48px !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   border-radius: 12px !important;
   background: var(--input-bg, #f8fafc) !important;
   border: 1.5px solid var(--border-acrylic, #cbd5e1) !important;
   color: var(--text-primary, #0f172a) !important;
-  font-size: 0.92rem !important;
+  font-size: 0.94rem !important;
   font-weight: 600 !important;
   outline: none !important;
   transition: all 0.18s ease;
   box-sizing: border-box !important;
 }
 
-[data-mode="light"] .login-input {
+[data-mode="light"] .login-input,
+[data-mode="light"] input.login-input {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-[data-mode="dark"] .login-input {
+[data-mode="dark"] .login-input,
+[data-mode="dark"] input.login-input {
   background: #070c1e !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
   color: #f8fafc !important;
+}
+
+input.login-input:-webkit-autofill,
+input.login-input:-webkit-autofill:hover, 
+input.login-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary, #0f172a) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--input-bg, #ffffff) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  padding-left: 52px !important;
 }
 
 .login-input:focus {

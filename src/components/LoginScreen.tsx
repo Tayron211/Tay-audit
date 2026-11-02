@@ -175,7 +175,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   placeholder="Ingresa tu usuario (ej: Admin o tu nombre)"
                   required
                   className="login-input"
-                  style={{ paddingLeft: '44px', paddingRight: '16px' }}
+                  style={{ paddingLeft: '52px', paddingRight: '16px' }}
                   autoComplete="username"
                   autoFocus
                 />
@@ -204,7 +204,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   placeholder="••••••••••••"
                   required
                   className="login-input"
-                  style={{ paddingLeft: '44px', paddingRight: '44px' }}
+                  style={{ paddingLeft: '52px', paddingRight: '48px' }}
                   autoComplete="current-password"
                 />
                 <button
