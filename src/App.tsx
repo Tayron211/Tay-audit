@@ -488,22 +488,14 @@ const MainApp: React.FC = () => {
       }
     });
 
-    // Desbloquear audio y auto-solicitar permisos nativos de notificación en la primera interacción
-    const unlockAudioAndRequestPerm = async () => {
+    // Desbloquear motor de audio en la primera interacción (sin disparar alertas intrusivas de permisos)
+    const unlockAudioOnFirstTouch = () => {
       unlockNotificationAudio();
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-        try {
-          const perm = await Notification.requestPermission();
-          if (perm === 'granted') {
-            await subscribeDeviceToPush();
-          }
-        } catch {}
-      }
     };
-    window.addEventListener('pointerdown', unlockAudioAndRequestPerm, { passive: true, once: true });
-    window.addEventListener('keydown', unlockAudioAndRequestPerm, { passive: true, once: true });
-    window.addEventListener('touchstart', unlockAudioAndRequestPerm, { passive: true, once: true });
-    window.addEventListener('click', unlockAudioAndRequestPerm, { passive: true, once: true });
+    window.addEventListener('pointerdown', unlockAudioOnFirstTouch, { passive: true, once: true });
+    window.addEventListener('keydown', unlockAudioOnFirstTouch, { passive: true, once: true });
+    window.addEventListener('touchstart', unlockAudioOnFirstTouch, { passive: true, once: true });
+    window.addEventListener('click', unlockAudioOnFirstTouch, { passive: true, once: true });
 
     const handleSwMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'OPEN_TICKET' && e.data.ticketId) {

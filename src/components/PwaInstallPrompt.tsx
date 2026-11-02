@@ -15,6 +15,7 @@ export const PwaInstallPrompt: React.FC = () => {
   const [showAndroidModal, setShowAndroidModal] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [installedSuccessfully, setInstalledSuccessfully] = useState<boolean>(false);
+  const [isWaitingPrompt, setIsWaitingPrompt] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -82,7 +83,29 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    const activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
+    // Si está en el navegador interno de WhatsApp, Instagram, etc., abrir en Google Chrome oficial
+    const ua = navigator.userAgent || '';
+    const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Line|Twitter|Snapchat|musical_ly|BytedanceWebview/i.test(ua);
+    if (isInApp) {
+      try {
+        window.location.href = 'intent://tay-audit.pages.dev#Intent;scheme=https;package=com.android.chrome;end';
+        return;
+      } catch {}
+    }
+
+    let activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
+
+    // Si el evento beforeinstallprompt de Chrome aún está inicializando, esperar hasta 1200ms
+    if (!activePrompt) {
+      setIsWaitingPrompt(true);
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 200));
+        activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
+        if (activePrompt) break;
+      }
+      setIsWaitingPrompt(false);
+    }
+
     if (activePrompt) {
       try {
         await activePrompt.prompt();
@@ -164,6 +187,7 @@ export const PwaInstallPrompt: React.FC = () => {
             <button
               type="button"
               onClick={handleInstallClick}
+              disabled={isWaitingPrompt}
               style={{
                 backgroundColor: '#070c1e',
                 color: '#FFB800',
@@ -177,11 +201,12 @@ export const PwaInstallPrompt: React.FC = () => {
                 gap: '5px',
                 cursor: 'pointer',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                opacity: isWaitingPrompt ? 0.75 : 1
               }}
             >
               <Download size={13} strokeWidth={2.5} />
-              <span>{isIOS ? 'Instalar' : 'Instalar WebAPK'}</span>
+              <span>{isWaitingPrompt ? 'Iniciando...' : isIOS ? 'Instalar' : 'Instalar WebAPK'}</span>
             </button>
           )}
 
