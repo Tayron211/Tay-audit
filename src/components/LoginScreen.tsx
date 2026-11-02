@@ -7,8 +7,6 @@ import {
   EyeOff, 
   ArrowRight, 
   AlertCircle,
-  Sparkles,
-  Server,
   Cpu
 } from 'lucide-react';
 import { UpnBrandLogo } from './Navbar';
@@ -19,66 +17,51 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('admin');
   const [usernameInput, setUsernameInput] = useState('Admin');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role);
-    setUsernameInput(role === 'admin' ? 'Admin' : 'User');
-    setErrorMsg(null);
-  };
+  // Detección inteligente del rol según lo que el usuario va escribiendo
+  const trimmedUser = usernameInput.trim().toLowerCase();
+  const detectedRole: UserRole = (
+    trimmedUser.includes('admin') || 
+    trimmedUser === 'root' || 
+    trimmedUser === 'adm' || 
+    trimmedUser === 'super' ||
+    trimmedUser === 'tayron'
+  ) ? 'admin' : 'user';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setIsSubmitting(true);
 
-    const trimmedUser = usernameInput.trim().toLowerCase();
-    const trimmedPass = password.trim();
+    const cleanUser = usernameInput.trim();
+    const cleanPass = password.trim();
 
-    // Verificación de credenciales solicitadas:
-    // Admin: contraseña 210391 (acceso a todo)
-    // User: contraseña 1991 (usuario común, todo excepto eliminar items)
+    // Verificación inteligente y segura de credenciales:
+    // Admin: clave 210391 (acceso total a todo el sistema)
+    // User: clave 1991 (operador TI común, todo excepto eliminar items)
     let authenticatedUser: AuthUser | null = null;
 
-    if (
-      (trimmedUser === 'admin' && trimmedPass === '210391') ||
-      (selectedRole === 'admin' && trimmedPass === '210391')
-    ) {
+    if (cleanPass === '210391') {
       authenticatedUser = {
-        username: 'Admin',
+        username: cleanUser || 'Admin',
         role: 'admin',
-        displayName: 'Administrador del Sistema',
+        displayName: cleanUser && cleanUser.toLowerCase() !== 'admin' 
+          ? `${cleanUser} (Admin)` 
+          : 'Administrador del Sistema',
         loginAt: new Date().toISOString()
       };
-    } else if (
-      (trimmedUser === 'user' && trimmedPass === '1991') ||
-      (selectedRole === 'user' && trimmedPass === '1991')
-    ) {
+    } else if (cleanPass === '1991') {
       authenticatedUser = {
-        username: 'User',
+        username: cleanUser || 'User',
         role: 'user',
-        displayName: 'Operador de Soporte TI',
-        loginAt: new Date().toISOString()
-      };
-    } else if (trimmedPass === '210391') {
-      // Detección inteligente por contraseña
-      authenticatedUser = {
-        username: 'Admin',
-        role: 'admin',
-        displayName: 'Administrador del Sistema',
-        loginAt: new Date().toISOString()
-      };
-    } else if (trimmedPass === '1991') {
-      // Detección inteligente por contraseña
-      authenticatedUser = {
-        username: 'User',
-        role: 'user',
-        displayName: 'Operador de Soporte TI',
+        displayName: cleanUser && cleanUser.toLowerCase() !== 'user' 
+          ? `${cleanUser} (Operador TI)` 
+          : 'Operador de Soporte TI',
         loginAt: new Date().toISOString()
       };
     }
@@ -87,16 +70,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       setTimeout(() => {
         setIsSubmitting(false);
         onLogin(authenticatedUser!);
-      }, 300);
+      }, 250);
     } else {
       setTimeout(() => {
         setIsSubmitting(false);
-        if (selectedRole === 'admin') {
-          setErrorMsg('Contraseña incorrecta para Administrador (Clave requerida: 210391)');
-        } else {
-          setErrorMsg('Contraseña incorrecta para Usuario Operador (Clave requerida: 1991)');
-        }
-      }, 250);
+        setErrorMsg('Usuario o contraseña incorrectos. Verifica tus credenciales de acceso.');
+      }, 200);
     }
   };
 
@@ -104,77 +83,63 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     <div className="login-screen-wrapper">
       <div className="login-card-container">
         
-        {/* PANEL IZQUIERDO: BRANDING INSTITUCIONAL UPN & AMBIENTE CYBER-TECH */}
+        {/* PANEL IZQUIERDO: UNA SOLA PIEZA CONTINUA CON BRANDING INSTITUCIONAL UPN */}
         <div className="login-visual-panel">
-          {/* Fondo gradiente y marcas de agua holográficas */}
-          <div className="login-visual-overlay" />
-          
-          <div className="login-visual-watermark">
-            <UpnBrandLogo size={280} color="rgba(255, 184, 0, 0.08)" />
+          {/* Fondo artístico con sutil malla de circuitos tecnológicos */}
+          <div className="login-visual-mesh-bg">
+            <svg width="100%" height="100%" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.12, pointerEvents: 'none' }}>
+              <circle cx="200" cy="220" r="160" stroke="#FFB800" strokeWidth="1" strokeDasharray="4 8" />
+              <circle cx="200" cy="220" r="110" stroke="#FFB800" strokeWidth="1.5" strokeOpacity="0.4" />
+              <circle cx="200" cy="220" r="60" stroke="#FFB800" strokeWidth="1" strokeDasharray="3 6" />
+              <path d="M40 220 H360 M200 60 V380" stroke="rgba(255,184,0,0.18)" strokeWidth="1" />
+              <path d="M80 100 L320 340 M80 340 L320 100" stroke="rgba(56,189,248,0.12)" strokeWidth="1" strokeDasharray="2 6" />
+            </svg>
           </div>
 
           <div className="login-visual-content">
-            {/* Tag superior */}
+            {/* Tag superior de branding */}
             <div className="login-badge-tag">
-              <UpnBrandLogo size={18} color="#FFB800" />
+              <UpnBrandLogo size={16} color="#FFB800" />
               <span>UNIVERSIDAD PRIVADA DEL NORTE</span>
             </div>
 
-            {/* Titular */}
-            <h1 className="login-visual-title">
-              Portal Corporativo de <span className="text-gradient-upn">Auditoría TI & STIVIE</span>
-            </h1>
-
-            <p className="login-visual-desc">
-              Gestión centralizada de infraestructura de cómputo, diagnóstico en tiempo real y asistencia técnica en campus.
-            </p>
-
-            {/* Badges de características */}
-            <div className="login-features-list">
-              <div className="login-feature-pill">
-                <div className="login-feature-icon-box">
-                  <ShieldCheck size={16} color="#FFB800" />
-                </div>
-                <div>
-                  <div className="login-feature-name">Auditoría 1-Clic en Vivo</div>
-                  <div className="login-feature-sub">Levantamiento automático de hardware</div>
-                </div>
-              </div>
-
-              <div className="login-feature-pill">
-                <div className="login-feature-icon-box">
-                  <Sparkles size={16} color="#38bdf8" />
-                </div>
-                <div>
-                  <div className="login-feature-name">STIVIE IA Integrado</div>
-                  <div className="login-feature-sub">Soporte técnico inteligente 24/7</div>
-                </div>
-              </div>
-
-              <div className="login-feature-pill">
-                <div className="login-feature-icon-box">
-                  <Server size={16} color="#10b981" />
-                </div>
-                <div>
-                  <div className="login-feature-name">Infraestructura Conectada</div>
-                  <div className="login-feature-sub">Control corporativo de activos y sedes</div>
-                </div>
+            {/* Emblema central de marca UPN en una sola pieza */}
+            <div className="login-brand-monogram-box">
+              <div className="login-brand-halo" />
+              <div className="login-brand-icon-wrapper">
+                <UpnBrandLogo size={82} color="#FFB800" />
               </div>
             </div>
 
-            {/* Pie del panel visual */}
+            {/* Titular e identidad institucional */}
+            <div className="login-visual-hero">
+              <h1 className="login-visual-title">
+                Portal Corporativo de <span className="text-gradient-upn">Auditoría TI & STIVIE</span>
+              </h1>
+              <p className="login-visual-desc">
+                Gestión centralizada de infraestructura de cómputo, diagnóstico de red en tiempo real y asistencia técnica inteligente en campus.
+              </p>
+            </div>
+
+            {/* Pie institucional continuo */}
             <div className="login-visual-footer">
-              <span>UPN TI • Departamento de Tecnologías de la Información</span>
+              <div className="login-status-indicator">
+                <span className="login-status-dot" />
+                <span>Servidor Cloud Activo 24/7 • Sede Central</span>
+              </div>
+              <div className="login-campus-caption">
+                UPN TI • Departamento de Tecnologías de la Información
+              </div>
             </div>
           </div>
         </div>
 
-        {/* PANEL DERECHO: FORMULARIO DE ACCESO CON SELECCIÓN DE ROL */}
+        {/* PANEL DERECHO: FORMULARIO LIMPIO CON DETECCIÓN INTELIGENTE DE ROL */}
         <div className="login-form-panel">
-          {/* Encabezado del Formulario con Logotipo UPN */}
+          {/* Encabezado con Logotipo UPN */}
           <div className="login-form-header">
             <div className="login-brand-emblem">
-              <UpnBrandLogo size={32} color="#FFB800" />
+              <UpnBrandLogo size={34} color="#FFB800" />
             </div>
             <h2 className="login-form-title">Iniciar Sesión</h2>
             <p className="login-form-subtitle">
@@ -182,69 +147,57 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             </p>
           </div>
 
-          {/* Selector de Rol: Admin vs User */}
-          <div className="login-role-selector">
-            <button
-              type="button"
-              onClick={() => handleRoleSelect('admin')}
-              className={`login-role-card ${selectedRole === 'admin' ? 'active-admin' : ''}`}
-            >
-              <div className="login-role-icon-circle admin">
-                <ShieldCheck size={18} />
-              </div>
-              <div className="login-role-info">
-                <div className="login-role-name">Admin</div>
-                <div className="login-role-badge">Acceso Total</div>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleSelect('user')}
-              className={`login-role-card ${selectedRole === 'user' ? 'active-user' : ''}`}
-            >
-              <div className="login-role-icon-circle user">
-                <User size={18} />
-              </div>
-              <div className="login-role-info">
-                <div className="login-role-name">User</div>
-                <div className="login-role-badge user">Operador TI</div>
-              </div>
-            </button>
-          </div>
-
           {/* Formulario */}
           <form onSubmit={handleSubmit} className="login-form-body">
             
-            {/* Campo: Usuario */}
+            {/* Campo: Usuario con Detección Automática de Rol */}
             <div className="login-input-group">
-              <label className="login-label">
-                Usuario del Sistema
-              </label>
+              <div className="login-label-row">
+                <label className="login-label">
+                  Usuario del Sistema
+                </label>
+                {/* Indicador inteligente de rol detectado automáticamente */}
+                <span className={`login-detected-badge ${detectedRole === 'admin' ? 'admin' : 'user'}`}>
+                  {detectedRole === 'admin' ? (
+                    <>
+                      <ShieldCheck size={12} />
+                      <span>Modo Administrador</span>
+                    </>
+                  ) : (
+                    <>
+                      <User size={12} />
+                      <span>Modo Operador TI</span>
+                    </>
+                  )}
+                </span>
+              </div>
               <div className="login-input-wrapper">
                 <div className="login-input-icon">
-                  {selectedRole === 'admin' ? <ShieldCheck size={16} /> : <User size={16} />}
+                  {detectedRole === 'admin' ? (
+                    <ShieldCheck size={16} color="#FFB800" />
+                  ) : (
+                    <User size={16} color="var(--text-muted)" />
+                  )}
                 </div>
                 <input
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="Admin o User"
+                  placeholder="Ingresa tu usuario (ej: Admin o tu nombre)"
                   required
                   className="login-input"
+                  autoComplete="username"
+                  autoFocus
                 />
               </div>
             </div>
 
-            {/* Campo: Contraseña */}
+            {/* Campo: Contraseña (Sin revelar claves ni texto explícito) */}
             <div className="login-input-group">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="login-label-row">
                 <label className="login-label">
                   Contraseña de Acceso
                 </label>
-                <span className="login-hint-badge">
-                  {selectedRole === 'admin' ? 'Clave: 210391' : 'Clave: 1991'}
-                </span>
               </div>
               <div className="login-input-wrapper">
                 <div className="login-input-icon">
@@ -257,10 +210,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     setPassword(e.target.value);
                     if (errorMsg) setErrorMsg(null);
                   }}
-                  placeholder={selectedRole === 'admin' ? 'Ingresa 210391' : 'Ingresa 1991'}
+                  placeholder="••••••••••••"
                   required
                   className="login-input"
-                  autoFocus
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -274,7 +227,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               </div>
             </div>
 
-            {/* Alerta de Error */}
+            {/* Alerta de Error si las credenciales fallan */}
             {errorMsg && (
               <div className="login-error-banner animate-shake">
                 <AlertCircle size={15} style={{ flexShrink: 0 }} />
@@ -282,25 +235,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               </div>
             )}
 
-            {/* Resumen de Permisos según Rol */}
+            {/* Resumen sutil y limpio del acceso detectado */}
             <div className="login-permissions-box">
               <div className="login-permissions-title">
-                {selectedRole === 'admin' ? (
+                {detectedRole === 'admin' ? (
                   <>
                     <ShieldCheck size={13} color="#FFB800" />
-                    <span>Permisos de Administrador</span>
+                    <span>Nivel de Acceso: Administrador</span>
                   </>
                 ) : (
                   <>
-                    <User size={13} color="#38bdf8" />
-                    <span>Permisos de Usuario Común</span>
+                    <User size={13} color="#0284c7" />
+                    <span>Nivel de Acceso: Operador TI</span>
                   </>
                 )}
               </div>
               <p className="login-permissions-text">
-                {selectedRole === 'admin' 
-                  ? 'Acceso irrestricto: Auditoría, Edición, Registro, Control Remoto y Eliminación definitiva de activos.'
-                  : 'Acceso operativo: Auditoría, Edición, Registro y Soporte. (La eliminación de equipos está protegida solo para Admin).'
+                {detectedRole === 'admin' 
+                  ? 'Acceso irrestricto: Auditoría de hardware, edición completa, control remoto y eliminación de activos.'
+                  : 'Acceso estándar: Auditoría, edición, registro y soporte. (La eliminación de equipos requiere cuenta Admin).'
                 }
               </p>
             </div>
@@ -311,7 +264,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               disabled={isSubmitting}
               className="login-submit-btn"
             >
-              <span>{isSubmitting ? 'Verificando...' : 'Ingresar al Portal TI'}</span>
+              <span>{isSubmitting ? 'Verificando acceso...' : 'Ingresar al Portal TI'}</span>
               <ArrowRight size={17} />
             </button>
           </form>
@@ -333,3 +286,4 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   );
 };
 
+export default LoginScreen;
