@@ -286,14 +286,16 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         handleClose();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
       clearTimeout(timeout);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
       stopScanner();
     };
   }, [isOpen]);
@@ -302,8 +304,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   return (
     <div 
-      className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
-      style={{ zIndex: 10000, padding: '12px' }}
+      className={`modal-backdrop-acrylic qr-scanner-backdrop ${isClosing ? 'closing' : ''}`}
+      style={{ zIndex: 10060, padding: '12px' }}
       onClick={(e) => {
         // Cerrar al tocar fuera de la ventana del modal
         if (e.target === e.currentTarget) {
@@ -311,7 +313,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         }
       }}
     >
-      <div className={`modal-window-acrylic ${isClosing ? 'closing' : ''}`} style={{
+      <div className={`modal-window-acrylic qr-scanner-window ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',
         maxWidth: '480px',
         maxHeight: 'min(92dvh, 750px)',
@@ -319,8 +321,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         padding: '22px 20px',
         borderRadius: '26px 8px 26px 8px',
         border: '1.5px solid var(--accent-primary)',
-        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)',
-        position: 'relative'
+        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.70), 0 0 35px rgba(255, 184, 0, 0.30)',
+        position: 'relative',
+        zIndex: 10061
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button

@@ -114,6 +114,7 @@ const MainApp: React.FC = () => {
 
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [scannedCodePrefill, setScannedCodePrefill] = useState<string | undefined>(undefined);
+  const [scannerFieldPrefill, setScannerFieldPrefill] = useState<{ field: 'hostname' | 'serialNumber'; value: string; ts: number } | null>(null);
   const [copiedPs, setCopiedPs] = useState(false);
 
   // Historial de navegación y gestión de retroceso (Atrás / Swipe en móviles / Botón Atrás en PC)
@@ -452,6 +453,7 @@ const MainApp: React.FC = () => {
 
   const handleCloseAuditModal = () => {
     setIsAuditModalOpen(false);
+    setScannerFieldPrefill(null);
     if (!selectedDevice && !isScannerOpen && modalHistoryPushedRef.current) {
       modalHistoryPushedRef.current = false;
       ignorePopstateRef.current = true;
@@ -483,10 +485,10 @@ const MainApp: React.FC = () => {
     handleOpenScannerModal('Escáner de Activos (QR / Código de Barras)', undefined);
   };
 
-  // Form field scanner open
+  // Form field scanner open: antepone el escáner sobre el formulario y auto-completa el campo al escanear
   const handleOpenFieldScanner = (field: 'hostname' | 'serialNumber') => {
     handleOpenScannerModal(`Escanear ${field === 'hostname' ? 'Hostname' : 'Número de Serie (S/N)'}`, (code: string) => {
-      setScannedCodePrefill(code);
+      setScannerFieldPrefill({ field, value: code, ts: Date.now() });
     });
   };
 
@@ -1166,6 +1168,16 @@ exit
         }}
       />
 
+      <AuditFormModal
+        isOpen={isAuditModalOpen}
+        onClose={handleCloseAuditModal}
+        onDeviceSaved={loadData}
+        prefillCode={scannedCodePrefill}
+        fieldPrefill={scannerFieldPrefill}
+        onOpenFieldScanner={handleOpenFieldScanner}
+      />
+
+      {/* Escáner de Códigos/QR (Antepuesto sobre formularios y modales con z-index superior) */}
       <QRScannerModal
         isOpen={isScannerOpen}
         onClose={handleCloseScannerModal}
@@ -1178,14 +1190,6 @@ exit
         }}
         customTitle={scannerCustomTitle}
         onCustomScan={scannerCustomCallback}
-      />
-
-      <AuditFormModal
-        isOpen={isAuditModalOpen}
-        onClose={handleCloseAuditModal}
-        onDeviceSaved={loadData}
-        prefillCode={scannedCodePrefill}
-        onOpenFieldScanner={handleOpenFieldScanner}
       />
 
       {/* Alerta Notificación Flotante en Tiempo Real con Sonido y Barra de Progreso */}

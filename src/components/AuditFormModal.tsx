@@ -38,11 +38,18 @@ const FORM_STATUS_OPTIONS: SelectOption<DeviceStatus>[] = [
   { value: 'baja', label: 'Dado de Baja (Obsoleto)', dotColor: 'var(--accent-rose)' }
 ];
 
+export interface FieldScanResult {
+  field: 'hostname' | 'serialNumber';
+  value: string;
+  ts: number;
+}
+
 interface AuditFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDeviceSaved: () => void;
   prefillCode?: string;
+  fieldPrefill?: FieldScanResult | null;
   onOpenFieldScanner?: (field: 'hostname' | 'serialNumber') => void;
 }
 
@@ -51,6 +58,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   onClose,
   onDeviceSaved,
   prefillCode,
+  fieldPrefill,
   onOpenFieldScanner
 }) => {
   const [isClosing, setIsClosing] = useState(false);
@@ -150,6 +158,17 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
       }
     }
   }, [prefillCode]);
+
+  useEffect(() => {
+    if (!fieldPrefill || !fieldPrefill.value) return;
+    const { field, value } = fieldPrefill;
+    const clean = value.trim();
+    if (field === 'hostname') {
+      setFormData(prev => ({ ...prev, hostname: clean.toUpperCase() }));
+    } else if (field === 'serialNumber') {
+      setFormData(prev => ({ ...prev, serialNumber: clean }));
+    }
+  }, [fieldPrefill]);
 
   // Select a specific Hardware Component from the dropdown menu and adapt all fields
   const handleSelectHardwareComponent = (compKey: HardwareComponentKey) => {

@@ -361,6 +361,17 @@ code, pre, .font-mono {
   will-change: opacity;
 }
 
+/* El escáner de códigos y QR siempre se antepone sobre cualquier otro formulario o modal abierto */
+.modal-backdrop-acrylic.qr-scanner-backdrop {
+  z-index: 10060 !important;
+  background: rgba(3, 7, 18, 0.78) !important;
+}
+
+.modal-window-acrylic.qr-scanner-window {
+  z-index: 10061 !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.70), 0 0 35px rgba(255, 184, 0, 0.30) !important;
+}
+
 .modal-backdrop-acrylic.closing {
   animation: modalBackdropFadeOut 0.22s ease-in forwards;
 }
