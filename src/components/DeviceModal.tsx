@@ -467,7 +467,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         </button>
 
         {/* Header with Hostname, Status & Action Mode Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', paddingRight: '36px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', paddingRight: '44px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div style={{
               width: '48px',
@@ -590,16 +590,26 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                     )}
                   </div>
                 ) : (
-                  <span style={{
-                    fontSize: '0.68rem',
-                    padding: '2px 8px',
-                    borderRadius: '6px',
-                    background: 'var(--accent-primary)',
-                    color: 'var(--accent-contrast, #000000)',
-                    fontWeight: 800,
-                    textTransform: 'uppercase'
-                  }}>
-                    Modo Edición Activo
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(255, 184, 0, 0.14)',
+                      border: '1px solid rgba(255, 184, 0, 0.38)',
+                      color: 'var(--accent-primary, #FFB800)',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.02em',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      boxShadow: '0 0 12px rgba(255, 184, 0, 0.12)'
+                    }}
+                  >
+                    <Edit3 size={12} />
+                    <span>Modo Edición</span>
                   </span>
                 )}
               </div>
