@@ -3781,12 +3781,16 @@ div.desktop-inventory-table.force-visible {
   display: flex;
   flex-direction: column;
   height: 100%;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 22px;
 }
 
 .login-badge-tag {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 6px 14px;
   border-radius: 20px;
@@ -3797,6 +3801,7 @@ div.desktop-inventory-table.force-visible {
   font-weight: 800;
   letter-spacing: 0.05em;
   width: fit-content;
+  margin: 0 auto;
 }
 
 .login-brand-monogram-box {
@@ -3804,7 +3809,7 @@ div.desktop-inventory-table.force-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 24px 0;
+  margin: 4px 0;
 }
 
 .login-brand-halo {
@@ -3833,22 +3838,30 @@ div.desktop-inventory-table.force-visible {
 }
 
 .login-visual-hero {
-  margin-top: auto;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 360px;
 }
 
 .login-visual-title {
   font-size: 1.75rem;
   font-weight: 800;
   line-height: 1.25;
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
   letter-spacing: -0.02em;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .login-title-white {
   color: #ffffff !important;
   display: block;
+  text-align: center;
 }
 
 .login-visual-panel .text-gradient-upn {
@@ -3856,13 +3869,15 @@ div.desktop-inventory-table.force-visible {
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   display: block;
+  text-align: center;
 }
 
 .login-visual-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #94a3b8 !important;
   line-height: 1.45;
   margin: 0;
+  text-align: center;
 }
 
 /* PANEL DERECHO: Formulario Limpio */

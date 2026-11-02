@@ -116,7 +116,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                 <span className="text-gradient-upn">Auditoría TI & STIVIE</span>
               </div>
               <div className="login-visual-subtitle">
-                Sistema Central de Control y Asistencia TI • Campus UPN
+                Sistema de Control y Asistencia TI • Campus Comas
               </div>
             </div>
           </div>
@@ -131,7 +131,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             </div>
             <h2 className="login-form-title">Iniciar Sesión</h2>
             <p className="login-form-subtitle">
-              Portal Institucional TAY-AUDIT • Campus UPN
+              TAY-AUDIT • Campus Comas
             </p>
           </div>
 
