@@ -37,7 +37,6 @@ import { OverlayCard } from './OverlayCard';
 import { scrollElementIntoView } from '../utils/autoScroll';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 import { Pagination } from './Pagination';
-import { getSystemNotificationPermission, requestPushNotificationPermission, triggerPushTest } from '../utils/pushNotifications';
 
 const TICKET_CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Pantalla / Proyector', label: 'Pantalla / Proyector' },
@@ -119,8 +118,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   ticketsNavTrigger
 }) => {
   const [supportSubTab, setSupportSubTab] = useState<SupportSubTab>(() => initialSubTab || getInitialSupportSubTab());
-  const [pushPerm, setPushPerm] = useState<string>(() => getSystemNotificationPermission());
-  const [testingPush, setTestingPush] = useState(false);
 
   // Sincronizar subtab cuando cambia externamente (ej: clic en "Ver todas" o al llegar de una notificación)
   useEffect(() => {
@@ -1365,58 +1362,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {pushPerm !== 'granted' && pushPerm !== 'unsupported' ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const ok = await requestPushNotificationPermission();
-                      setPushPerm(ok ? 'granted' : 'denied');
-                    }}
-                    className="btn-flat"
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      backgroundColor: 'rgba(255, 184, 0, 0.12)',
-                      color: '#FFB800',
-                      border: '1px solid rgba(255, 184, 0, 0.35)',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    title="Recibir notificaciones sonoras en segundo plano en tu celular o PC"
-                  >
-                    <span>🔔 Activar Alertas 24/7</span>
-                  </button>
-                ) : pushPerm === 'granted' ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setTestingPush(true);
-                      await triggerPushTest();
-                      setTimeout(() => setTestingPush(false), 2000);
-                    }}
-                    disabled={testingPush}
-                    className="btn-flat"
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                      color: '#22c55e',
-                      border: '1px solid rgba(34, 197, 94, 0.35)',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                    title="Emitir alerta de prueba con timbre sonoro en segundo plano"
-                  >
-                    <span>{testingPush ? 'Enviando...' : '🔔 Probar Sonido'}</span>
-                  </button>
-                ) : null}
-
                 <button
                   type="button"
                   onClick={() => window.open(api.getSupportExcelDownloadUrl(), '_blank')}
