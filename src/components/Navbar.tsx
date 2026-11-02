@@ -13,7 +13,9 @@ import {
   ShieldCheck,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Smartphone,
+  X
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -95,6 +97,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isUserMenuClosing, setIsUserMenuClosing] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  const handleInstallClick = async () => {
+    const prompt = (window as any).__pwaInstallPrompt;
+    if (prompt) {
+      prompt.prompt();
+      try {
+        const choice = await prompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          (window as any).__pwaInstallPrompt = null;
+          return;
+        }
+      } catch {}
+    }
+    setShowInstallModal(true);
+  };
 
   const closeColorDropdown = () => {
     if (isColorDropdownClosing || !isColorDropdownOpen) return;
@@ -609,9 +628,44 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 </div>
 
+                {/* Opción de Instalar como WebApp Nativa */}
+                <div style={{ marginTop: '4px', borderTop: '1px solid var(--border-acrylic)', paddingTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeUserMenu();
+                      handleInstallClick();
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 184, 0, 0.12)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Smartphone size={14} color="var(--accent-primary)" />
+                    <span>Instalar en el Móvil</span>
+                  </button>
+                </div>
+
                 {/* Opción de Salir / Cerrar Sesión */}
                 {onLogout && (
-                  <div style={{ marginTop: '6px' }}>
+                  <div style={{ marginTop: '2px' }}>
                     <button
                       type="button"
                       onClick={() => {
@@ -651,6 +705,92 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
       </div>
     </header>
+
+    {/* MODAL GUÍA PARA INSTALAR COMO APP NATIVA (PWA) */}
+    {showInstallModal && (
+      <div 
+        className="modal-backdrop-acrylic"
+        onClick={() => setShowInstallModal(false)}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(7, 12, 30, 0.8)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 10090,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}
+      >
+        <div
+          className="acrylic-panel-elevated"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            maxWidth: '440px',
+            width: '100%',
+            padding: '24px',
+            borderRadius: '18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            background: 'var(--bg-popover)',
+            border: '1px solid var(--border-acrylic-active)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
+              <Smartphone size={20} color="var(--accent-primary)" />
+              <span>Instalar como App en tu Móvil</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowInstallModal(false)}
+              className="btn-flat"
+              style={{ padding: '6px', borderRadius: '8px' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ margin: 0 }}>
+              Al instalar la aplicación web en tu pantalla de inicio, <strong>se elimina la barra blanca del navegador</strong> y la app se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
+            </p>
+
+            <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255, 184, 0, 0.08)', border: '1px solid rgba(255, 184, 0, 0.25)' }}>
+              <strong style={{ color: 'var(--accent-primary)', display: 'block', marginBottom: '4px' }}>
+                🤖 En Android (Chrome o Samsung Internet):
+              </strong>
+              <span>
+                1. Toca el menú de <strong>3 puntos (⋮)</strong> o las <strong>3 líneas (≡)</strong> del navegador.<br />
+                2. Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Añadir a pantalla de inicio"</strong>.
+              </span>
+            </div>
+
+            <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+              <strong style={{ color: 'var(--accent-cyan)', display: 'block', marginBottom: '4px' }}>
+                🍎 En iPhone / iPad (Safari):
+              </strong>
+              <span>
+                1. Toca el botón <strong>Compartir</strong> (icono con flecha hacia arriba).<br />
+                2. Desliza y selecciona <strong>"Añadir a pantalla de inicio"</strong>.
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowInstallModal(false)}
+            className="btn-flat btn-primary"
+            style={{ width: '100%', padding: '10px', fontSize: '0.84rem', fontWeight: 800, justifyContent: 'center' }}
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    )}
 
 
 
