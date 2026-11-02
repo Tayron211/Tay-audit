@@ -15,9 +15,7 @@ import {
   LogOut,
   ChevronDown,
   Smartphone,
-  X,
-  Maximize2,
-  Minimize2
+  X
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -115,39 +113,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       } catch {}
     }
     setShowInstallModal(true);
-  };
-
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    document.addEventListener('webkitfullscreenchange', handleFsChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFsChange);
-      document.removeEventListener('webkitfullscreenchange', handleFsChange);
-    };
-  }, []);
-
-  const toggleFullscreen = async () => {
-    try {
-      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
-        const docEl = document.documentElement as any;
-        if (docEl.requestFullscreen) {
-          await docEl.requestFullscreen();
-        } else if (docEl.webkitRequestFullscreen) {
-          await docEl.webkitRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        }
-      }
-    } catch {}
   };
 
   const closeColorDropdown = () => {
@@ -314,28 +279,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Plus size={14} />
             <span>Registrar</span>
-          </button>
-
-          {/* BOTÓN MODO INMERSIVO (PANTALLA COMPLETA NATIVA EN MÓVIL Y ESCRITORIO) */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="btn-flat nav-fullscreen-btn"
-            style={{
-              height: '36px',
-              padding: '0 9px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '10px',
-              border: isFullscreen ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
-              backgroundColor: isFullscreen ? 'rgba(255, 184, 0, 0.16)' : 'rgba(148, 163, 184, 0.08)',
-              color: isFullscreen ? 'var(--accent-primary)' : 'var(--text-primary)'
-            }}
-            title={isFullscreen ? 'Salir de Modo Inmersivo' : 'Activar Modo Inmersivo (Pantalla Completa sin barras de navegador)'}
-            aria-label="Modo Inmersivo"
-          >
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
 
           {/* UN SOLO BOTÓN: APARIENCIA Y TEMA */}

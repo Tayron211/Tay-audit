@@ -54,6 +54,23 @@
           if (msMeta) {
             msMeta.setAttribute('content', themeColor);
           }
+
+          // Forzar modo inmersivo automáticamente al interactuar/tocar en móviles
+          function triggerAutoImmersive() {
+            try {
+              var doc = document.documentElement;
+              if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (doc.requestFullscreen) {
+                  doc.requestFullscreen().catch(function() {});
+                } else if (doc.webkitRequestFullscreen) {
+                  doc.webkitRequestFullscreen();
+                }
+              }
+            } catch (e) {}
+          }
+          window.addEventListener('touchstart', triggerAutoImmersive, { passive: true });
+          window.addEventListener('pointerdown', triggerAutoImmersive, { passive: true });
+          window.addEventListener('click', triggerAutoImmersive, { passive: true });
         } catch (e) {}
       })();
     </script>
