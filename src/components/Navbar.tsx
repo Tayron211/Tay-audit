@@ -12,7 +12,8 @@ import {
   Sparkles,
   ShieldCheck,
   User,
-  LogOut
+  LogOut,
+  ChevronDown
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -90,20 +91,25 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
 
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
         setIsColorDropdownOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
     };
-    if (isColorDropdownOpen) {
+    if (isColorDropdownOpen || isUserMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isColorDropdownOpen]);
+  }, [isColorDropdownOpen, isUserMenuOpen]);
 
   const themes = [
     { id: 'upn', label: 'UPN Oro Lúcuma', color: '#ffb800' },
@@ -481,78 +487,129 @@ export const Navbar: React.FC<NavbarProps> = ({
           openTicketsCount={openTicketsCount}
         />
 
-        {/* Unified User Profile & Session Capsule */}
+        {/* UN SOLO BOTÓN DE USUARIO: AL DAR TAP DESPLIEGA EL MENÚ CON SALIR */}
         {currentUser && (
-          <div
-            className="nav-user-capsule"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              height: '36px',
-              padding: '0 5px 0 10px',
-              borderRadius: '10px',
-              backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.12)' : 'rgba(56, 189, 248, 0.12)',
-              border: currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)',
-              gap: '8px',
-              userSelect: 'none'
-            }}
-          >
-            <div
+          <div style={{ position: 'relative' }} ref={userMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsUserMenuOpen(prev => !prev)}
+              className="btn-flat nav-user-btn"
               style={{
+                height: '36px',
+                padding: '0 10px',
+                borderRadius: '10px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '6px',
+                backgroundColor: isUserMenuOpen 
+                  ? (currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.22)' : 'rgba(56, 189, 248, 0.22)')
+                  : (currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.12)' : 'rgba(56, 189, 248, 0.12)'),
+                border: isUserMenuOpen 
+                  ? (currentUser.role === 'admin' ? '1px solid #FFB800' : '1px solid #38bdf8')
+                  : (currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)'),
                 color: currentUser.role === 'admin' ? 'var(--accent-primary, #FFB800)' : '#38bdf8',
-                fontSize: '0.74rem',
-                fontWeight: 800
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                userSelect: 'none'
               }}
-              title={currentUser.role === 'admin' ? 'Sesión activa: Administrador (Acceso total)' : 'Sesión activa: Operador TI'}
+              title={currentUser.role === 'admin' ? 'Sesión: Administrador (Click para opciones)' : 'Sesión: Operador TI (Click para opciones)'}
+              aria-haspopup="true"
+              aria-expanded={isUserMenuOpen}
             >
-              {currentUser.role === 'admin' ? <ShieldCheck size={13} /> : <User size={13} />}
+              {currentUser.role === 'admin' ? <ShieldCheck size={14} /> : <User size={14} />}
               <span>{currentUser.username}</span>
-            </div>
+              <ChevronDown 
+                size={12} 
+                style={{ 
+                  transition: 'transform 0.2s ease', 
+                  transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  opacity: 0.8
+                }} 
+              />
+            </button>
 
-            {onLogout && (
-              <>
-                <div
-                  style={{
-                    width: '1px',
-                    height: '16px',
-                    backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.28)' : 'rgba(56, 189, 248, 0.28)'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 6px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#ef4444';
-                    e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--text-muted)';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                  title="Cerrar sesión de usuario"
-                  aria-label="Cerrar sesión"
-                >
-                  <LogOut size={12} />
-                  <span className="hide-on-mobile">Salir</span>
-                </button>
-              </>
+            {/* Menú Desplegable de Usuario (Al dar Tap) */}
+            {isUserMenuOpen && (
+              <div
+                className="acrylic-popover animate-fadeIn"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  width: '210px',
+                  padding: '8px',
+                  borderRadius: '14px',
+                  zIndex: 1000,
+                  boxShadow: '0 12px 36px rgba(0,0,0,0.45)'
+                }}
+              >
+                {/* Cabecera del Usuario */}
+                <div style={{ padding: '8px 10px 10px 10px', borderBottom: '1px solid var(--border-acrylic)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.16)' : 'rgba(56, 189, 248, 0.16)',
+                        color: currentUser.role === 'admin' ? '#FFB800' : '#38bdf8'
+                      }}
+                    >
+                      {currentUser.role === 'admin' ? <ShieldCheck size={16} /> : <User size={16} />}
+                    </div>
+                    <div style={{ overflow: 'hidden' }}>
+                      <div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                        {currentUser.username}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                        {currentUser.role === 'admin' ? 'Administrador' : 'Operador TI'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Opción de Salir / Cerrar Sesión */}
+                {onLogout && (
+                  <div style={{ marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onLogout();
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#ef4444',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <LogOut size={14} />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}

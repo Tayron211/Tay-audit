@@ -1365,6 +1365,7 @@ code, pre {
   transition: all 0.2s ease;
 }
 
+.nav-user-btn,
 .nav-user-capsule {
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
