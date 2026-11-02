@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="22"
+        android:translateY="22"
+        android:scaleX="2.666"
+        android:scaleY="2.666">
+        <!-- Pilar Izquierdo con Corte Superior Horizontal y Ala Norte UPN -->
+        <path
+            android:fillColor="#FFB800"
+            android:pathData="M11.4,2.5H9.4L4,7.9V11.1L8.55,7.9V22H11.4V2.5Z" />
+        <!-- Pilar Derecho con Corte Superior Horizontal y Ala Norte UPN -->
+        <path
+            android:fillColor="#FFB800"
+            android:pathData="M12.6,2.5H14.6L20 7.9V11.1L15.45,7.9V22H12.6V2.5Z" />
+    </group>
+</vector>
