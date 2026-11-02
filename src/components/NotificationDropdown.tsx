@@ -10,7 +10,7 @@ import {
   BellRing
 } from 'lucide-react';
 import type { AppNotification } from '../types';
-import { getSystemNotificationPermission, requestPushNotificationPermission } from '../utils/pushNotifications';
+import { getSystemNotificationPermission, requestPushNotificationPermission, triggerPushTest } from '../utils/pushNotifications';
 
 interface NotificationDropdownProps {
   notifications: AppNotification[];
@@ -71,10 +71,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermission());
+  const [isTestingPush, setIsTestingPush] = useState(false);
 
   const handleEnablePush = async () => {
     const granted = await requestPushNotificationPermission();
     setPushPermission(granted ? 'granted' : 'denied');
+  };
+
+  const handleTestPush = async () => {
+    setIsTestingPush(true);
+    await triggerPushTest();
+    setTimeout(() => setIsTestingPush(false), 2000);
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -270,6 +277,45 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 style={{ padding: '3px 9px', fontSize: '0.68rem', fontWeight: 800, whiteSpace: 'nowrap' }}
               >
                 Activar
+              </button>
+            </div>
+          )}
+
+          {/* Estado de Notificaciones Push Activas y Botón de Prueba */}
+          {pushPermission === 'granted' && (
+            <div
+              style={{
+                padding: '6px 14px',
+                backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                borderBottom: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
+                <span style={{ fontSize: '0.70rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                  Push 24/7 activo en segundo plano
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleTestPush}
+                disabled={isTestingPush}
+                className="btn-flat"
+                style={{
+                  padding: '2px 8px',
+                  fontSize: '0.66rem',
+                  fontWeight: 700,
+                  color: 'var(--accent-primary)',
+                  border: '1px solid var(--border-acrylic)',
+                  borderRadius: '6px'
+                }}
+                title="Emitir alerta de prueba con timbre sonoro en segundo plano"
+              >
+                {isTestingPush ? 'Enviando...' : '🔔 Probar Sonido'}
               </button>
             </div>
           )}

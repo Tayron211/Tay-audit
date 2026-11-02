@@ -83,6 +83,15 @@ export function initDB() {
       updatedAt TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id TEXT PRIMARY KEY,
+      endpoint TEXT UNIQUE,
+      p256dh TEXT,
+      auth TEXT,
+      userAgent TEXT,
+      createdAt TEXT
+    );
+
     CREATE INDEX IF NOT EXISTS idx_devices_hostname ON devices(hostname);
     CREATE INDEX IF NOT EXISTS idx_devices_type ON devices(deviceType);
     CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status);

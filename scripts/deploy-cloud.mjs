@@ -45,13 +45,14 @@ if (fs.existsSync(csPath)) {
 
 // 2. Compilar Frontend (TypeScript + Vite)
 console.log('\n[2/4] Compilando interfaz web (dist/)...');
-execSync('npm run build', { stdio: 'inherit', cwd: rootDir });
+execSync('npm run build', { stdio: 'inherit', cwd: rootDir, shell: 'cmd.exe' });
 
 // 3. Publicar Frontend + Funciones Edge en Cloudflare Pages (sin tocar los datos de D1)
 console.log('\n[3/4] Subiendo actualizacion a https://tay-audit.pages.dev ...');
 execSync('npx wrangler pages deploy dist --project-name=tay-audit --branch=main --commit-dirty=true', {
   stdio: 'inherit',
-  cwd: rootDir
+  cwd: rootDir,
+  shell: 'cmd.exe'
 });
 
 console.log('\n[4/4] ¡Actualizacion publicada con exito en https://tay-audit.pages.dev !');

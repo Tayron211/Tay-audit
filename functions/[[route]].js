@@ -100,12 +100,122 @@ async function ensureSchema(db) {
     db.prepare(`CREATE TABLE IF NOT EXISTS agent_commands (
       id TEXT PRIMARY KEY, hostname TEXT NOT NULL, action TEXT NOT NULL, details TEXT, createdAt INTEGER NOT NULL
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id TEXT PRIMARY KEY, endpoint TEXT UNIQUE, p256dh TEXT, auth TEXT, userAgent TEXT, createdAt TEXT
+    )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS system_meta (
       key TEXT PRIMARY KEY, value TEXT NOT NULL
     )`),
     db.prepare(`INSERT OR IGNORE INTO system_meta (key, value) VALUES ('last_change_ts', '1')`)
   ]);
   schemaVerified = true;
+}
+
+// ----------------------------------------------------------------------------
+// WEB PUSH NOTIFICATIONS 24/7 (VAPID RFC 8292 & Web Crypto)
+// ----------------------------------------------------------------------------
+const VAPID_PUBLIC_KEY = 'BGkSXnXaQ6GLubO9tK0uaFxsBm10mCoHbEjVHY-UsA4g6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk';
+const VAPID_PRIVATE_JWK = {
+  key_ops: ['sign'],
+  ext: true,
+  kty: 'EC',
+  x: 'aRJeddpDoYu5s720rS5oXGwGbXSYKgdsSNUdj5SwDiA',
+  y: '6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk',
+  crv: 'P-256',
+  d: 'hYrem2pqrgT6Hn2OGViO3wZzmehDowDxeN8sX_-Oi_A'
+};
+
+function b64Url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+let cachedVapidKey = null;
+async function getVapidCryptoKey() {
+  if (!cachedVapidKey) {
+    cachedVapidKey = await crypto.subtle.importKey(
+      'jwk',
+      VAPID_PRIVATE_JWK,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign']
+    );
+  }
+  return cachedVapidKey;
+}
+
+async function createVapidJwt(aud) {
+  const key = await getVapidCryptoKey();
+  const header = { typ: 'JWT', alg: 'ES256' };
+  const claims = {
+    aud: aud,
+    exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+    sub: 'mailto:soporte@tay-audit.pages.dev'
+  };
+
+  const enc = new TextEncoder();
+  const headerB64 = b64Url(enc.encode(JSON.stringify(header)));
+  const claimsB64 = b64Url(enc.encode(JSON.stringify(claims)));
+  const message = enc.encode(`${headerB64}.${claimsB64}`);
+
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: { name: 'SHA-256' } },
+    key,
+    message
+  );
+
+  return `${headerB64}.${claimsB64}.${b64Url(signature)}`;
+}
+
+async function dispatchPushToAllSubscribers(db, ticket) {
+  try {
+    const { results: subs } = await db.prepare('SELECT * FROM push_subscriptions').all();
+    if (!subs || subs.length === 0) return 0;
+
+    const deadEndpoints = [];
+    let dispatchedCount = 0;
+
+    await Promise.allSettled(subs.map(async (sub) => {
+      try {
+        const url = new URL(sub.endpoint);
+        const aud = `${url.protocol}//${url.host}`;
+        const jwt = await createVapidJwt(aud);
+
+        const res = await fetch(sub.endpoint, {
+          method: 'POST',
+          headers: {
+            'TTL': '86400',
+            'Urgency': 'high',
+            'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
+          }
+        });
+
+        if (res.status === 201 || res.status === 200 || res.status === 202) {
+          dispatchedCount++;
+        } else if (res.status === 404 || res.status === 410) {
+          deadEndpoints.push(sub.endpoint);
+        }
+      } catch (err) {
+        console.warn('FCM dispatch error for subscriber:', sub.endpoint, err);
+      }
+    }));
+
+    if (deadEndpoints.length > 0) {
+      for (const ep of deadEndpoints) {
+        try {
+          await db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').bind(ep).run();
+        } catch {}
+      }
+    }
+    return dispatchedCount;
+  } catch (err) {
+    console.warn('dispatchPushToAllSubscribers error:', err);
+    return 0;
+  }
 }
 
 async function touchSyncVersion(db) {
@@ -1242,6 +1352,55 @@ exit /b 0
     // ------------------------------------------------------------------------
     // 5. SUPPORT TICKETS & STIVIE AI / KNOWLEDGE BASE
     // ------------------------------------------------------------------------
+    if (method === 'POST' && pathname === '/api/push/subscribe') {
+      try {
+        const body = await request.json();
+        const endpoint = body?.endpoint || body?.subscription?.endpoint;
+        const p256dh = body?.p256dh || body?.subscription?.keys?.p256dh || '';
+        const auth = body?.auth || body?.subscription?.keys?.auth || '';
+        const userAgent = sanitizeInput(body?.userAgent || request.headers.get('user-agent') || '', 255);
+
+        if (!endpoint || typeof endpoint !== 'string') {
+          return jsonResponse({ error: 'Endpoint es obligatorio' }, 400);
+        }
+
+        const now = new Date().toISOString();
+        const subId = `sub-${shortUuid()}`;
+
+        await db.prepare(`
+          INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, userAgent, createdAt)
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(endpoint) DO UPDATE SET
+            p256dh = excluded.p256dh,
+            auth = excluded.auth,
+            userAgent = excluded.userAgent,
+            createdAt = excluded.createdAt
+        `).bind(subId, endpoint, p256dh, auth, userAgent, now).run();
+
+        return jsonResponse({ success: true, message: 'Suscripción push registrada exitosamente' });
+      } catch (err) {
+        return jsonResponse({ error: 'Error al registrar suscripción push: ' + err.message }, 500);
+      }
+    }
+
+    if (method === 'POST' && pathname === '/api/push/test') {
+      try {
+        const testTicket = {
+          id: 'TEST-' + shortUuid(),
+          hostname: 'MOVIL-TEST',
+          userName: 'Prueba Push UPN',
+          category: 'Notificación en Tiempo Real',
+          description: 'Esta es una notificación de prueba en tiempo real para verificar el sonido y la llegada en segundo plano.',
+          urgency: 'alta',
+          createdAt: new Date().toISOString()
+        };
+        const count = await dispatchPushToAllSubscribers(db, testTicket);
+        return jsonResponse({ success: true, count, message: `Push enviado a ${count} dispositivos registrados.` });
+      } catch (err) {
+        return jsonResponse({ error: err.message }, 500);
+      }
+    }
+
     if (method === 'GET' && pathname === '/api/tickets') {
       const { results } = await db.prepare('SELECT * FROM support_tickets ORDER BY datetime(createdAt) DESC').all();
       return jsonResponse(results || []);
@@ -1280,6 +1439,22 @@ exit /b 0
 
       await touchSyncVersion(db);
       const savedTicket = await db.prepare('SELECT * FROM support_tickets WHERE id = ?').bind(ticketId).first();
+
+      // Despacho Web Push a todos los celulares y navegadores registrados
+      try {
+        await dispatchPushToAllSubscribers(db, savedTicket || {
+          id: ticketId,
+          hostname: cleanHost,
+          userName: cleanUserName,
+          category: cleanCat,
+          description: cleanDesc,
+          urgency: cleanUrg,
+          createdAt: now
+        });
+      } catch (pushErr) {
+        console.warn('Error al despachar push notification:', pushErr);
+      }
+
       return jsonResponse({
         success: true,
         id: ticketId,

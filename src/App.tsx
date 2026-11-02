@@ -22,9 +22,9 @@ import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
 import { LiveNotificationToast } from './components/LiveNotificationToast';
 import { LoginScreen } from './components/LoginScreen';
-import { playNotificationChime } from './utils/notificationSound';
+import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
-import { registerNotificationServiceWorker, sendNativePushNotification } from './utils/pushNotifications';
+import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush } from './utils/pushNotifications';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
 
@@ -386,7 +386,6 @@ const MainApp: React.FC = () => {
     });
 
     const checkCloudSync = async () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         const sync = await api.getSyncState();
         if (!isMounted) return;
@@ -439,9 +438,24 @@ const MainApp: React.FC = () => {
     };
   }, []);
 
-  // Inicialización de Service Worker y escucha de clics en notificaciones de Windows y Móvil
+  // Inicialización de Service Worker, suscripción Web Push y desbloqueo de audio en móviles
   useEffect(() => {
-    registerNotificationServiceWorker();
+    registerNotificationServiceWorker().then(() => {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        subscribeDeviceToPush().catch(() => {});
+      }
+    });
+
+    // Desbloquear audio en el primer toque de pantalla en teléfonos móviles
+    const unlockAudio = () => {
+      unlockNotificationAudio();
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+    window.addEventListener('pointerdown', unlockAudio, { passive: true });
+    window.addEventListener('keydown', unlockAudio, { passive: true });
+    window.addEventListener('touchstart', unlockAudio, { passive: true });
 
     const handleSwMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'OPEN_TICKET' && e.data.ticketId) {

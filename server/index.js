@@ -1992,8 +1992,161 @@ app.get(['/api/export/support-excel', '/api/export/tickets-excel'], async (req, 
 });
 
 // ============================================================================
-// STIVIE AI & SOPORTE TI INCIDENT MANAGEMENT ROUTES
+// STIVIE AI & SOPORTE TI INCIDENT MANAGEMENT ROUTES & WEB PUSH 24/7
 // ============================================================================
+const VAPID_PUBLIC_KEY = 'BGkSXnXaQ6GLubO9tK0uaFxsBm10mCoHbEjVHY-UsA4g6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk';
+const VAPID_PRIVATE_JWK = {
+  key_ops: ['sign'],
+  ext: true,
+  kty: 'EC',
+  x: 'aRJeddpDoYu5s720rS5oXGwGbXSYKgdsSNUdj5SwDiA',
+  y: '6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk',
+  crv: 'P-256',
+  d: 'hYrem2pqrgT6Hn2OGViO3wZzmehDowDxeN8sX_-Oi_A'
+};
+
+function b64Url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+let cachedVapidKey = null;
+async function getVapidCryptoKey() {
+  if (!cachedVapidKey) {
+    cachedVapidKey = await crypto.subtle.importKey(
+      'jwk',
+      VAPID_PRIVATE_JWK,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign']
+    );
+  }
+  return cachedVapidKey;
+}
+
+async function createVapidJwt(aud) {
+  const key = await getVapidCryptoKey();
+  const header = { typ: 'JWT', alg: 'ES256' };
+  const claims = {
+    aud: aud,
+    exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+    sub: 'mailto:soporte@tay-audit.pages.dev'
+  };
+
+  const enc = new TextEncoder();
+  const headerB64 = b64Url(enc.encode(JSON.stringify(header)));
+  const claimsB64 = b64Url(enc.encode(JSON.stringify(claims)));
+  const message = enc.encode(`${headerB64}.${claimsB64}`);
+
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: { name: 'SHA-256' } },
+    key,
+    message
+  );
+
+  return `${headerB64}.${claimsB64}.${b64Url(signature)}`;
+}
+
+async function dispatchPushToAllSubscribers(ticket) {
+  try {
+    const subs = db.prepare('SELECT * FROM push_subscriptions').all();
+    if (!subs || subs.length === 0) return 0;
+
+    const deadEndpoints = [];
+    let dispatchedCount = 0;
+
+    await Promise.allSettled(subs.map(async (sub) => {
+      try {
+        const url = new URL(sub.endpoint);
+        const aud = `${url.protocol}//${url.host}`;
+        const jwt = await createVapidJwt(aud);
+
+        const res = await fetch(sub.endpoint, {
+          method: 'POST',
+          headers: {
+            'TTL': '86400',
+            'Urgency': 'high',
+            'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
+          }
+        });
+
+        if (res.status === 201 || res.status === 200 || res.status === 202) {
+          dispatchedCount++;
+        } else if (res.status === 404 || res.status === 410) {
+          deadEndpoints.push(sub.endpoint);
+        }
+      } catch (err) {
+        console.warn('FCM dispatch error in server for endpoint:', sub.endpoint, err);
+      }
+    }));
+
+    if (deadEndpoints.length > 0) {
+      for (const ep of deadEndpoints) {
+        try {
+          db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(ep);
+        } catch {}
+      }
+    }
+    return dispatchedCount;
+  } catch (err) {
+    console.warn('dispatchPushToAllSubscribers server error:', err);
+    return 0;
+  }
+}
+
+// Subscribe device for push notifications
+app.post('/api/push/subscribe', (req, res) => {
+  try {
+    const endpoint = req.body?.endpoint || req.body?.subscription?.endpoint;
+    const p256dh = req.body?.p256dh || req.body?.subscription?.keys?.p256dh || '';
+    const auth = req.body?.auth || req.body?.subscription?.keys?.auth || '';
+    const userAgent = (req.body?.userAgent || req.headers['user-agent'] || '').slice(0, 255);
+
+    if (!endpoint || typeof endpoint !== 'string') {
+      return res.status(400).json({ error: 'Endpoint es obligatorio' });
+    }
+
+    const now = new Date().toISOString();
+    const subId = `sub-${randomUUID().slice(0, 8)}`;
+
+    db.prepare(`
+      INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, userAgent, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(endpoint) DO UPDATE SET
+        p256dh = excluded.p256dh,
+        auth = excluded.auth,
+        userAgent = excluded.userAgent,
+        createdAt = excluded.createdAt
+    `).run(subId, endpoint, p256dh, auth, userAgent, now);
+
+    res.json({ success: true, message: 'Suscripción push registrada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Test push notifications to all registered devices
+app.post('/api/push/test', async (req, res) => {
+  try {
+    const testTicket = {
+      id: 'TEST-' + randomUUID().slice(0, 8),
+      hostname: 'MOVIL-TEST',
+      userName: 'Prueba Push UPN',
+      category: 'Notificación en Tiempo Real',
+      description: 'Esta es una notificación de prueba en tiempo real para verificar el sonido y la llegada en segundo plano.',
+      urgency: 'alta',
+      createdAt: new Date().toISOString()
+    };
+    const count = await dispatchPushToAllSubscribers(testTicket);
+    res.json({ success: true, count, message: `Push enviado a ${count} dispositivos registrados.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // GET all support tickets
 app.get('/api/tickets', (req, res) => {
@@ -2046,6 +2199,11 @@ app.post('/api/tickets', (req, res) => {
 
     const savedTicket = db.prepare('SELECT * FROM support_tickets WHERE id = ?').get(ticketId);
     broadcastEvent('TICKET_CREATED', savedTicket);
+
+    // Despacho Web Push a todos los celulares y navegadores registrados
+    dispatchPushToAllSubscribers(savedTicket).catch(err => {
+      console.warn('Error al despachar push notification en server:', err);
+    });
 
     res.json({
       success: true,

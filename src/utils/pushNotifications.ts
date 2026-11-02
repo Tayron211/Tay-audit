@@ -1,7 +1,25 @@
 import type { AppNotification } from '../types';
+import { API_BASE } from '../services/api';
+import { playNotificationChime } from './notificationSound';
+
+export const VAPID_PUBLIC_KEY = 'BGkSXnXaQ6GLubO9tK0uaFxsBm10mCoHbEjVHY-UsA4g6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk';
 
 /**
- * Registra el Service Worker para permitir notificaciones push en Windows y Móviles (Android / iOS)
+ * Convierte una clave pública VAPID en Base64URL al formato Uint8Array requerido por PushManager
+ */
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+/**
+ * Registra el Service Worker para permitir notificaciones push en segundo plano en Móviles y Windows
  */
 export const registerNotificationServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
@@ -17,6 +35,56 @@ export const registerNotificationServiceWorker = async (): Promise<ServiceWorker
 };
 
 /**
+ * Suscribe este dispositivo móvil o PC al servidor Cloudflare / Express para recibir Web Push en segundo plano
+ */
+export const subscribeDeviceToPush = async (): Promise<boolean> => {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return false;
+  }
+
+  try {
+    let reg: ServiceWorkerRegistration | null | undefined = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      reg = await registerNotificationServiceWorker();
+    }
+    if (!reg) return false;
+
+    // Verificar si ya existe una suscripción activa
+    let subscription = await reg.pushManager.getSubscription();
+    if (!subscription) {
+      const appKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: appKey as unknown as BufferSource
+      });
+    }
+
+    if (subscription) {
+      const subJson = subscription.toJSON();
+      const endpoint = subscription.endpoint;
+      const p256dh = subJson.keys?.p256dh || '';
+      const auth = subJson.keys?.auth || '';
+
+      await fetch(`${API_BASE}/api/push/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint,
+          p256dh,
+          auth,
+          userAgent: navigator.userAgent
+        })
+      });
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.warn('Error al suscribir el dispositivo a Web Push:', err);
+    return false;
+  }
+};
+
+/**
  * Consulta el estado actual de los permisos de notificaciones del sistema
  */
 export const getSystemNotificationPermission = (): NotificationPermission | 'unsupported' => {
@@ -27,7 +95,7 @@ export const getSystemNotificationPermission = (): NotificationPermission | 'uns
 };
 
 /**
- * Solicita permisos de notificación al usuario (compatible con Windows y Móvil)
+ * Solicita permisos de notificación al usuario y suscribe el dispositivo automáticamente
  */
 export const requestPushNotificationPermission = async (): Promise<boolean> => {
   if (typeof window === 'undefined' || !('Notification' in window)) {
@@ -38,6 +106,7 @@ export const requestPushNotificationPermission = async (): Promise<boolean> => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       await registerNotificationServiceWorker();
+      await subscribeDeviceToPush();
       return true;
     }
     return false;
@@ -52,12 +121,14 @@ export const requestPushNotificationPermission = async (): Promise<boolean> => {
  * como en teléfonos móviles (Bandeja del sistema con vibración y sonido).
  */
 export const sendNativePushNotification = async (notif: AppNotification): Promise<boolean> => {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+  if (typeof window === 'undefined') {
     return false;
   }
 
-  // Si no hay permisos concedidos, no se puede disparar
-  if (Notification.permission !== 'granted') {
+  // Siempre ejecutar timbre y vibración
+  playNotificationChime();
+
+  if (!('Notification' in window) || Notification.permission !== 'granted') {
     return false;
   }
 
@@ -71,15 +142,20 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
     badge: '/upn-symbol.svg',
     tag: `ticket-${notif.ticketId}`,
     renotify: true,
-    requireInteraction: true, // En Windows permanece en el centro de notificaciones
+    requireInteraction: true,
     silent: false,
+    sound: '/notification.wav',
+    vibrate: [300, 150, 300, 150, 450],
     data: {
       ticketId: notif.ticketId,
       url: `/?tab=support&subtab=tickets&ticketId=${notif.ticketId}`
-    }
+    },
+    actions: [
+      { action: 'open', title: '🎫 Ver Caso' }
+    ]
   };
 
-  // En Android / Chrome Móvil, new Notification() genera error si no se hace mediante Service Worker
+  // En Android / Chrome Móvil es indispensable usar ServiceWorkerRegistration.showNotification
   try {
     if ('serviceWorker' in navigator) {
       let reg: ServiceWorkerRegistration | null | undefined = await navigator.serviceWorker.getRegistration();
@@ -87,8 +163,6 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
         reg = await registerNotificationServiceWorker();
       }
       if (reg && reg.showNotification) {
-        // En móviles añadimos patrón de vibración
-        notificationOptions.vibrate = [200, 100, 200, 100, 250];
         await reg.showNotification(title, notificationOptions);
         return true;
       }
@@ -110,6 +184,18 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
     return true;
   } catch (err) {
     console.error('Error al emitir notificación nativa:', err);
+    return false;
+  }
+};
+
+/**
+ * Envía una prueba de notificación Push a través del servidor a todos los dispositivos
+ */
+export const triggerPushTest = async (): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_BASE}/api/push/test`, { method: 'POST' });
+    return res.ok;
+  } catch {
     return false;
   }
 };
