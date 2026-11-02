@@ -75,8 +75,8 @@ self.addEventListener('push', (event) => {
 
     const notificationOptions = {
       body,
-      icon: '/upn-arrow-icon.png',
-      badge: '/upn-symbol.svg',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       tag: ticketId ? `ticket-${ticketId}` : `ticket-${Date.now()}`,
       renotify: true,
       requireInteraction: true,
@@ -134,8 +134,8 @@ async function checkBackgroundUpdates() {
                 `🎫 [${urgencyTag}] ${latest.category} • ${latest.hostname || 'UPN'}`,
                 {
                   body: `${latest.userName || 'Usuario'}: ${latest.description}`,
-                  icon: '/upn-arrow-icon.png',
-                  badge: '/upn-symbol.svg',
+                  icon: '/icon-192.png',
+                  badge: '/icon-192.png',
                   tag: `ticket-${latest.id}`,
                   renotify: true,
                   requireInteraction: true,

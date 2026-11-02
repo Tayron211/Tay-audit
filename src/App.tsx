@@ -22,6 +22,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
 import { LiveNotificationToast } from './components/LiveNotificationToast';
 import { MobileNotificationBanner } from './components/MobileNotificationBanner';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
@@ -920,6 +921,9 @@ exit
           flex: 1,
           boxSizing: 'border-box'
         }}>
+        {/* Banner de Instalación como App Nativa en Móviles (PWA Standalone) */}
+        <PwaInstallPrompt />
+
         {/* Banner de Activación Rápida de Notificaciones para Móviles */}
         <MobileNotificationBanner />
 

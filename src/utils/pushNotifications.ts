@@ -156,8 +156,8 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
 
   const notificationOptions: any = {
     body,
-    icon: '/upn-arrow-icon.png',
-    badge: '/upn-symbol.svg',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
     tag: `ticket-${notif.ticketId}`,
     renotify: true,
     requireInteraction: true,

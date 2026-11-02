@@ -1,31 +1,49 @@
 {
+  "id": "/",
   "name": "Tay-Audit | Auditoría & Inventario TI",
   "short_name": "Tay-Audit",
   "description": "Sistema Inteligente de Inventario y Auditoría TI UPN",
   "start_url": "/",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "window-controls-overlay"],
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "fullscreen"
+  ],
   "background_color": "#070c1e",
   "theme_color": "#070c1e",
   "orientation": "portrait-primary",
+  "lang": "es",
+  "categories": [
+    "productivity",
+    "utilities",
+    "business"
+  ],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/upn-arrow-icon.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/upn-arrow-icon.png",
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
