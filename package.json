@@ -27,6 +27,9 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
     "@cloudflare/workers-types": "^5.20261029.1",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",

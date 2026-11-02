@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TayAudit</string>
+    <string name="title_activity_main">TayAudit</string>
+    <string name="package_name">com.tayaudit.app</string>
+    <string name="custom_url_scheme">com.tayaudit.app</string>
+</resources>

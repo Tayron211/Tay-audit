@@ -185,3 +185,4 @@ console.log('✓ public/icon-maskable-512.png generado');
 // 4. Apple Touch Icon 180x180 para iPhone / iPad
 fs.writeFileSync('public/apple-touch-icon.png', renderIcon(180, 0.14, true));
 console.log('✓ public/apple-touch-icon.png generado');
+
