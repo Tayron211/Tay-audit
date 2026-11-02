@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, X, Check, Smartphone } from 'lucide-react';
 
 export const PwaInstallPrompt: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(() => {
+    if (typeof window !== 'undefined' && (window as any).__pwaInstallPrompt) {
+      return (window as any).__pwaInstallPrompt;
+    }
+    return null;
+  });
   const [isStandalone, setIsStandalone] = useState<boolean>(false);
   const [isIOS, setIsIOS] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showIOSModal, setShowIOSModal] = useState<boolean>(false);
+  const [showAndroidModal, setShowAndroidModal] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [installedSuccessfully, setInstalledSuccessfully] = useState<boolean>(false);
 
@@ -31,9 +37,15 @@ export const PwaInstallPrompt: React.FC = () => {
     setIsIOS(iOSDetected);
     setIsMobile(mobileDetected);
 
+    // Si main.tsx ya capturó el evento beforeinstallprompt
+    if ((window as any).__pwaInstallPrompt) {
+      setDeferredPrompt((window as any).__pwaInstallPrompt);
+    }
+
     // 3. Capturar evento de instalación nativo (Android / Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
+      (window as any).__pwaInstallPrompt = e;
       setDeferredPrompt(e);
     };
 
@@ -44,6 +56,7 @@ export const PwaInstallPrompt: React.FC = () => {
       setInstalledSuccessfully(true);
       setIsStandalone(true);
       setDeferredPrompt(null);
+      (window as any).__pwaInstallPrompt = null;
     };
 
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -69,20 +82,21 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    if (deferredPrompt) {
+    const activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
+    if (activePrompt) {
       try {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') {
+        await activePrompt.prompt();
+        const choice = await activePrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
           setInstalledSuccessfully(true);
           setDeferredPrompt(null);
+          (window as any).__pwaInstallPrompt = null;
         }
       } catch {
-        // En caso de fallo transitorio en el prompt del navegador
+        setShowAndroidModal(true);
       }
     } else {
-      // Si el navegador de Android aún no emitió beforeinstallprompt o es un navegador alternativo
-      setShowIOSModal(true);
+      setShowAndroidModal(true);
     }
   };
 
@@ -95,7 +109,7 @@ export const PwaInstallPrompt: React.FC = () => {
 
   return (
     <>
-      {/* Banner Superior Flotante: Invitar a instalar como App Nativa */}
+      {/* Banner Superior Flotante: Invitar a instalar como WebAPK / App Nativa */}
       <aside
         aria-label="Instalar aplicación móvil"
         style={{
@@ -133,7 +147,9 @@ export const PwaInstallPrompt: React.FC = () => {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {installedSuccessfully ? '¡App Instalada con Éxito!' : 'Usar como App Nativa'}
+              {installedSuccessfully 
+                ? '¡App Instalada con Éxito!' 
+                : isIOS ? 'Usar como App en iPhone' : 'Instalar WebAPK Android'}
             </span>
             <span style={{ fontSize: '0.67rem', fontWeight: 600, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {installedSuccessfully 
@@ -165,7 +181,7 @@ export const PwaInstallPrompt: React.FC = () => {
               }}
             >
               <Download size={13} strokeWidth={2.5} />
-              <span>Instalar</span>
+              <span>{isIOS ? 'Instalar' : 'Instalar WebAPK'}</span>
             </button>
           )}
 
@@ -189,7 +205,164 @@ export const PwaInstallPrompt: React.FC = () => {
         </div>
       </aside>
 
-      {/* Modal Instructivo para iPhone (iOS) y Navegadores sin auto-prompt */}
+      {/* Modal Instructivo para Android (cuando el prompt de Chrome requiere acceso al menú de WebAPK) */}
+      {showAndroidModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 11000,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setShowAndroidModal(false)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '380px',
+              backgroundColor: 'var(--bg-canvas-card, #0B132B)',
+              border: '1px solid var(--border-acrylic, rgba(255, 255, 255, 0.15))',
+              borderRadius: '24px',
+              padding: '24px 20px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '18px',
+              color: 'var(--text-primary, #ffffff)',
+              animation: 'slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del Modal */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img 
+                  src="/icon-192.png" 
+                  alt="Tay-Audit Icon" 
+                  style={{ width: '40px', height: '40px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+                />
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>Instalar WebAPK Android</h4>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
+                    Aplicación Nativa en tu celular
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAndroidModal(false)}
+                className="modal-close-btn"
+                style={{ width: '32px', height: '32px' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Pasos Visuales para Android */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255, 184, 0, 0.15)',
+                    color: '#FFB800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  1
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Toca los <strong>tres puntos (⋮)</strong> en la esquina superior derecha de tu navegador Chrome.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  2
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Pulsa en <strong>"Instalar aplicación"</strong> <Download size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#38bdf8' }} /> (o <em>"Añadir a pantalla de inicio"</em>).
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  3
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Toca <strong>Instalar</strong>. Android descargará y compilará la WebAPK oficial, apareciendo en tu lista de aplicaciones del celular.
+                </div>
+              </div>
+            </div>
+
+            {/* Botón Entendido */}
+            <button
+              type="button"
+              onClick={() => setShowAndroidModal(false)}
+              className="btn-flat btn-primary"
+              style={{
+                width: '100%',
+                padding: '11px',
+                borderRadius: '12px',
+                fontWeight: 800,
+                fontSize: '0.84rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <Check size={16} />
+              <span>Entendido</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Instructivo para iPhone (iOS tal como está) */}
       {showIOSModal && (
         <div
           role="dialog"
@@ -236,7 +409,7 @@ export const PwaInstallPrompt: React.FC = () => {
                 <div>
                   <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>Instalar Tay-Audit</h4>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
-                    {isIOS ? 'En tu iPhone / iPad' : 'En tu dispositivo móvil'}
+                    En tu iPhone / iPad
                   </span>
                 </div>
               </div>
@@ -250,128 +423,76 @@ export const PwaInstallPrompt: React.FC = () => {
               </button>
             </div>
 
-            {/* Pasos Visuales */}
+            {/* Pasos Visuales iOS */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {isIOS ? (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                        color: '#38bdf8',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '0.80rem',
-                        flexShrink: 0
-                      }}
-                    >
-                      1
-                    </div>
-                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                      Toca el botón <strong>Compartir</strong> <Share size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#38bdf8' }} /> en la barra inferior de Safari.
-                    </div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  1
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Toca el botón <strong>Compartir</strong> <Share size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#38bdf8' }} /> en la barra inferior de Safari.
+                </div>
+              </div>
 
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 184, 0, 0.15)',
-                        color: '#FFB800',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '0.80rem',
-                        flexShrink: 0
-                      }}
-                    >
-                      2
-                    </div>
-                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                      Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#FFB800' }} />.
-                    </div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255, 184, 0, 0.15)',
+                    color: '#FFB800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  2
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#FFB800' }} />.
+                </div>
+              </div>
 
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                        color: '#22c55e',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '0.80rem',
-                        flexShrink: 0
-                      }}
-                    >
-                      3
-                    </div>
-                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                      Pulsa <strong>Añadir</strong> arriba a la derecha. ¡Listo! Se abrirá como app nativa sin Safari.
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 184, 0, 0.15)',
-                        color: '#FFB800',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '0.80rem',
-                        flexShrink: 0
-                      }}
-                    >
-                      1
-                    </div>
-                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                      Toca el menú de opciones de tu navegador (los tres puntos <strong>⋮</strong> arriba a la derecha).
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                        color: '#22c55e',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 900,
-                        fontSize: '0.80rem',
-                        flexShrink: 0
-                      }}
-                    >
-                      2
-                    </div>
-                    <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                      Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Añadir a la pantalla de inicio"</strong>.
-                    </div>
-                  </div>
-                </>
-              )}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.80rem',
+                    flexShrink: 0
+                  }}
+                >
+                  3
+                </div>
+                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Pulsa <strong>Añadir</strong> arriba a la derecha. ¡Listo! Se abrirá como app nativa sin Safari.
+                </div>
+              </div>
             </div>
 
             {/* Botón Entendido */}
