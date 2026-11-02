@@ -108,7 +108,7 @@ async function checkBackgroundUpdates() {
     // Si la app está abierta en primer plano activo, la UI principal se encarga del sonido
     const isAppInForeground = clients.some(c => c.visibilityState === 'visible');
 
-    const syncRes = await fetch('/api/sync/state', { cache: 'no-store' });
+    const syncRes = await fetch('/api/sync-state', { cache: 'no-store' });
     if (!syncRes.ok) return;
     const syncData = await syncRes.json();
 
@@ -158,5 +158,5 @@ async function checkBackgroundUpdates() {
   }
 }
 
-// Polling de respaldo cada 5 segundos
-setInterval(checkBackgroundUpdates, 5000);
+// Polling de respaldo cada 2.5 segundos para detección rápida en segundo plano
+setInterval(checkBackgroundUpdates, 2500);

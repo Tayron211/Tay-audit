@@ -770,12 +770,14 @@ export async function onRequest(context) {
       });
     }
 
-    if (method === 'GET' && pathname === '/api/sync-state') {
+    if (method === 'GET' && (pathname === '/api/sync-state' || pathname === '/api/sync/state')) {
       const row = await db.prepare("SELECT value FROM system_meta WHERE key = 'last_change_ts'").first();
       return jsonResponse({
         ok: true,
         version: row ? row.value : '1',
         serverTime: new Date().toISOString()
+      }, 200, {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
       });
     }
 

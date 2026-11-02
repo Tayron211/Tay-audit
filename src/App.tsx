@@ -233,8 +233,13 @@ const MainApp: React.FC = () => {
     }
   }, [activeTab]);
 
-  // Forzado de Modo Inmersivo Automático en Móviles (Sin botones, 100% automático al abrir e interactuar)
+  // Forzado de Modo Inmersivo Automático SOLO en Navegadores Móviles (NUNCA en computadoras / PC)
   useEffect(() => {
+    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent) ||
+                     (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 820);
+
+    if (!isMobile) return; // En PC de escritorio NUNCA forzar pantalla completa
+
     const requestImmersive = () => {
       const docEl = document.documentElement as any;
       if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
@@ -246,22 +251,9 @@ const MainApp: React.FC = () => {
       }
     };
 
-    // 1. Intentar de inmediato al abrir la aplicación
-    requestImmersive();
-
-    // 2. Al primer toque/interacción en cualquier parte de la pantalla, forzar pantalla completa
-    const onFirstUserTouch = () => {
-      requestImmersive();
-    };
-
-    window.addEventListener('touchstart', onFirstUserTouch, { passive: true });
-    window.addEventListener('pointerdown', onFirstUserTouch, { passive: true });
-    window.addEventListener('click', onFirstUserTouch, { passive: true });
-
+    window.addEventListener('touchstart', requestImmersive, { passive: true });
     return () => {
-      window.removeEventListener('touchstart', onFirstUserTouch);
-      window.removeEventListener('pointerdown', onFirstUserTouch);
-      window.removeEventListener('click', onFirstUserTouch);
+      window.removeEventListener('touchstart', requestImmersive);
     };
   }, []);
 
@@ -385,6 +377,52 @@ const MainApp: React.FC = () => {
       lastFullLoadTsRef.current = Date.now();
     });
 
+    const checkFastTicketsSync = async () => {
+      try {
+        const freshTickets = await api.getTickets();
+        if (!isMounted) return;
+        setTickets(freshTickets);
+
+        const openTickets = freshTickets.filter(t => t.status !== 'resuelto');
+        const activeTicketIds = new Set(openTickets.map(t => t.id));
+
+        if (knownTicketIdsRef.current !== null) {
+          const brandNewTickets = freshTickets.filter(
+            t => !knownTicketIdsRef.current!.has(t.id) && t.status !== 'resuelto'
+          );
+
+          if (brandNewTickets.length > 0) {
+            playNotificationChime();
+
+            const newNotifs: AppNotification[] = brandNewTickets.map(t => ({
+              id: `notif-${t.id}-${Date.now()}`,
+              ticketId: t.id,
+              title: `Nuevo Ticket TI: ${t.category}`,
+              userName: t.userName || 'Usuario / Docente',
+              hostname: t.hostname,
+              category: t.category,
+              description: t.description,
+              urgency: t.urgency,
+              timestamp: t.createdAt || new Date().toISOString(),
+              read: false,
+              attended: false
+            }));
+
+            setActiveToastNotification(newNotifs[0]);
+            sendNativePushNotification(newNotifs[0]);
+
+            setNotifications(prev => {
+              const combined = [...newNotifs, ...prev.filter(p => !brandNewTickets.some(b => b.id === p.ticketId))];
+              return combined.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5);
+            });
+          } else {
+            setNotifications(prev => prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5));
+          }
+        }
+        knownTicketIdsRef.current = new Set(freshTickets.map(t => t.id));
+      } catch {}
+    };
+
     const checkCloudSync = async () => {
       try {
         const sync = await api.getSyncState();
@@ -393,9 +431,10 @@ const MainApp: React.FC = () => {
         const now = Date.now();
         if (lastSyncVersionRef.current === null) {
           lastSyncVersionRef.current = sync.version;
-        } else if (sync.version !== lastSyncVersionRef.current || now - lastFullLoadTsRef.current > 12000) {
+        } else if (sync.version !== lastSyncVersionRef.current || now - lastFullLoadTsRef.current > 10000) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
+          await checkFastTicketsSync();
           loadData();
         }
       } catch {
@@ -404,7 +443,7 @@ const MainApp: React.FC = () => {
     };
 
     checkCloudSync();
-    const syncTimer = setInterval(checkCloudSync, 3000);
+    const syncTimer = setInterval(checkCloudSync, 1200);
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -423,6 +462,7 @@ const MainApp: React.FC = () => {
         };
         eventSource.onmessage = () => {
           lastFullLoadTsRef.current = Date.now();
+          checkFastTicketsSync();
           loadData();
         };
       } catch {
@@ -446,22 +486,31 @@ const MainApp: React.FC = () => {
       }
     });
 
-    // Desbloquear audio en el primer toque de pantalla en teléfonos móviles
-    const unlockAudio = () => {
+    // Desbloquear audio y auto-solicitar permisos nativos de notificación en la primera interacción
+    const unlockAudioAndRequestPerm = async () => {
       unlockNotificationAudio();
-      window.removeEventListener('pointerdown', unlockAudio);
-      window.removeEventListener('keydown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm === 'granted') {
+            await subscribeDeviceToPush();
+          }
+        } catch {}
+      }
     };
-    window.addEventListener('pointerdown', unlockAudio, { passive: true });
-    window.addEventListener('keydown', unlockAudio, { passive: true });
-    window.addEventListener('touchstart', unlockAudio, { passive: true });
+    window.addEventListener('pointerdown', unlockAudioAndRequestPerm, { passive: true, once: true });
+    window.addEventListener('keydown', unlockAudioAndRequestPerm, { passive: true, once: true });
+    window.addEventListener('touchstart', unlockAudioAndRequestPerm, { passive: true, once: true });
+    window.addEventListener('click', unlockAudioAndRequestPerm, { passive: true, once: true });
 
     const handleSwMessage = (e: MessageEvent) => {
       if (e.data && e.data.type === 'OPEN_TICKET' && e.data.ticketId) {
         setSupportInitialSubTab('tickets');
         setTargetTicketId(e.data.ticketId);
         setActiveTab('support');
+      }
+      if (e.data && e.data.type === 'TICKET_UPDATE') {
+        loadData();
       }
     };
 

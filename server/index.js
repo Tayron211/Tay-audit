@@ -171,7 +171,8 @@ function broadcastEvent(eventType, payload) {
 }
 
 let localSyncVersion = String(Date.now());
-app.get('/api/sync-state', (req, res) => {
+app.get(['/api/sync-state', '/api/sync/state'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   res.json({ ok: true, version: localSyncVersion, serverTime: new Date().toISOString() });
 });
 
