@@ -89,7 +89,7 @@ export const MobileNotificationBanner: React.FC = () => {
                 Activar Alertas de Tickets en este Celular
               </span>
               <span style={{ fontSize: '0.68rem', fontWeight: 600, opacity: 0.9 }}>
-                Recibe sonido y avisos en segundo plano al crearse tickets
+                Recibe sonido y avisos en tiempo real al crearse tickets
               </span>
             </div>
           </>
@@ -140,3 +140,4 @@ export const MobileNotificationBanner: React.FC = () => {
     </div>
   );
 };
+
