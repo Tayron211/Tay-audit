@@ -2632,9 +2632,15 @@ select option {
     display: none !important;
   }
 
-  .hide-on-mobile {
+  .hide-on-desktop {
+  display: flex;
+}
+
+@media (min-width: 901px) {
+  .hide-on-desktop {
     display: none !important;
   }
+}
 
   .hide-on-mobile-text {
     display: none !important;

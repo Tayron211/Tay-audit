@@ -7,7 +7,9 @@ import {
   Bot,
   ShieldCheck,
   Globe,
-  Wifi
+  Wifi,
+  Maximize2,
+  X
 } from 'lucide-react';
 import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification, AuthUser } from './types';
 import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
@@ -232,6 +234,32 @@ const MainApp: React.FC = () => {
       window.scrollTo(0, 0);
     }
   }, [activeTab]);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [dismissImmersivePill, setDismissImmersivePill] = useState(false);
+
+  useEffect(() => {
+    const handleFs = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFs);
+    document.addEventListener('webkitfullscreenchange', handleFs);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFs);
+      document.removeEventListener('webkitfullscreenchange', handleFs);
+    };
+  }, []);
+
+  const handleActivateFullscreen = async () => {
+    try {
+      const docEl = document.documentElement as any;
+      if (docEl.requestFullscreen) {
+        await docEl.requestFullscreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        await docEl.webkitRequestFullscreen();
+      }
+    } catch {}
+  };
 
   useEffect(() => {
     if (!isAppLoading) {
@@ -1232,6 +1260,72 @@ exit
 
       {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen) */}
       <SplashScreen isLoading={isAppLoading} />
+
+      {/* Botón Flotante para Forzar Modo Inmersivo en Móviles */}
+      {!isFullscreen && !dismissImmersivePill && (
+        <aside
+          className="hide-on-desktop"
+          style={{
+            position: 'fixed',
+            bottom: '22px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9990,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(7, 12, 30, 0.94)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1.5px solid var(--accent-primary)',
+            padding: '7px 14px',
+            borderRadius: '24px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.7)',
+            maxWidth: '92vw'
+          }}
+          aria-label="Modo Inmersivo"
+        >
+          <button
+            type="button"
+            onClick={handleActivateFullscreen}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-primary)',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Maximize2 size={14} color="var(--accent-primary)" />
+            <span>Modo Inmersivo (Pantalla Completa)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDismissImmersivePill(true)}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              color: 'var(--text-muted)',
+              borderRadius: '50%',
+              width: '18px',
+              height: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: 0
+            }}
+            title="Ocultar aviso"
+          >
+            <X size={11} />
+          </button>
+        </aside>
+      )}
     </div>
   );
 };
