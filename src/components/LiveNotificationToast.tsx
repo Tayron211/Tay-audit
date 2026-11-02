@@ -50,88 +50,30 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
   if (!notification) return null;
 
   return (
-    <div
-      className={`live-toast-notification ${isClosing ? 'closing' : ''}`}
-      style={{
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        zIndex: 10002,
-        maxWidth: '380px',
-        width: 'calc(100vw - 40px)',
-        borderRadius: '14px',
-        backgroundColor: 'var(--bg-acrylic-popover, #0f172a)',
-        color: 'var(--text-primary, #ffffff)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1.5px solid var(--accent-primary, #6366f1)',
-        boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 20px rgba(99, 102, 241, 0.35)',
-        overflow: 'hidden',
-        animation: 'slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}
-    >
+    <div className={`live-toast-notification ${isClosing ? 'closing' : ''}`}>
       <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
         {/* Animated Chime Icon */}
-        <div
-          style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-            border: '1px solid var(--accent-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--accent-primary)',
-            flexShrink: 0,
-            animation: 'pulse 1.8s infinite'
-          }}
-        >
-          <Headphones size={20} />
+        <div className="live-toast-icon-box">
+          <Headphones size={20} strokeWidth={2.4} />
         </div>
 
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-            <span
-              style={{
-                fontSize: '0.62rem',
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                backgroundColor: '#ef4444',
-                color: '#ffffff'
-              }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+            <span className="live-toast-badge">
               Nuevo Ticket STIVIE
             </span>
-            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+            <span className="live-toast-meta">
               {notification.ticketId}
             </span>
           </div>
 
-          <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
-            {notification.userName || 'Usuario Docente'}{' '}
-            <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              ({notification.hostname})
-            </span>
+          <div style={{ marginBottom: '4px' }}>
+            <span className="live-toast-user">{notification.userName || 'Usuario Docente'}</span>{' '}
+            <span className="live-toast-host">({notification.hostname})</span>
           </div>
 
-          <div
-            style={{
-              fontSize: '0.74rem',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.35,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              marginBottom: '10px'
-            }}
-          >
+          <div className="live-toast-desc">
             "{notification.description}"
           </div>
 
@@ -142,10 +84,10 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
               onClick={() => onAtender(notification)}
               className="btn-primary"
               style={{
-                padding: '5px 12px',
+                padding: '6px 14px',
                 fontSize: '0.74rem',
                 fontWeight: 800,
-                borderRadius: '6px',
+                borderRadius: '8px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -153,9 +95,9 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
               }}
             >
               <span>Atender Ahora</span>
-              <ArrowRight size={13} />
+              <ArrowRight size={13} strokeWidth={2.5} />
             </button>
-            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+            <span className="live-toast-meta">
               {notification.category}
             </span>
           </div>
@@ -165,22 +107,21 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
         <button
           type="button"
           onClick={requestClose}
-          className="btn-flat"
-          style={{ width: '22px', height: '22px', padding: 0, borderRadius: '4px', color: 'var(--text-muted)' }}
+          className="modal-close-btn"
+          style={{ width: '28px', height: '28px', minWidth: '28px', minHeight: '28px' }}
           title="Cerrar aviso"
+          aria-label="Cerrar aviso"
         >
-          <X size={13} />
+          <X size={14} strokeWidth={2.4} />
         </button>
       </div>
 
       {/* Progress countdown bar */}
-      <div style={{ width: '100%', height: '3px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }}>
+      <div className="live-toast-progress-track">
         <div
+          className="live-toast-progress-bar"
           style={{
-            height: '100%',
-            width: `${progress}%`,
-            backgroundColor: 'var(--accent-primary, #6366f1)',
-            transition: 'width 0.05s linear'
+            width: `${progress}%`
           }}
         />
       </div>
