@@ -79,6 +79,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     if (isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
+      setIsClosing(false);
       onClose();
     }, 200);
   };
@@ -162,12 +163,14 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
       prevDeviceIdRef.current = null;
       setDevice(null);
       setIsEditing(false);
+      setIsClosing(false);
       return;
     }
 
     const isNewDevice = initialDevice.id !== prevDeviceIdRef.current;
     prevDeviceIdRef.current = initialDevice.id;
     setDevice(initialDevice);
+    setIsClosing(false);
 
     if (isNewDevice) {
       setActionMessage(null);
