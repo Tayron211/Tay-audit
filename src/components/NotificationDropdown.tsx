@@ -165,8 +165,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               zIndex: 1100,
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden',
-              animation: 'fadeIn 0.18s ease'
+              overflow: 'hidden'
             }}
           >
           {/* Header estilo Facebook */}

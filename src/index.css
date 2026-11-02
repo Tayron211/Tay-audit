@@ -354,12 +354,13 @@ code, pre, .font-mono {
   padding: 16px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  animation: modalBackdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transition: opacity 0.2s ease;
+  animation: modalBackdropFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.22s ease;
+  will-change: opacity;
 }
 
 .modal-backdrop-acrylic.closing {
-  animation: modalBackdropFadeOut 0.2s ease-in forwards;
+  animation: modalBackdropFadeOut 0.22s ease-in forwards;
 }
 
 .modal-window-acrylic {
@@ -369,10 +370,11 @@ code, pre, .font-mono {
   border: 1px solid var(--border-modal-window, var(--border-acrylic-hover)) !important;
   border-radius: 20px !important;
   box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic) !important;
-  animation: modalScaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalScaleIn 0.30s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: center center;
   box-sizing: border-box !important;
   margin: auto !important; /* Mantiene la ventana siempre perfectamente centrada en vertical y horizontal */
+  will-change: transform, opacity;
 }
 
 /* Adaptación fluida de ventanas modales en pantallas móviles y tablets */
@@ -609,23 +611,58 @@ code, pre, .font-mono {
 @keyframes modalScaleIn {
   0% {
     opacity: 0;
-    transform: scale(0.97) translateY(8px);
+    transform: scale(0.95) translateY(14px);
   }
   100% {
     opacity: 1;
-    transform: none;
+    transform: scale(1) translateY(0);
   }
 }
 
 @keyframes modalScaleOut {
   0% {
     opacity: 1;
-    transform: none;
+    transform: scale(1) translateY(0);
   }
   100% {
     opacity: 0;
     transform: scale(0.96) translateY(10px);
   }
+}
+
+@keyframes popoverSmoothOpen {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInFast {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: popoverSmoothOpen 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 @keyframes stivieFlyIn {
@@ -641,10 +678,13 @@ code, pre, .font-mono {
 
 .acrylic-popover {
   background: var(--bg-popover) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border: 1px solid var(--border-acrylic-active) !important;
   box-shadow: var(--popover-shadow) !important;
+  animation: popoverSmoothOpen 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .acrylic-card, .glass-card {
@@ -893,8 +933,9 @@ code, pre {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  animation: dropdownSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: dropdownSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   transform-origin: top left;
+  will-change: transform, opacity;
 }
 
 [data-mode="light"] .acrylic-dropdown-menu {
@@ -1023,7 +1064,9 @@ code, pre {
   padding: 4px !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2) !important;
   z-index: 10050 !important;
-  animation: fadeIn 0.15s ease;
+  animation: dropdownSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transform-origin: top center;
+  will-change: transform, opacity;
 }
 
 .acrylic-select-option {
