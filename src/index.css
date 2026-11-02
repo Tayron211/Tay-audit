@@ -487,6 +487,7 @@ code, pre, .font-mono {
     top: calc(100% + 8px) !important;
     left: auto !important;
     bottom: auto !important;
+    max-width: calc(100vw - 28px) !important;
     max-height: calc(100dvh - 80px) !important;
     border-radius: 16px !important;
     z-index: 1001 !important;
@@ -494,6 +495,7 @@ code, pre, .font-mono {
     transform-origin: top right !important;
     animation: dropdownLateralUnfold 0.20s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
   }
 
   .notification-popover.closing {

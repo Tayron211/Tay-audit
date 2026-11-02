@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { 
   Bell, 
   CheckCheck, 
@@ -46,15 +46,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     }, 180);
   };
 
-  const toggleDropdown = () => {
-    if (isOpen) {
-      closeDropdown();
-    } else {
-      setIsOpen(true);
-    }
-  };
-
-  // Close on outside click
+  // Close on outside click / touch
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -78,38 +70,60 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     maxWidth: '92vw'
   });
 
+  const updatePosition = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    // Usar clientWidth para medir el viewport real visible libre de barras o seguros
+    const viewportW = document.documentElement.clientWidth || window.innerWidth;
+
+    if (viewportW <= 820) {
+      // Margen de seguridad amplio de 18px en el lateral derecho para asegurar que nunca se corte
+      const rightMargin = 18;
+      const leftMargin = 12;
+      const popoverW = Math.min(335, Math.max(250, viewportW - rightMargin - leftMargin));
+
+      // Coordenada deseada del borde derecho en pantalla (exactamente a 18px del borde derecho)
+      const targetRightOnScreen = viewportW - rightMargin;
+      // Offset CSS 'right' exacto relativo al contenedor:
+      const rightOffset = rect.right - targetRightOnScreen;
+
+      setPopoverPos({
+        right: `${rightOffset}px`,
+        width: `${popoverW}px`,
+        maxWidth: `calc(100vw - 28px)`
+      });
+    } else {
+      setPopoverPos({
+        right: '0',
+        width: '360px',
+        maxWidth: '92vw'
+      });
+    }
+  };
+
+  const toggleDropdown = () => {
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      updatePosition();
+      setIsOpen(true);
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const updatePosition = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const screenW = window.innerWidth;
-
-      if (screenW <= 820) {
-        // En móviles, desplegar lateralmente desde el propio botón
-        // Distancia desde el borde derecho del botón al borde derecho de la pantalla
-        const spaceToRight = screenW - rect.right;
-        // Margen de 10px hacia el lateral derecho de la pantalla
-        const lateralRightOffset = -Math.max(0, spaceToRight - 10);
-
-        setPopoverPos({
-          right: `${lateralRightOffset}px`,
-          width: `${Math.min(350, screenW - 20)}px`,
-          maxWidth: `${screenW - 20}px`
-        });
-      } else {
-        setPopoverPos({
-          right: '0',
-          width: '360px',
-          maxWidth: '92vw'
-        });
-      }
-    };
-
-    updatePosition();
     window.addEventListener('resize', updatePosition);
-    return () => window.removeEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, { passive: true });
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
   }, [isOpen]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
