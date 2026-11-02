@@ -159,8 +159,39 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
     document.documentElement.setAttribute('data-mode', colorMode);
+    document.documentElement.style.colorScheme = colorMode;
     localStorage.setItem('tay_audit_theme', currentTheme);
     localStorage.setItem('tay_audit_colormode', colorMode);
+
+    // Sincronización armónica con la barra y navegación de TODOS los navegadores móviles (Chrome Android, Samsung Internet, iOS Safari, Edge Mobile, Firefox)
+    const mobileThemeColor = colorMode === 'light' ? '#f8fafc' : '#070c1e';
+    const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
+    if (themeMetas.length > 0) {
+      themeMetas.forEach(meta => meta.setAttribute('content', mobileThemeColor));
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.setAttribute('name', 'theme-color');
+      newMeta.setAttribute('content', mobileThemeColor);
+      document.head.appendChild(newMeta);
+    }
+
+    let schemeMeta = document.querySelector('meta[name="color-scheme"]');
+    if (!schemeMeta) {
+      schemeMeta = document.createElement('meta');
+      schemeMeta.setAttribute('name', 'color-scheme');
+      document.head.appendChild(schemeMeta);
+    }
+    schemeMeta.setAttribute('content', colorMode);
+
+    const appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (appleStatusBar) {
+      appleStatusBar.setAttribute('content', colorMode === 'dark' ? 'black-translucent' : 'default');
+    }
+
+    const msNavMeta = document.querySelector('meta[name="msapplication-navbutton-color"]');
+    if (msNavMeta) {
+      msNavMeta.setAttribute('content', mobileThemeColor);
+    }
 
     // Contraste dinámico e inteligente según luminancia del tema (Negro #000000 sobre amarillo/ámbar, Blanco #ffffff sobre colores oscuros)
     const contrastColor = computeIntelligentContrast(currentTheme, customColor);

@@ -107,6 +107,7 @@
 /* DARK MODE AEROGLASS TOKENS (UPN INSTITUTIONAL DEEP NAVY BLUE CANVAS)  */
 /* ==================================================================== */
 :root, [data-mode="dark"] {
+  color-scheme: dark;
   --bg-canvas: #070c1e;            /* Deep UPN Navy Blue Canvas */
   --bg-canvas-subtle: #0b132b;     /* Institutional UPN Navy */
   --bg-acrylic: rgba(11, 19, 43, 0.95);
@@ -167,6 +168,7 @@
 /* LIGHT MODE AEROGLASS TOKENS (TRUE FROSTED GLASS & HIGH CONTRAST)     */
 /* ==================================================================== */
 [data-mode="light"] {
+  color-scheme: light;
   --bg-canvas: #f8fafc;            /* Pure Crisp Light Canvas */
   --bg-canvas-subtle: #f1f5f9;
   --bg-acrylic: rgba(255, 255, 255, 0.95);
@@ -223,6 +225,15 @@
 /* ==================================================================== */
 /* GLOBAL RESET & HIGH RESOLUTION CRISP RENDERING                       */
 /* ==================================================================== */
+html {
+  background-color: var(--bg-canvas);
+  color-scheme: dark;
+}
+
+[data-mode="light"] {
+  color-scheme: light;
+}
+
 html, body {
   background-color: var(--bg-canvas);
   background-image: var(--gradient-canvas);
@@ -231,6 +242,10 @@ html, body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   width: 100%;
   max-width: 100vw;
   min-height: 100vh;

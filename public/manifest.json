@@ -1,0 +1,24 @@
+{
+  "name": "Tay-Audit | Auditoría & Inventario TI",
+  "short_name": "Tay-Audit",
+  "description": "Sistema Inteligente de Inventario y Auditoría TI UPN",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070c1e",
+  "theme_color": "#070c1e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/upn-arrow-icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
