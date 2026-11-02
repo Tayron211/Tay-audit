@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Share, PlusSquare, X, Check, Smartphone } from 'lucide-react';
+import { Download, Share, PlusSquare, X, Check } from 'lucide-react';
+import { AndroidIcon, AppleIcon } from './BrandIcons';
 
 export const PwaInstallPrompt: React.FC = () => {
   const [isStandalone, setIsStandalone] = useState<boolean>(false);
@@ -102,7 +103,7 @@ export const PwaInstallPrompt: React.FC = () => {
               boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
             }}
           >
-            <Smartphone size={18} color="#FFB800" />
+            {isIOS ? <AppleIcon size={17} color="#ffffff" /> : <AndroidIcon size={18} color="#3DDC84" />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -134,12 +135,12 @@ export const PwaInstallPrompt: React.FC = () => {
                   fontWeight: 900,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '5px',
+                  gap: '6px',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
                   whiteSpace: 'nowrap'
                 }}
               >
-                <Download size={13} strokeWidth={2.5} />
+                <AndroidIcon size={14} color="#3DDC84" />
                 <span>Descargar .APK</span>
               </a>
             ) : (
@@ -190,26 +191,28 @@ export const PwaInstallPrompt: React.FC = () => {
 
 
 
-      {/* Modal Instructivo para iPhone (iOS tal como está) */}
+      {/* Modal Instructivo para iPhone (iOS) */}
       {showIOSModal && (
         <div
           role="dialog"
           aria-modal="true"
+          className="modal-backdrop-acrylic modal-centered-mobile"
           style={{
             position: 'fixed',
             inset: 0,
             zIndex: 11000,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'center',
             padding: '16px'
           }}
           onClick={() => setShowIOSModal(false)}
         >
           <div
+            className="modal-window-acrylic"
             style={{
               width: '100%',
               maxWidth: '380px',
@@ -217,12 +220,12 @@ export const PwaInstallPrompt: React.FC = () => {
               border: '1px solid var(--border-acrylic, rgba(255, 255, 255, 0.15))',
               borderRadius: '24px',
               padding: '24px 20px',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
               display: 'flex',
               flexDirection: 'column',
               gap: '18px',
               color: 'var(--text-primary, #ffffff)',
-              animation: 'slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+              margin: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -236,9 +239,12 @@ export const PwaInstallPrompt: React.FC = () => {
                 />
                 <div>
                   <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>Instalar Tay-Audit</h4>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
-                    En tu iPhone / iPad
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                    <AppleIcon size={13} color="var(--text-secondary, #94a3b8)" />
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
+                      En tu iPhone / iPad
+                    </span>
+                  </div>
                 </div>
               </div>
               <button

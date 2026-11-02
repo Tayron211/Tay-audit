@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
+import { AndroidIcon, AppleIcon } from './BrandIcons';
 import type { AppNotification, AuthUser } from '../types';
 
 // Logotipo Corporativo Oficial UPN (Universidad Privada del Norte - TI)
@@ -707,17 +708,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
     </header>
 
-    {/* MODAL GUÍA PARA INSTALAR COMO APP NATIVA (PWA) */}
+    {/* MODAL GUÍA PARA INSTALAR COMO APP NATIVA (PWA / APK) */}
     {showInstallModal && (
       <div 
-        className="modal-backdrop-acrylic"
+        className="modal-backdrop-acrylic modal-centered-mobile"
         onClick={() => setShowInstallModal(false)}
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(7, 12, 30, 0.8)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          background: 'rgba(7, 12, 30, 0.85)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           zIndex: 10090,
           display: 'flex',
           alignItems: 'center',
@@ -726,23 +727,27 @@ export const Navbar: React.FC<NavbarProps> = ({
         }}
       >
         <div
-          className="acrylic-panel-elevated"
+          className="acrylic-panel-elevated modal-window-acrylic"
           onClick={(e) => e.stopPropagation()}
           style={{
             maxWidth: '440px',
             width: '100%',
             padding: '24px',
-            borderRadius: '18px',
+            borderRadius: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            background: 'var(--bg-popover)',
-            border: '1px solid var(--border-acrylic-active)'
+            background: 'var(--bg-popover, #0B132B)',
+            border: '1px solid var(--border-acrylic-active, rgba(255, 184, 0, 0.3))',
+            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 184, 0, 0.15)',
+            margin: 'auto'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
-              <Smartphone size={20} color="var(--accent-primary)" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 184, 0, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Smartphone size={18} color="var(--accent-primary, #FFB800)" />
+              </div>
               <span>Instalar como App en tu Móvil</span>
             </div>
             <button
@@ -757,14 +762,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <p style={{ margin: 0 }}>
-              Al instalar la aplicación web en tu pantalla de inicio, <strong>se elimina la barra blanca del navegador</strong> y la app se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
+              Al instalar la aplicación en tu pantalla de inicio, <strong>se elimina la barra del navegador</strong> y se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
             </p>
 
-            <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255, 184, 0, 0.1)', border: '1px solid rgba(255, 184, 0, 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Android Card con Logo Oficial Android */}
+            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(61, 220, 132, 0.08)', border: '1px solid rgba(61, 220, 132, 0.28)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                <strong style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🤖 Android (App Nativa .APK):
-                </strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AndroidIcon size={20} color="#3DDC84" />
+                  <strong style={{ color: '#3DDC84', fontSize: '0.88rem' }}>
+                    Android (App Nativa .APK)
+                  </strong>
+                </div>
                 <a 
                   href="/TayAudit.apk" 
                   download="TayAudit.apk"
@@ -780,13 +789,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </div>
 
-            <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
-              <strong style={{ color: 'var(--accent-cyan)', display: 'block', marginBottom: '4px' }}>
-                🍎 En iPhone / iPad (Safari):
-              </strong>
-              <span>
-                1. Toca el botón <strong>Compartir</strong> (icono con flecha hacia arriba).<br />
-                2. Desliza y selecciona <strong>"Añadir a pantalla de inicio"</strong>.
+            {/* Apple iOS Card con Logo Oficial Apple */}
+            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.16)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                <AppleIcon size={18} color="var(--text-primary, #ffffff)" />
+                <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>
+                  Apple iOS (iPhone / iPad)
+                </strong>
+              </div>
+              <span style={{ fontSize: '0.80rem', lineHeight: 1.45 }}>
+                1. Toca el botón <strong>Compartir</strong> (icono con flecha hacia arriba en Safari).<br />
+                2. Desliza hacia abajo y selecciona <strong>"Añadir a pantalla de inicio"</strong>.
               </span>
             </div>
           </div>

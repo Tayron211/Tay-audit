@@ -419,6 +419,21 @@ code, pre, .font-mono {
     -webkit-overflow-scrolling: touch !important;
   }
 
+  /* Ventanas que deben salir exactamente en medio de la pantalla (ej. Instalar en Móvil) */
+  .modal-backdrop-acrylic.modal-centered-mobile,
+  .modal-backdrop-centered {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .modal-backdrop-acrylic.modal-centered-mobile .modal-window-acrylic,
+  .modal-backdrop-acrylic.modal-centered-mobile .acrylic-panel-elevated,
+  .modal-backdrop-centered .modal-window-acrylic,
+  .modal-backdrop-centered .acrylic-panel-elevated {
+    margin: auto !important;
+    align-self: center !important;
+  }
+
   .modal-window-acrylic {
     margin: auto 0 !important;
     width: 100% !important;
