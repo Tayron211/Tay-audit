@@ -56,18 +56,61 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   // Close on outside click
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         closeDropdown();
       }
     };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside, { passive: true });
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen, isClosing]);
+
+  // Posicionamiento lateral y despliegue anclado al botón en pantallas móviles y de escritorio
+  const [popoverPos, setPopoverPos] = useState<{ right: string; width: string; maxWidth: string }>({
+    right: '0',
+    width: '360px',
+    maxWidth: '92vw'
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const screenW = window.innerWidth;
+
+      if (screenW <= 820) {
+        // En móviles, desplegar lateralmente desde el propio botón
+        // Distancia desde el borde derecho del botón al borde derecho de la pantalla
+        const spaceToRight = screenW - rect.right;
+        // Margen de 10px hacia el lateral derecho de la pantalla
+        const lateralRightOffset = -Math.max(0, spaceToRight - 10);
+
+        setPopoverPos({
+          right: `${lateralRightOffset}px`,
+          width: `${Math.min(350, screenW - 20)}px`,
+          maxWidth: `${screenW - 20}px`
+        });
+      } else {
+        setPopoverPos({
+          right: '0',
+          width: '360px',
+          maxWidth: '92vw'
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [isOpen]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermission());
@@ -172,9 +215,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             style={{
               position: 'absolute',
               top: 'calc(100% + 8px)',
-              right: 0,
-              width: '360px',
-              maxWidth: '92vw',
+              right: popoverPos.right,
+              width: popoverPos.width,
+              maxWidth: popoverPos.maxWidth,
               borderRadius: '16px',
               boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic)',
               backgroundColor: 'var(--bg-acrylic-popover)',

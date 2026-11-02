@@ -476,27 +476,29 @@ code, pre, .font-mono {
     display: block !important;
     position: fixed !important;
     inset: 0 !important;
-    z-index: 10000 !important;
-    background: rgba(0, 0, 0, 0.45) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 1000 !important;
+    background: rgba(0, 0, 0, 0.22) !important;
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
   }
 
   .notification-popover {
-    position: fixed !important;
-    top: 58px !important;
-    left: 50% !important;
-    right: auto !important;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: auto !important;
     bottom: auto !important;
-    transform: translateX(-50%) !important;
-    width: min(94vw, 400px) !important;
-    max-width: calc(100vw - 16px) !important;
-    max-height: calc(100dvh - 76px) !important;
-    border-radius: 18px !important;
-    z-index: 10001 !important;
-    box-shadow: 0 20px 60px -8px rgba(0, 0, 0, 0.65), 0 0 0 1.5px var(--border-acrylic) !important;
-    animation: popoverMobileCenterIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    max-height: calc(100dvh - 80px) !important;
+    border-radius: 16px !important;
+    z-index: 1001 !important;
+    box-shadow: 0 16px 48px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-acrylic) !important;
+    transform-origin: top right !important;
+    animation: dropdownLateralUnfold 0.20s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     box-sizing: border-box !important;
+  }
+
+  .notification-popover.closing {
+    animation: dropdownLateralFold 0.16s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+    pointer-events: none !important;
   }
 
   .live-toast-notification {
@@ -512,14 +514,25 @@ code, pre, .font-mono {
   }
 }
 
-@keyframes popoverMobileCenterIn {
+@keyframes dropdownLateralUnfold {
   from {
     opacity: 0;
-    transform: translate(-50%, -10px) scale(0.97);
+    transform: translateY(-8px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdownLateralFold {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
   }
 }
 
