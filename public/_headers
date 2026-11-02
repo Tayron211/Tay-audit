@@ -1,0 +1,21 @@
+/*
+  # Prevención estricta de Clickjacking (Nadie puede incrustar la app en iframes maliciosos)
+  X-Frame-Options: DENY
+
+  # Prevención de ataques de tipo MIME Sniffing
+  X-Content-Type-Options: nosniff
+
+  # Control de fuga de URLs hacia dominios de terceros
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Protección activa contra Cross-Site Scripting (XSS)
+  X-XSS-Protection: 1; mode=block
+
+  # Restricción de permisos de hardware en navegador (Cámara permitida solo para el escáner QR institucional)
+  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+
+  # Forzar navegación segura y cifrada HTTPS en todo momento
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Content Security Policy (CSP) robusta contra inyecciones y scripts no autorizados
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https: wss: ws:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';

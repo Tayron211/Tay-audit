@@ -10,8 +10,19 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Forwarded-Server-Url',
   'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'strict-origin-when-cross-origin'
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
 };
+
+function sanitizeInput(str, maxLen = 2000) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .slice(0, maxLen)
+    .trim();
+}
 
 function jsonResponse(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -1246,6 +1257,11 @@ exit /b 0
         return jsonResponse({ error: 'Nombre de usuario, equipo y descripción son obligatorios.' }, 400);
       }
 
+      const cleanUserName = sanitizeInput(userName, 100);
+      const cleanDesc = sanitizeInput(description, 3000);
+      const cleanCat = sanitizeInput(category || 'General', 100);
+      const cleanUrg = sanitizeInput(urgency || 'media', 20);
+
       const now = new Date().toISOString();
       const ticketId = await getNextTicketId(db);
       const cleanHost = hostname.trim().toUpperCase();
@@ -1254,14 +1270,14 @@ exit /b 0
         db.prepare(`
           INSERT INTO support_tickets (id, deviceId, hostname, userName, category, description, urgency, status, createdAt)
           VALUES (?, ?, ?, ?, ?, ?, ?, 'abierto', ?)
-        `).bind(ticketId, deviceId || null, cleanHost, userName.trim(), category || 'General', description.trim(), urgency || 'media', now),
+        `).bind(ticketId, deviceId || null, cleanHost, cleanUserName, cleanCat, cleanDesc, cleanUrg, now),
         db.prepare(`
           INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
           VALUES (?, ?, ?, 'TICKET_CREADO', ?, ?, ?)
         `).bind(
           `log-${shortUuid()}`, deviceId || null, cleanHost,
-          `Incidencia [${ticketId}] reportada por ${userName}: [${category || 'General'}] ${description.slice(0, 80)}...`,
-          userName.trim(), now
+          `Incidencia [${ticketId}] reportada por ${cleanUserName}: [${cleanCat}] ${cleanDesc.slice(0, 80)}...`,
+          cleanUserName, now
         )
       ]);
 
@@ -1283,6 +1299,7 @@ exit /b 0
 
       const body = await request.json();
       const { status, solutionNotes } = body || {};
+      const cleanSolution = solutionNotes ? sanitizeInput(solutionNotes, 4000) : null;
       const now = new Date().toISOString();
       const resolvedAt = status === 'resuelto' ? now : (status === 'abierto' || status === 'en_progreso' ? null : (existing.resolvedAt || null));
 
@@ -1292,14 +1309,14 @@ exit /b 0
           solutionNotes = COALESCE(?, solutionNotes),
           resolvedAt = ?
         WHERE id = ?
-      `).bind(status ?? null, solutionNotes ?? null, resolvedAt, ticketId).run();
+      `).bind(status ?? null, cleanSolution ?? null, resolvedAt, ticketId).run();
 
-      if (status === 'resuelto' && solutionNotes && solutionNotes.trim().length > 5) {
+      if (status === 'resuelto' && cleanSolution && cleanSolution.length > 5) {
         const keywords = `${existing.category},${existing.hostname},${existing.description.toLowerCase().replace(/[^a-záéíóúñ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3).slice(0, 8).join(',')}`;
         await db.prepare(`
           INSERT INTO stivie_knowledge (id, triggerKeywords, category, questionPattern, solutionText, actionType, actionLabel, helpfulCount, learnedFrom, createdAt, updatedAt)
           VALUES (?, ?, ?, ?, ?, 'none', NULL, 1, 'solucion_ticket_soporte', ?, ?)
-        `).bind(`k-learn-${shortUuid()}`, keywords, existing.category, existing.description, solutionNotes, now, now).run();
+        `).bind(`k-learn-${shortUuid()}`, keywords, existing.category, existing.description, cleanSolution, now, now).run();
       }
 
       await touchSyncVersion(db);

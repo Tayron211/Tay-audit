@@ -1181,7 +1181,7 @@ exit
 // POST REMOTE ACTION (Restart, Shutdown, Screen Mirroring/VNC/RDP Assist)
 app.post('/api/devices/:id/remote-action', (req, res) => {
   try {
-    const { action, forced } = req.body;
+    const { action } = req.body;
     const device = db.prepare('SELECT * FROM devices WHERE id = ? OR LOWER(hostname) = LOWER(?)').get(req.params.id, req.params.id);
 
     if (!device) return res.status(404).json({ error: 'Dispositivo no encontrado' });
@@ -2532,7 +2532,7 @@ app.post('/api/stivie/knowledge', (req, res) => {
 });
 
 // Middleware centralizado de control de errores para Producción (OWASP: Previene fuga de stack traces)
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   const errorId = randomUUID().slice(0, 8);
   console.error(`[Error #${errorId}]:`, err);
   const isDev = process.env.NODE_ENV !== 'production';

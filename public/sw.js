@@ -1,7 +1,6 @@
 // Service Worker para Notificaciones Push Nativas en Windows y Móviles (TAY-AUDIT & STIVIE)
-const CACHE_NAME = 'tay-audit-sw-v1';
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
@@ -49,7 +48,7 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       data = event.data.json();
-    } catch (e) {
+    } catch {
       data.body = event.data.text();
     }
   }
