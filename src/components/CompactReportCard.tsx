@@ -123,15 +123,28 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
     }
   };
 
-  const handleResolve = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!solutionText.trim() || isSubmitting) return;
+  const handleDirectResolve = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      await onUpdateStatus(ticket.id, 'resuelto', solutionText.trim());
+      await onUpdateStatus(ticket.id, 'resuelto');
       setShowResolveForm(false);
-      setSolutionText('');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResolve = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const clean = solutionText.trim() || undefined;
+      await onUpdateStatus(ticket.id, 'resuelto', clean);
+      setShowResolveForm(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -490,7 +503,7 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                 </div>
               )}
 
-              {(ticket.status === 'abierto' || !ticket.solutionNotes) && (
+              {(ticket.status !== 'resuelto' || !ticket.solutionNotes) && (
                 <div className="report-card-toolbar__case-row">
                   {ticket.status === 'abierto' && (
                     <button
@@ -507,98 +520,162 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                     </button>
                   )}
 
-                  {!ticket.solutionNotes && (
+                  {ticket.status !== 'resuelto' && (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowResolveForm(true);
-                      }}
+                      disabled={isSubmitting}
+                      onClick={handleDirectResolve}
                       className="btn-flat btn-remote btn-primary"
-                      title="Resolver y Enseñar a STIVIE"
+                      title="Resolver ticket directamente en 1 clic"
                     >
                       <Sparkles size={13} />
                       <span>Resolver</span>
                     </button>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!showResolveForm && ticket.solutionNotes) {
+                        setSolutionText(ticket.solutionNotes);
+                      }
+                      setShowResolveForm(!showResolveForm);
+                    }}
+                    className="btn-flat btn-remote"
+                    style={{
+                      border: '1px solid var(--border-acrylic-active)',
+                      background: showResolveForm ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.72rem'
+                    }}
+                    title="Agregar o editar comentario interno para el aprendizaje de STIVIE"
+                  >
+                    <Bot size={13} color="var(--accent-primary)" />
+                    <span>{showResolveForm ? 'Cerrar Nota' : (ticket.solutionNotes ? 'Editar Nota STIVIE' : '+ Nota a STIVIE')}</span>
+                  </button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Solución (si existe) o Formulario de resolución */}
+          {/* Solución interna (si existe) o Formulario de instrucción para STIVIE */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {ticket.solutionNotes ? (
+            {ticket.solutionNotes && !showResolveForm && (
               <div style={{
                 padding: '10px 12px',
                 borderRadius: '8px',
-                background: 'rgba(16, 185, 129, 0.1)',
+                background: 'rgba(16, 185, 129, 0.08)',
                 border: '1px solid rgba(16, 185, 129, 0.25)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
-                  <Bot size={14} />
-                  <span>Solución Aplicada (STIVIE la aprendió):</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
+                    <Bot size={14} />
+                    <span>Instrucción Interna para STIVIE (No se envía al usuario):</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSolutionText(ticket.solutionNotes || '');
+                      setShowResolveForm(true);
+                    }}
+                    className="btn-flat"
+                    style={{ fontSize: '0.68rem', padding: '2px 8px', color: 'var(--text-muted)' }}
+                    title="Editar nota técnica de STIVIE"
+                  >
+                    Editar
+                  </button>
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
                   {ticket.solutionNotes}
                 </div>
               </div>
-            ) : (
-              showResolveForm ? (
-                <form 
-                  onSubmit={handleResolve}
-                  className="report-resolve-form"
-                  style={{
-                    padding: '12px',
-                    borderRadius: '10px',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--border-acrylic-active)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px'
-                  }}
-                >
-                  <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={14} color="var(--accent-primary)" />
-                    <span>Respuesta al Usuario & Solución (STIVIE la aprenderá):</span>
-                  </div>
-                  
-                  <textarea
-                    placeholder="Describe la solución aplicada al caso..."
-                    value={solutionText}
-                    onChange={(e) => setSolutionText(e.target.value)}
-                    className="form-input"
-                    style={{ width: '100%', minHeight: '60px', fontSize: '0.78rem' }}
-                    autoFocus
-                  />
+            )}
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowResolveForm(false);
-                        setSolutionText('');
-                      }}
-                      className="btn-flat"
-                      style={{ padding: '5px 12px', fontSize: '0.72rem' }}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={!solutionText.trim() || isSubmitting}
-                      className="btn-flat btn-primary"
-                      style={{ padding: '5px 14px', fontSize: '0.72rem', gap: '5px', fontWeight: 800 }}
-                    >
-                      <Send size={12} />
-                      <span>Confirmar y Enseñar a STIVIE</span>
-                    </button>
-                  </div>
-                </form>
-              ) : null
+            {!ticket.solutionNotes && ticket.status === 'resuelto' && !showResolveForm && (
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: 'rgba(59, 130, 246, 0.06)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
+                  <Bot size={14} color="#3b82f6" />
+                  <span>STIVIE aprendió este caso de forma autónoma según la atención técnica.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowResolveForm(true);
+                  }}
+                  className="btn-flat"
+                  style={{ fontSize: '0.68rem', padding: '3px 8px', whiteSpace: 'nowrap' }}
+                >
+                  + Agregar nota a STIVIE
+                </button>
+              </div>
+            )}
+
+            {showResolveForm && (
+              <form 
+                onSubmit={handleResolve}
+                className="report-resolve-form"
+                style={{
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--border-acrylic-active)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Bot size={14} color="var(--accent-primary)" />
+                  <span>Instrucción Interna para STIVIE (No se enviará al usuario):</span>
+                </div>
+                
+                <textarea
+                  placeholder="Describe cómo se resuelve para que STIVIE aprenda este procedimiento..."
+                  value={solutionText}
+                  onChange={(e) => setSolutionText(e.target.value)}
+                  className="form-input"
+                  style={{ width: '100%', minHeight: '60px', fontSize: '0.78rem' }}
+                  autoFocus
+                />
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResolveForm(false);
+                      setSolutionText('');
+                    }}
+                    className="btn-flat"
+                    style={{ padding: '5px 12px', fontSize: '0.72rem' }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!solutionText.trim() || isSubmitting}
+                    className="btn-flat btn-primary"
+                    style={{ padding: '5px 14px', fontSize: '0.72rem', gap: '5px', fontWeight: 800 }}
+                  >
+                    <Send size={12} />
+                    <span>{ticket.status === 'resuelto' ? 'Guardar Nota en STIVIE' : 'Resolver e Instruir a STIVIE'}</span>
+                  </button>
+                </div>
+              </form>
             )}
 
             {/* Acciones adicionales: Ver en inventario si el equipo existe */}

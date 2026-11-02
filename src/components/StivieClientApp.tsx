@@ -198,21 +198,23 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
       try {
         const tickets: SupportTicket[] = await api.getTickets();
         const myTck = tickets.find(t => t.id === activeTicketId);
-        if (myTck && myTck.solutionNotes) {
-          setMessages(prev => {
-            const alreadyShown = prev.some(m => m.id === `tech-reply-${myTck.id}`);
-            if (alreadyShown) return prev;
+        if (myTck) {
+          if (myTck.status === 'resuelto') {
+            setMessages(prev => {
+              const alreadyShown = prev.some(m => m.id === `ticket-resolved-${myTck.id}`);
+              if (alreadyShown) return prev;
 
-            return [
-              ...prev,
-              {
-                id: `tech-reply-${myTck.id}`,
-                sender: 'support_technician',
-                text: `Respuesta del Soporte TI:\n"${myTck.solutionNotes}"\n\n(Estado: ${myTck.status === 'resuelto' ? 'Solucionado' : 'En Atención'})`,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              }
-            ];
-          });
+              return [
+                ...prev,
+                {
+                  id: `ticket-resolved-${myTck.id}`,
+                  sender: 'stivie',
+                  text: `✅ **Ticket ${myTck.id} Resuelto**\n\nEl equipo de Soporte TI ha atendido y cerrado tu caso con éxito. Si tienes alguna otra duda o consulta técnica, aquí sigo disponible para asistirte.`,
+                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+              ];
+            });
+          }
         }
       } catch {
         // ignore

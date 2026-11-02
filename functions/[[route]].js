@@ -1308,12 +1308,48 @@ exit /b 0
         WHERE id = ?
       `).bind(status ?? null, cleanSolution ?? null, resolvedAt, ticketId).run();
 
-      if (status === 'resuelto' && cleanSolution && cleanSolution.length > 5) {
-        const keywords = `${existing.category},${existing.hostname},${existing.description.toLowerCase().replace(/[^a-záéíóúñ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3).slice(0, 8).join(',')}`;
-        await db.prepare(`
-          INSERT INTO stivie_knowledge (id, triggerKeywords, category, questionPattern, solutionText, actionType, actionLabel, helpfulCount, learnedFrom, createdAt, updatedAt)
-          VALUES (?, ?, ?, ?, ?, 'none', NULL, 1, 'solucion_ticket_soporte', ?, ?)
-        `).bind(`k-learn-${shortUuid()}`, keywords, existing.category, existing.description, cleanSolution, now, now).run();
+      const isNewlyResolved = status === 'resuelto' && existing.status !== 'resuelto';
+      if (status === 'resuelto') {
+        const descWords = (existing.description || '').toLowerCase().replace(/[^a-záéíóúñ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3);
+        const keywords = `${existing.category},${existing.hostname},${descWords.slice(0, 8).join(',')}`;
+
+        // Determinar acción automática inteligente según el caso atendido
+        let autoAction = 'none';
+        let autoLabel = null;
+        const qText = `${existing.category} ${existing.description}`.toLowerCase();
+        if (qText.includes('pantalla') || qText.includes('proyec') || qText.includes('clon') || qText.includes('segunda')) {
+          autoAction = 'display_clone';
+          autoLabel = 'Duplicar Pantalla Ahora (1-Clic)';
+        } else if (qText.includes('impres') || qText.includes('spooler') || qText.includes('cola')) {
+          autoAction = 'restart_spooler';
+          autoLabel = 'Reiniciar Cola de Impresión Spooler (1-Clic)';
+        } else if (qText.includes('dns') || qText.includes('red') || qText.includes('internet') || qText.includes('ping')) {
+          autoAction = 'flush_dns';
+          autoLabel = 'Limpiar Caché DNS de Windows';
+        }
+
+        if (cleanSolution && cleanSolution.trim().length > 3) {
+          // El técnico dejó indicación interna de cómo resolverlo (STIVIE la aprende)
+          await db.prepare(`
+            INSERT INTO stivie_knowledge (id, triggerKeywords, category, questionPattern, solutionText, actionType, actionLabel, helpfulCount, learnedFrom, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'solucion_ticket_soporte', ?, ?)
+          `).bind(`k-learn-${shortUuid()}`, keywords, existing.category, existing.description, cleanSolution.trim(), autoAction, autoLabel, now, now).run();
+        } else if (isNewlyResolved) {
+          // STIVIE aprende por su cuenta según el caso atendido
+          let autoSolution = `Incidencia de ${existing.category.toLowerCase()} atendida y resuelta satisfactoriamente por Soporte TI en ${existing.hostname}. Componentes y funcionamiento operativo validados.`;
+          if (autoAction === 'display_clone') {
+            autoSolution = `Para incidencias de proyección en ${existing.hostname}, la solución nativa verificada es duplicar pantalla (DisplaySwitch /clone). Puedes activarla con el botón directo.`;
+          } else if (autoAction === 'restart_spooler') {
+            autoSolution = `Para problemas de impresión en ${existing.hostname}, se resolvió desbloqueando el servicio Spooler de Windows. Puedes reiniciar la cola con el botón de acción directa.`;
+          } else if (autoAction === 'flush_dns') {
+            autoSolution = `Para problemas de navegación en ${existing.hostname}, se validó la limpieza de caché DNS y renovación de red. Puedes ejecutar la limpieza con el botón directo.`;
+          }
+
+          await db.prepare(`
+            INSERT INTO stivie_knowledge (id, triggerKeywords, category, questionPattern, solutionText, actionType, actionLabel, helpfulCount, learnedFrom, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'auto_aprendizaje_caso_atendido', ?, ?)
+          `).bind(`k-learn-${shortUuid()}`, keywords, existing.category, existing.description, autoSolution, autoAction, autoLabel, now, now).run();
+        }
       }
 
       await touchSyncVersion(db);
