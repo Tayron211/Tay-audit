@@ -25,9 +25,27 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraStarting, setIsCameraStarting] = useState(true);
   const [activeCameraLabel, setActiveCameraLabel] = useState<string>('Iniciando lente de la cámara...');
+  const [isClosing, setIsClosing] = useState(false);
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isCancelledRef = useRef<boolean>(false);
   const isStartingRef = useRef<boolean>(false);
+  const isClosingRef = useRef<boolean>(false);
+
+  // Refs de props para garantizar estabilidad total y evitar reinicios del hardware de la cámara por re-renders externos
+  const devicesRef = useRef(devices);
+  const onDeviceFoundRef = useRef(onDeviceFound);
+  const onNewCodeScannedRef = useRef(onNewCodeScanned);
+  const onCustomScanRef = useRef(onCustomScan);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    devicesRef.current = devices;
+    onDeviceFoundRef.current = onDeviceFound;
+    onNewCodeScannedRef.current = onNewCodeScanned;
+    onCustomScanRef.current = onCustomScan;
+    onCloseRef.current = onClose;
+  });
 
   // Detención segura del escáner liberando hardware y evitando excepciones si aún no ha iniciado
   const stopScanner = useCallback(async () => {
@@ -64,31 +82,19 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     }
   }, []);
 
-  const [isClosing, setIsClosing] = useState(false);
-
   // Cierre suave del modal con animación fluida
   const handleClose = useCallback(() => {
-    if (isClosing) return;
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
     setIsClosing(true);
     isCancelledRef.current = true;
     stopScanner();
     setTimeout(() => {
+      isClosingRef.current = false;
       setIsClosing(false);
-      onClose();
+      onCloseRef.current();
     }, 200);
-  }, [isClosing, onClose, stopScanner]);
-
-  // Cerrar escáner al presionar tecla Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleClose]);
+  }, [stopScanner]);
 
   const handleCodeScanned = useCallback((code: string) => {
     const clean = code.trim();
@@ -96,11 +102,13 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
     handleClose();
 
-    // Si se especificó callback personalizado (ej: campos específicos en formularios o barra de búsqueda)
-    if (onCustomScan) {
-      onCustomScan(clean);
+    // Si se especificó callback personalizado
+    if (onCustomScanRef.current) {
+      onCustomScanRef.current(clean);
       return;
     }
+
+    const currentDevices = devicesRef.current;
 
     // Flujo general de auditoría: vincular activo existente de forma 100% precisa
     let parsed: any = null;
@@ -115,36 +123,36 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     // 1. Si es QR estructurado con ID único o tag de activo
     if (parsed) {
       if (parsed.id) {
-        matched = devices.find(d => d.id === parsed.id || d.id.toLowerCase() === String(parsed.id).toLowerCase());
+        matched = currentDevices.find(d => d.id === parsed.id || d.id.toLowerCase() === String(parsed.id).toLowerCase());
       }
       if (!matched && parsed.tag) {
-        matched = devices.find(d => d.qrCodeData === parsed.tag || d.qrCodeData?.toLowerCase() === String(parsed.tag).toLowerCase());
+        matched = currentDevices.find(d => d.qrCodeData === parsed.tag || d.qrCodeData?.toLowerCase() === String(parsed.tag).toLowerCase());
       }
       if (!matched && parsed.hostname) {
-        matched = devices.find(d => d.hostname.toLowerCase() === String(parsed.hostname).toLowerCase());
+        matched = currentDevices.find(d => d.hostname.toLowerCase() === String(parsed.hostname).toLowerCase());
       }
     }
 
     // 2. Coincidencia exacta por ID de dispositivo (dev-xxxx)
     if (!matched) {
-      matched = devices.find(d => d.id.toLowerCase() === clean.toLowerCase() || `dev-${d.id.toLowerCase()}` === clean.toLowerCase());
+      matched = currentDevices.find(d => d.id.toLowerCase() === clean.toLowerCase() || `dev-${d.id.toLowerCase()}` === clean.toLowerCase());
     }
 
     // 3. Coincidencia exacta por Código de Etiqueta / QR registrado
     if (!matched) {
-      matched = devices.find(d => d.qrCodeData && d.qrCodeData.toLowerCase() === clean.toLowerCase());
+      matched = currentDevices.find(d => d.qrCodeData && d.qrCodeData.toLowerCase() === clean.toLowerCase());
     }
 
     // 4. Coincidencia exacta por Hostname (nombre corporativo único)
     if (!matched) {
-      matched = devices.find(d => d.hostname.toLowerCase() === clean.toLowerCase());
+      matched = currentDevices.find(d => d.hostname.toLowerCase() === clean.toLowerCase());
     }
 
     // 5. Coincidencia por Número de Serie (excluyendo genéricos/vacíos/repetidos)
     if (!matched) {
       const isGenericSerial = ['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie', '0', ''].includes(clean.toLowerCase());
       if (!isGenericSerial) {
-        matched = devices.find(d => 
+        matched = currentDevices.find(d => 
           d.serialNumber && 
           !['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie'].includes(d.serialNumber.toLowerCase()) &&
           d.serialNumber.toLowerCase() === clean.toLowerCase()
@@ -154,22 +162,25 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
     // 6. Si el string escaneado contiene explícitamente el ID único del dispositivo
     if (!matched) {
-      matched = devices.find(d => clean.toLowerCase().includes(d.id.toLowerCase()));
+      matched = currentDevices.find(d => clean.toLowerCase().includes(d.id.toLowerCase()));
     }
 
     // 7. Si el string escaneado contiene la etiqueta de activo única
     if (!matched) {
-      matched = devices.find(d => d.qrCodeData && d.qrCodeData.length >= 6 && clean.toLowerCase().includes(d.qrCodeData.toLowerCase()));
+      matched = currentDevices.find(d => d.qrCodeData && d.qrCodeData.length >= 6 && clean.toLowerCase().includes(d.qrCodeData.toLowerCase()));
     }
 
     if (matched) {
-      onDeviceFound(matched);
+      onDeviceFoundRef.current(matched);
     } else {
-      onNewCodeScanned(clean);
+      onNewCodeScannedRef.current(clean);
     }
-  }, [devices, handleClose, onCustomScan, onDeviceFound, onNewCodeScanned]);
+  }, [handleClose]);
 
   const startCamera = useCallback(async () => {
+    // Si la cámara ya está activa o en proceso de inicio, mantenerla sin reiniciar
+    if (scannerRef.current?.isScanning || isStartingRef.current) return;
+
     try {
       isCancelledRef.current = false;
       isStartingRef.current = true;
@@ -251,13 +262,14 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       console.warn('Error al activar cámara:', err);
       setIsCameraStarting(false);
       setCameraError(
-        'No se pudo activar la cámara directamente (posible permiso denegado o conexión no segura). Puedes ingresar el código o número de serie manualmente abajo.'
+        'No se pudo activar la cámara directamente (posible permiso denegado o conexión no segura).'
       );
     } finally {
       isStartingRef.current = false;
     }
   }, [handleCodeScanned]);
 
+  // Ciclo de vida estricto: iniciar cámara una sola vez al abrir el modal, y liberarla al cerrar
   useEffect(() => {
     if (!isOpen) {
       stopScanner();
@@ -265,7 +277,12 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     }
 
     isCancelledRef.current = false;
-    const timeout = setTimeout(startCamera, 120);
+    isClosingRef.current = false;
+    setIsClosing(false);
+
+    const timeout = setTimeout(() => {
+      startCamera();
+    }, 120);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -279,7 +296,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       stopScanner();
     };
-  }, [isOpen, startCamera, stopScanner, handleClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -371,7 +388,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '16px'
+          marginBottom: '0'
         }}>
           {/* Contenedor del escáner HTML5 */}
           <div id="tay-qr-reader" style={{ width: '100%' }} />
@@ -467,38 +484,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
               </button>
             </div>
           )}
-        </div>
-
-        {/* Botón Inferior de Cancelar y Cerrar (Acceso Rápido para Pulgares en Móvil) */}
-        <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center' }}>
-          <button
-            type="button"
-            onClick={handleClose}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              handleClose();
-            }}
-            className="btn-flat"
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-acrylic)',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              touchAction: 'manipulation',
-              background: 'transparent',
-              cursor: 'pointer'
-            }}
-          >
-            <X size={16} />
-            <span>Cancelar y cerrar escáner</span>
-          </button>
         </div>
       </div>
     </div>
