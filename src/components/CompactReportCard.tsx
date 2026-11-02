@@ -440,122 +440,116 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
             </div>
           )}
 
-          {/* Acciones rápidas TI & Gestión de Caso (Diseño 100% ordenado y simétrico) */}
-          {(ticket.status !== 'resuelto' || !ticket.solutionNotes) && (
+          {/* Acciones rápidas TI & Gestión de Caso (Solo para tickets activos en atención) */}
+          {ticket.status !== 'resuelto' && (
             <div className="report-card-toolbar">
-              {ticket.status !== 'resuelto' && (
-                <div className="report-card-toolbar__remote-grid">
-                  <button
-                    type="button"
-                    disabled={remoteLoading !== null}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoteAction('display_clone');
-                    }}
-                    className="btn-flat btn-remote btn-remote--primary"
-                    title="Duplicar Pantalla (Win+P /clone)"
-                    aria-label="Duplicar Pantalla (Win+P)"
-                  >
-                    <ScreenShare size={15} />
-                  </button>
+              <div className="report-card-toolbar__remote-grid">
+                <button
+                  type="button"
+                  disabled={remoteLoading !== null}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoteAction('display_clone');
+                  }}
+                  className="btn-flat btn-remote btn-remote--primary"
+                  title="Duplicar Pantalla (Win+P /clone)"
+                  aria-label="Duplicar Pantalla (Win+P)"
+                >
+                  <ScreenShare size={15} />
+                </button>
 
-                  <button
-                    type="button"
-                    disabled={remoteLoading !== null}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoteAction('remote_access');
-                    }}
-                    className="btn-flat btn-remote btn-remote--cyan"
-                    title="Acceso Remoto RDP (mstsc.exe)"
-                    aria-label="Acceso Remoto RDP"
-                  >
-                    <Monitor size={15} />
-                  </button>
+                <button
+                  type="button"
+                  disabled={remoteLoading !== null}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoteAction('remote_access');
+                  }}
+                  className="btn-flat btn-remote btn-remote--cyan"
+                  title="Acceso Remoto RDP (mstsc.exe)"
+                  aria-label="Acceso Remoto RDP"
+                >
+                  <Monitor size={15} />
+                </button>
 
+                <button
+                  type="button"
+                  disabled={remoteLoading !== null}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoteAction('restart');
+                  }}
+                  className="btn-flat btn-remote btn-remote--amber"
+                  title="Reiniciar Equipo"
+                  aria-label="Reiniciar Equipo"
+                >
+                  <RotateCw size={15} />
+                </button>
+
+                <button
+                  type="button"
+                  disabled={remoteLoading !== null}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoteAction('shutdown');
+                  }}
+                  className="btn-flat btn-remote btn-remote--rose"
+                  title="Apagar Equipo"
+                  aria-label="Apagar Equipo"
+                >
+                  <Power size={15} />
+                </button>
+              </div>
+
+              <div className="report-card-toolbar__case-row">
+                {ticket.status === 'abierto' && (
                   <button
                     type="button"
-                    disabled={remoteLoading !== null}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemoteAction('restart');
+                      onUpdateStatus(ticket.id, 'en_progreso');
                     }}
                     className="btn-flat btn-remote btn-remote--amber"
-                    title="Reiniciar Equipo"
-                    aria-label="Reiniciar Equipo"
+                    title="Tomar caso para atención"
                   >
-                    <RotateCw size={15} />
+                    <Clock size={13} />
+                    <span>Tomar Caso</span>
                   </button>
+                )}
 
-                  <button
-                    type="button"
-                    disabled={remoteLoading !== null}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoteAction('shutdown');
-                    }}
-                    className="btn-flat btn-remote btn-remote--rose"
-                    title="Apagar Equipo"
-                    aria-label="Apagar Equipo"
-                  >
-                    <Power size={15} />
-                  </button>
-                </div>
-              )}
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={handleDirectResolve}
+                  className="btn-flat btn-remote btn-primary"
+                  title="Resolver ticket directamente en 1 clic (STIVIE aprende de forma autónoma)"
+                >
+                  <Sparkles size={13} />
+                  <span>Resolver</span>
+                </button>
 
-              {(ticket.status !== 'resuelto' || !ticket.solutionNotes) && (
-                <div className="report-card-toolbar__case-row">
-                  {ticket.status === 'abierto' && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onUpdateStatus(ticket.id, 'en_progreso');
-                      }}
-                      className="btn-flat btn-remote btn-remote--amber"
-                      title="Tomar caso para atención"
-                    >
-                      <Clock size={13} />
-                      <span>Tomar Caso</span>
-                    </button>
-                  )}
-
-                  {ticket.status !== 'resuelto' && (
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={handleDirectResolve}
-                      className="btn-flat btn-remote btn-primary"
-                      title="Resolver ticket directamente en 1 clic"
-                    >
-                      <Sparkles size={13} />
-                      <span>Resolver</span>
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!showResolveForm && ticket.solutionNotes) {
-                        setSolutionText(ticket.solutionNotes);
-                      }
-                      setShowResolveForm(!showResolveForm);
-                    }}
-                    className="btn-flat btn-remote"
-                    style={{
-                      border: '1px solid var(--border-acrylic-active)',
-                      background: showResolveForm ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.72rem'
-                    }}
-                    title="Agregar o editar comentario interno para el aprendizaje de STIVIE"
-                  >
-                    <Bot size={13} color="var(--accent-primary)" />
-                    <span>{showResolveForm ? 'Cerrar Nota' : (ticket.solutionNotes ? 'Editar Nota STIVIE' : '+ Nota a STIVIE')}</span>
-                  </button>
-                </div>
-              )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!showResolveForm && ticket.solutionNotes) {
+                      setSolutionText(ticket.solutionNotes);
+                    }
+                    setShowResolveForm(!showResolveForm);
+                  }}
+                  className="btn-flat btn-remote"
+                  style={{
+                    border: '1px solid var(--border-acrylic-active)',
+                    background: showResolveForm ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.72rem'
+                  }}
+                  title="Agregar o editar comentario interno para el aprendizaje de STIVIE"
+                >
+                  <Bot size={13} color="var(--accent-primary)" />
+                  <span>{showResolveForm ? 'Cerrar Nota' : '+ Nota a STIVIE'}</span>
+                </button>
+              </div>
             </div>
           )}
 
