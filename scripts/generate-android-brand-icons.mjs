@@ -339,3 +339,4 @@ for (const s of splashes) {
 }
 
 console.log('¡Todos los iconos y splash screens de UPN se generaron exitosamente!');
+

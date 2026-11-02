@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronDown,
   Smartphone,
+  Download,
   X
 } from 'lucide-react';
 import { computeIntelligentContrast } from '../utils/theme';
@@ -759,13 +760,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               Al instalar la aplicación web en tu pantalla de inicio, <strong>se elimina la barra blanca del navegador</strong> y la app se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
             </p>
 
-            <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255, 184, 0, 0.08)', border: '1px solid rgba(255, 184, 0, 0.25)' }}>
-              <strong style={{ color: 'var(--accent-primary)', display: 'block', marginBottom: '4px' }}>
-                🤖 En Android (Chrome o Samsung Internet):
-              </strong>
-              <span>
-                1. Toca el menú de <strong>3 puntos (⋮)</strong> o las <strong>3 líneas (≡)</strong> del navegador.<br />
-                2. Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Añadir a pantalla de inicio"</strong>.
+            <div style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255, 184, 0, 0.1)', border: '1px solid rgba(255, 184, 0, 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <strong style={{ color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🤖 Android (App Nativa .APK):
+                </strong>
+                <a 
+                  href="/TayAudit.apk" 
+                  download="TayAudit.apk"
+                  className="btn-flat btn-primary"
+                  style={{ padding: '6px 14px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Download size={14} />
+                  <span>Descargar TayAudit.apk</span>
+                </a>
+              </div>
+              <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+                Instalador APK directo con icono oficial UPN. Cero dependencia del navegador.
               </span>
             </div>
 

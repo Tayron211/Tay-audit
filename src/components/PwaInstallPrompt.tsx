@@ -2,17 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, X, Check, Smartphone } from 'lucide-react';
 
 export const PwaInstallPrompt: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(() => {
-    if (typeof window !== 'undefined' && (window as any).__pwaInstallPrompt) {
-      return (window as any).__pwaInstallPrompt;
-    }
-    return null;
-  });
   const [isStandalone, setIsStandalone] = useState<boolean>(false);
   const [isIOS, setIsIOS] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showIOSModal, setShowIOSModal] = useState<boolean>(false);
-  const [showAndroidModal, setShowAndroidModal] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [installedSuccessfully, setInstalledSuccessfully] = useState<boolean>(false);
 
@@ -37,25 +30,10 @@ export const PwaInstallPrompt: React.FC = () => {
     setIsIOS(iOSDetected);
     setIsMobile(mobileDetected);
 
-    // Si main.tsx ya capturó el evento beforeinstallprompt
-    if ((window as any).__pwaInstallPrompt) {
-      setDeferredPrompt((window as any).__pwaInstallPrompt);
-    }
-
-    // 3. Capturar evento de instalación nativo (Android / Chrome)
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      (window as any).__pwaInstallPrompt = e;
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // 4. Capturar cuando la app ya fue instalada
+    // Capturar cuando la app ya fue instalada
     const handleAppInstalled = () => {
       setInstalledSuccessfully(true);
       setIsStandalone(true);
-      setDeferredPrompt(null);
       (window as any).__pwaInstallPrompt = null;
     };
 
@@ -66,7 +44,6 @@ export const PwaInstallPrompt: React.FC = () => {
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
@@ -76,14 +53,10 @@ export const PwaInstallPrompt: React.FC = () => {
     return null;
   }
 
-  const handleInstallClick = async () => {
+  const handleInstallClick = () => {
     if (isIOS) {
       setShowIOSModal(true);
-      return;
     }
-
-    // En Android, abrimos el modal de instalación nativa directa con opción de descarga de APK
-    setShowAndroidModal(true);
   };
 
   const handleDismiss = () => {
@@ -147,28 +120,52 @@ export const PwaInstallPrompt: React.FC = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
           {!installedSuccessfully && (
-            <button
-              type="button"
-              onClick={handleInstallClick}
-              style={{
-                backgroundColor: '#070c1e',
-                color: '#FFB800',
-                border: 'none',
-                padding: '5px 12px',
-                borderRadius: '8px',
-                fontSize: '0.72rem',
-                fontWeight: 900,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <Download size={13} strokeWidth={2.5} />
-              <span>{isIOS ? 'Instalar' : 'Descargar .APK'}</span>
-            </button>
+            !isIOS ? (
+              <a
+                href="/TayAudit.apk"
+                download="TayAudit.apk"
+                style={{
+                  backgroundColor: '#070c1e',
+                  color: '#FFB800',
+                  textDecoration: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <Download size={13} strokeWidth={2.5} />
+                <span>Descargar .APK</span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                style={{
+                  backgroundColor: '#070c1e',
+                  color: '#FFB800',
+                  border: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <Download size={13} strokeWidth={2.5} />
+                <span>Instalar</span>
+              </button>
+            )
           )}
 
           <button
@@ -191,194 +188,7 @@ export const PwaInstallPrompt: React.FC = () => {
         </div>
       </aside>
 
-      {/* Modal Instructivo para Android (cuando el prompt de Chrome requiere acceso al menú de WebAPK) */}
-      {showAndroidModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 11000,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
-            padding: '16px'
-          }}
-          onClick={() => setShowAndroidModal(false)}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '380px',
-              backgroundColor: 'var(--bg-canvas-card, #0B132B)',
-              border: '1px solid var(--border-acrylic, rgba(255, 255, 255, 0.15))',
-              borderRadius: '24px',
-              padding: '24px 20px',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-              color: 'var(--text-primary, #ffffff)',
-              animation: 'slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header del Modal */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img 
-                  src="/icon-192.png" 
-                  alt="Tay-Audit Icon" 
-                  style={{ width: '40px', height: '40px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
-                />
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>App Nativa TayAudit (.apk)</h4>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
-                    Instalador independiente para Android (Sin navegador)
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAndroidModal(false)}
-                className="modal-close-btn"
-                style={{ width: '32px', height: '32px' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            {/* Botón Principal: Descargar APK Directo */}
-            <a
-              href="/TayAudit.apk"
-              download="TayAudit.apk"
-              className="btn-flat btn-primary"
-              style={{
-                width: '100%',
-                padding: '13px 16px',
-                borderRadius: '14px',
-                fontWeight: 900,
-                fontSize: '0.90rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                textDecoration: 'none',
-                boxShadow: '0 4px 18px rgba(255, 184, 0, 0.35)',
-                boxSizing: 'border-box'
-              }}
-            >
-              <Download size={18} />
-              <span>Descargar TayAudit.apk (5.1 MB)</span>
-            </a>
-
-            {/* Pasos de Instalación Rápida */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px 14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 184, 0, 0.2)',
-                    color: '#FFB800',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 900,
-                    fontSize: '0.75rem',
-                    flexShrink: 0
-                  }}
-                >
-                  1
-                </div>
-                <div style={{ fontSize: '0.79rem', lineHeight: 1.4 }}>
-                  Pulsa el botón de arriba para <strong>descargar TayAudit.apk</strong>.
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                    color: '#38bdf8',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 900,
-                    fontSize: '0.75rem',
-                    flexShrink: 0
-                  }}
-                >
-                  2
-                </div>
-                <div style={{ fontSize: '0.79rem', lineHeight: 1.4 }}>
-                  Abre el archivo descargado y pulsa <strong>Instalar</strong>. Si el móvil pide confirmar instalación de fuentes desconocidas, selecciona <em>"Permitir desde esta fuente"</em>.
-                </div>
-              </div>
-            </div>
-
-            {/* Alternativa: Versión Web ligera si el usuario la prefiere */}
-            {deferredPrompt && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await deferredPrompt.prompt();
-                    const choice = await deferredPrompt.userChoice;
-                    if (choice?.outcome === 'accepted') {
-                      setInstalledSuccessfully(true);
-                      setShowAndroidModal(false);
-                    }
-                  } catch {}
-                }}
-                style={{
-                  background: 'transparent',
-                  border: '1px dashed rgba(255, 255, 255, 0.18)',
-                  color: 'var(--text-secondary, #94a3b8)',
-                  padding: '9px',
-                  borderRadius: '10px',
-                  fontSize: '0.73rem',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                O usar como acceso web rápido de Chrome
-              </button>
-            )}
-
-            {/* Botón Cerrar */}
-            <button
-              type="button"
-              onClick={() => setShowAndroidModal(false)}
-              className="btn-flat"
-              style={{
-                width: '100%',
-                padding: '9px',
-                borderRadius: '10px',
-                fontWeight: 700,
-                fontSize: '0.78rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(255,255,255,0.06)',
-                color: 'var(--text-primary, #ffffff)',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <span>Cerrar</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Modal Instructivo para iPhone (iOS tal como está) */}
       {showIOSModal && (
