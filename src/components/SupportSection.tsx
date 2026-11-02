@@ -199,6 +199,16 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
   // New ticket creation form state (manual ticket from Support TI panel)
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
+  const [isClosingTicketModal, setIsClosingTicketModal] = useState(false);
+
+  const closeCreateTicketModal = () => {
+    if (isClosingTicketModal || !isCreatingTicket) return;
+    setIsClosingTicketModal(true);
+    setTimeout(() => {
+      setIsClosingTicketModal(false);
+      setIsCreatingTicket(false);
+    }, 200);
+  };
   const [createForm, setCreateForm] = useState<{
     deviceId: string;
     hostname: string;
@@ -296,6 +306,16 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
   // New rule teach form state
   const [isTeaching, setIsTeaching] = useState(false);
+  const [isClosingTeachModal, setIsClosingTeachModal] = useState(false);
+
+  const closeTeachingModal = () => {
+    if (isClosingTeachModal || !isTeaching) return;
+    setIsClosingTeachModal(true);
+    setTimeout(() => {
+      setIsClosingTeachModal(false);
+      setIsTeaching(false);
+    }, 200);
+  };
   const [newRule, setNewRule] = useState({
     triggerKeywords: '',
     category: 'General',
@@ -587,7 +607,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       await api.teachStivie(newRule);
       setActionFeedback('¡STIVIE aprendió la nueva respuesta exitosamente!');
       setTimeout(() => setActionFeedback(null), 3000);
-      setIsTeaching(false);
+      closeTeachingModal();
       setNewRule({
         triggerKeywords: '',
         category: 'General',
@@ -630,7 +650,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
       setActionFeedback('Ticket Creado');
       setTimeout(() => setActionFeedback(null), 2500);
-      setIsCreatingTicket(false);
+      closeCreateTicketModal();
       setCreateForm({ deviceId: '', hostname: '', userName: '', category: 'General', description: '', urgency: 'media' });
       onRefresh();
     } catch (err: any) {
@@ -1384,10 +1404,18 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           </div>
 
           {/* MODAL WINDOW: CREAR NUEVO TICKET DE ATENCION AL USUARIO */}
-          {isCreatingTicket && (
-            <div className="modal-backdrop-acrylic" style={{ zIndex: 10000, padding: '16px' }}>
+          {(isCreatingTicket || isClosingTicketModal) && (
+            <div 
+              className={`modal-backdrop-acrylic ${isClosingTicketModal ? 'closing' : ''}`} 
+              style={{ zIndex: 10000, padding: '16px' }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeCreateTicketModal();
+                }
+              }}
+            >
               <div
-                className="modal-window-acrylic"
+                className={`modal-window-acrylic ${isClosingTicketModal ? 'closing' : ''}`}
                 style={{
                   width: '100%',
                   maxWidth: '580px',
@@ -1436,7 +1464,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setIsCreatingTicket(false)}
+                    onClick={closeCreateTicketModal}
                     aria-label="Cerrar ventana"
                     title="Cerrar ventana"
                     className="modal-close-btn"
@@ -1529,7 +1557,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-acrylic)' }}>
                     <button
                       type="button"
-                      onClick={() => setIsCreatingTicket(false)}
+                      onClick={closeCreateTicketModal}
                       className="btn-flat"
                       style={{ padding: '8px 18px', fontSize: '0.80rem' }}
                     >
@@ -2367,10 +2395,18 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           </div>
 
           {/* MODAL WINDOW: ENSEÑAR NUEVA SOLUCION A STIVIE */}
-          {isTeaching && (
-            <div className="modal-backdrop-acrylic" style={{ zIndex: 10000, padding: '16px' }}>
+          {(isTeaching || isClosingTeachModal) && (
+            <div 
+              className={`modal-backdrop-acrylic ${isClosingTeachModal ? 'closing' : ''}`} 
+              style={{ zIndex: 10000, padding: '16px' }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeTeachingModal();
+                }
+              }}
+            >
               <div
-                className="modal-window-acrylic"
+                className={`modal-window-acrylic ${isClosingTeachModal ? 'closing' : ''}`}
                 style={{
                   width: '100%',
                   maxWidth: '680px',
@@ -2419,7 +2455,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setIsTeaching(false)}
+                    onClick={closeTeachingModal}
                     aria-label="Cerrar ventana"
                     title="Cerrar ventana"
                     className="modal-close-btn"
@@ -2488,7 +2524,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-acrylic)' }}>
                     <button
                       type="button"
-                      onClick={() => setIsTeaching(false)}
+                      onClick={closeTeachingModal}
                       className="btn-flat"
                       style={{ padding: '8px 18px', fontSize: '0.80rem' }}
                     >

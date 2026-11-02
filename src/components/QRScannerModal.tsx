@@ -64,12 +64,19 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     }
   }, []);
 
-  // Cierre inmediato del modal para que la interfaz móvil responda instantáneamente al toque
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Cierre suave del modal con animación fluida
   const handleClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
     isCancelledRef.current = true;
     stopScanner();
-    onClose();
-  }, [onClose, stopScanner]);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
+  }, [isClosing, onClose, stopScanner]);
 
   // Cerrar escáner al presionar tecla Escape
   useEffect(() => {
@@ -278,7 +285,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   return (
     <div 
-      className="modal-backdrop-acrylic"
+      className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
       style={{ zIndex: 10000, padding: '12px' }}
       onClick={(e) => {
         // Cerrar al tocar fuera de la ventana del modal
@@ -287,7 +294,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         }
       }}
     >
-      <div className="modal-window-acrylic" style={{
+      <div className={`modal-window-acrylic ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',
         maxWidth: '480px',
         maxHeight: 'min(92dvh, 750px)',
@@ -296,8 +303,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         borderRadius: '26px 8px 26px 8px',
         border: '1.5px solid var(--accent-primary)',
         boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)',
-        position: 'relative',
-        animation: 'none'
+        position: 'relative'
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button

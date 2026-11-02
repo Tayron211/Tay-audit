@@ -30,20 +30,38 @@ export function CustomSelect<T extends string = string>({
   id
 }: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
+  const closeSelect = () => {
+    if (isClosing || !isOpen) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setIsOpen(false);
+    }, 160);
+  };
+
+  const toggleSelect = () => {
+    if (isOpen) {
+      closeSelect();
+    } else {
+      setIsOpen(true);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        closeSelect();
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        closeSelect();
       }
     };
 
@@ -56,12 +74,12 @@ export function CustomSelect<T extends string = string>({
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, isClosing]);
 
   const handleSelect = (val: T, e: React.MouseEvent) => {
     e.stopPropagation();
     onChange(val);
-    setIsOpen(false);
+    closeSelect();
   };
 
   return (
@@ -76,7 +94,7 @@ export function CustomSelect<T extends string = string>({
         disabled={disabled}
         onClick={(e) => {
           e.stopPropagation();
-          setIsOpen((prev) => !prev);
+          toggleSelect();
         }}
         className={`acrylic-select-trigger ${isOpen ? 'is-open' : ''}`}
         aria-haspopup="listbox"
@@ -122,10 +140,10 @@ export function CustomSelect<T extends string = string>({
         />
       </button>
 
-      {isOpen && (
+      {(isOpen || isClosing) && (
         <div
           role="listbox"
-          className="acrylic-select-popover"
+          className={`acrylic-select-popover ${isClosing ? 'closing' : ''}`}
           onClick={(e) => e.stopPropagation()}
         >
           {options.map((opt) => {

@@ -69,7 +69,34 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isStatusDropdownClosing, setIsStatusDropdownClosing] = useState(false);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 200);
+  };
+
+  const closeStatusDropdown = () => {
+    if (isStatusDropdownClosing || !isStatusDropdownOpen) return;
+    setIsStatusDropdownClosing(true);
+    setTimeout(() => {
+      setIsStatusDropdownClosing(false);
+      setIsStatusDropdownOpen(false);
+    }, 160);
+  };
+
+  const toggleStatusDropdown = () => {
+    if (isStatusDropdownOpen) {
+      closeStatusDropdown();
+    } else {
+      setIsStatusDropdownOpen(true);
+    }
+  };
 
   // Edit form state
   const [editForm, setEditForm] = useState<{
@@ -117,7 +144,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
-        setIsStatusDropdownOpen(false);
+        closeStatusDropdown();
       }
     };
     if (isStatusDropdownOpen) {
@@ -126,7 +153,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isStatusDropdownOpen]);
+  }, [isStatusDropdownOpen, isStatusDropdownClosing]);
 
   useEffect(() => {
     if (!initialDevice) {
@@ -191,12 +218,12 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     if (!device) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        requestClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [device, onClose]);
+  }, [device, isClosing]);
 
   if (!device) return null;
 
@@ -434,14 +461,14 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
 
   return (
     <div 
-      className="modal-backdrop-acrylic"
+      className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          requestClose();
         }
       }}
     >
-      <div className="modal-window-acrylic device-modal-window" style={{
+      <div className={`modal-window-acrylic device-modal-window ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',
         maxWidth: '860px',
         maxHeight: 'min(92dvh, 880px)',
@@ -452,7 +479,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Cerrar ventana"
           title="Cerrar ventana"
           className="modal-close-btn"
@@ -500,7 +527,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                   <div className="acrylic-dropdown-wrapper" ref={statusDropdownRef}>
                     <button
                       type="button"
-                      onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      onClick={toggleStatusDropdown}
                       className={`status-pill ${getStatusBadge(device.status).className} acrylic-dropdown-trigger`}
                       style={{
                         cursor: 'pointer',
@@ -520,14 +547,14 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                       />
                     </button>
 
-                    {isStatusDropdownOpen && (
-                      <div className="acrylic-dropdown-menu">
+                    {(isStatusDropdownOpen || isStatusDropdownClosing) && (
+                      <div className={`acrylic-dropdown-menu ${isStatusDropdownClosing ? 'closing' : ''}`}>
                         <div className="acrylic-dropdown-header">Estado de Inventario</div>
                         <button
                           type="button"
                           onClick={() => {
                             handleStatusChange('instalado');
-                            setIsStatusDropdownOpen(false);
+                            closeStatusDropdown();
                           }}
                           className={`acrylic-dropdown-item ${device.status === 'instalado' ? 'is-selected' : ''}`}
                           style={{ color: '#10b981' }}
@@ -543,7 +570,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                           type="button"
                           onClick={() => {
                             handleStatusChange('custodia');
-                            setIsStatusDropdownOpen(false);
+                            closeStatusDropdown();
                           }}
                           className={`acrylic-dropdown-item ${device.status === 'custodia' ? 'is-selected' : ''}`}
                           style={{ color: '#f59e0b' }}
@@ -559,7 +586,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                           type="button"
                           onClick={() => {
                             handleStatusChange('maintenance');
-                            setIsStatusDropdownOpen(false);
+                            closeStatusDropdown();
                           }}
                           className={`acrylic-dropdown-item ${(device.status === 'maintenance' || device.status === 'mantenimiento') ? 'is-selected' : ''}`}
                           style={{ color: 'var(--accent-cyan, #06b6d4)' }}
@@ -575,7 +602,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                           type="button"
                           onClick={() => {
                             handleStatusChange('baja');
-                            setIsStatusDropdownOpen(false);
+                            closeStatusDropdown();
                           }}
                           className={`acrylic-dropdown-item ${device.status === 'baja' ? 'is-selected' : ''}`}
                           style={{ color: '#f43f5e' }}
@@ -1272,7 +1299,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                   <Edit3 size={13} />
                   <span>Editar Datos y Ubicación</span>
                 </button>
-                <button onClick={onClose} className="btn-flat" style={{ padding: '7px 20px', fontWeight: 700, fontSize: '0.78rem' }}>
+                <button onClick={requestClose} className="btn-flat" style={{ padding: '7px 20px', fontWeight: 700, fontSize: '0.78rem' }}>
                   Cerrar
                 </button>
               </>

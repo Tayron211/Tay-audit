@@ -501,8 +501,14 @@ code, pre, .font-mono {
   }
 }
 
+.modal-backdrop-acrylic.closing {
+  animation: modalBackdropFadeOut 0.20s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+
 .modal-window-acrylic.closing {
-  animation: modalScaleOut 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: modalScaleOut 0.20s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
 }
 
 /* Modal Close Button (Uniforme, circular, con proporciones perfectas y sin deformaciones) */
@@ -639,6 +645,61 @@ code, pre, .font-mono {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+@keyframes popoverSmoothClose {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+.acrylic-popover.closing {
+  animation: popoverSmoothClose 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+@keyframes dropdownSlideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+.acrylic-dropdown-menu.closing,
+.acrylic-select-popover.closing {
+  animation: dropdownSlideUp 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+.dropdown-mobile-backdrop.closing {
+  opacity: 0 !important;
+  transition: opacity 0.18s ease-in !important;
+  pointer-events: none !important;
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+.live-toast-notification.closing {
+  animation: slideOutRight 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
 }
 
 @keyframes fadeIn {

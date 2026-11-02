@@ -53,6 +53,17 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   prefillCode,
   onOpenFieldScanner
 }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
+  };
+
   const [formData, setFormData] = useState<Partial<Device>>({
     hostname: '',
     deviceType: 'pc',
@@ -111,7 +122,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           setIsHwMenuOpen(false);
           setShowPrinterSuggestions(false);
         } else {
-          onClose();
+          requestClose();
         }
       }
     };
@@ -325,7 +336,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
       await api.createDevice(payload);
       onDeviceSaved();
-      onClose();
+      requestClose();
     } catch (err: any) {
       setError(err.message || 'Error al guardar el equipo en inventario');
     } finally {
@@ -351,14 +362,14 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
   return (
     <div 
-      className="modal-backdrop-acrylic"
+      className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          requestClose();
         }
       }}
     >
-      <div className="modal-window-acrylic" style={{
+      <div className={`modal-window-acrylic ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',
         maxWidth: isEcran || isSpeaker ? '640px' : '780px',
         maxHeight: 'min(92dvh, 900px)',
@@ -415,7 +426,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="modal-close-btn"
             title="Cerrar ventana"
             aria-label="Cerrar ventana"
@@ -1899,7 +1910,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           >
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               disabled={loading}
               className="btn-flat"
               style={{ padding: '8px 18px', fontSize: '0.82rem' }}

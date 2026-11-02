@@ -34,13 +34,31 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   openTicketsCount
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const closeDropdown = () => {
+    if (isClosing || !isOpen) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setIsOpen(false);
+    }, 180);
+  };
+
+  const toggleDropdown = () => {
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      setIsOpen(true);
+    }
+  };
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        closeDropdown();
       }
     };
     if (isOpen) {
@@ -49,7 +67,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, isClosing]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermission());
@@ -91,7 +109,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {/* Botón de Campana estilo Facebook con Badge de Nuevas */}
       <button
         type="button"
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={toggleDropdown}
         className="btn-flat"
         style={{
           position: 'relative',
@@ -143,14 +161,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       </button>
 
       {/* Menú Desplegable Estilo Facebook (Máximo 5 notificaciones) */}
-      {isOpen && (
+      {(isOpen || isClosing) && (
         <>
           <div
-            className="notification-backdrop-mobile"
-            onClick={() => setIsOpen(false)}
+            className={`notification-backdrop-mobile ${isClosing ? 'closing' : ''}`}
+            onClick={closeDropdown}
           />
           <div
-            className="acrylic-popover notification-popover"
+            className={`acrylic-popover notification-popover ${isClosing ? 'closing' : ''}`}
             style={{
               position: 'absolute',
               top: 'calc(100% + 8px)',
@@ -300,7 +318,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                       key={n.id}
                       onClick={() => {
                         onSelectNotification(n);
-                        setIsOpen(false);
+                        closeDropdown();
                       }}
                       style={{
                         padding: '12px 14px',
@@ -462,7 +480,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             <button
               type="button"
               onClick={() => {
-                setIsOpen(false);
+                closeDropdown();
                 if (onGoToTickets) {
                   onGoToTickets();
                 } else {

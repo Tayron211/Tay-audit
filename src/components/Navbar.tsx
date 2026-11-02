@@ -89,18 +89,54 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout
 }) => {
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  const [isColorDropdownClosing, setIsColorDropdownClosing] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isUserMenuClosing, setIsUserMenuClosing] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const closeColorDropdown = () => {
+    if (isColorDropdownClosing || !isColorDropdownOpen) return;
+    setIsColorDropdownClosing(true);
+    setTimeout(() => {
+      setIsColorDropdownClosing(false);
+      setIsColorDropdownOpen(false);
+    }, 180);
+  };
+
+  const toggleColorDropdown = () => {
+    if (isColorDropdownOpen) {
+      closeColorDropdown();
+    } else {
+      setIsColorDropdownOpen(true);
+    }
+  };
+
+  const closeUserMenu = () => {
+    if (isUserMenuClosing || !isUserMenuOpen) return;
+    setIsUserMenuClosing(true);
+    setTimeout(() => {
+      setIsUserMenuClosing(false);
+      setIsUserMenuOpen(false);
+    }, 180);
+  };
+
+  const toggleUserMenu = () => {
+    if (isUserMenuOpen) {
+      closeUserMenu();
+    } else {
+      setIsUserMenuOpen(true);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
-        setIsColorDropdownOpen(false);
+        closeColorDropdown();
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
+        closeUserMenu();
       }
     };
     if (isColorDropdownOpen || isUserMenuOpen) {
@@ -109,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isColorDropdownOpen, isUserMenuOpen]);
+  }, [isColorDropdownOpen, isColorDropdownClosing, isUserMenuOpen, isUserMenuClosing]);
 
   const themes = [
     { id: 'upn', label: 'UPN Oro Lúcuma', color: '#ffb800' },
@@ -230,7 +266,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div style={{ position: 'relative' }} ref={colorDropdownRef}>
             <button
               type="button"
-              onClick={() => setIsColorDropdownOpen(prev => !prev)}
+              onClick={toggleColorDropdown}
               className="btn-flat"
               style={{
                 height: '36px',
@@ -261,9 +297,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
           {/* Desplegable de Apariencia & Tema (Limpio, sin texto de pantone ni botón aplicar) */}
-          {isColorDropdownOpen && (
+          {(isColorDropdownOpen || isColorDropdownClosing) && (
             <div 
-              className="acrylic-popover"
+              className={`acrylic-popover ${isColorDropdownClosing ? 'closing' : ''}`}
               style={{
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
@@ -492,7 +528,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div style={{ position: 'relative' }} ref={userMenuRef}>
             <button
               type="button"
-              onClick={() => setIsUserMenuOpen(prev => !prev)}
+              onClick={toggleUserMenu}
               className="btn-flat nav-user-btn"
               style={{
                 height: '36px',
@@ -531,9 +567,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Menú Desplegable de Usuario (Al dar Tap) */}
-            {isUserMenuOpen && (
+            {(isUserMenuOpen || isUserMenuClosing) && (
               <div
-                className="acrylic-popover animate-fadeIn"
+                className={`acrylic-popover ${isUserMenuClosing ? 'closing' : ''}`}
                 style={{
                   position: 'absolute',
                   top: 'calc(100% + 8px)',
@@ -579,8 +615,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onLogout();
+                        closeUserMenu();
+                        setTimeout(() => onLogout(), 160);
                       }}
                       style={{
                         width: '100%',

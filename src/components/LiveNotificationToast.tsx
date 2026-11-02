@@ -14,6 +14,16 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
   onAtender
 }) => {
   const [progress, setProgress] = useState(100);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const requestClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 220);
+  };
 
   useEffect(() => {
     if (!notification) return;
@@ -27,7 +37,7 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
       setProgress(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          onClose();
+          requestClose();
           return 0;
         }
         return prev - decrement;
@@ -35,13 +45,13 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
     }, interval);
 
     return () => clearInterval(timer);
-  }, [notification, onClose]);
+  }, [notification, isClosing]);
 
   if (!notification) return null;
 
   return (
     <div
-      className="live-toast-notification"
+      className={`live-toast-notification ${isClosing ? 'closing' : ''}`}
       style={{
         position: 'fixed',
         top: '20px',
@@ -154,7 +164,7 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
         {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           className="btn-flat"
           style={{ width: '22px', height: '22px', padding: 0, borderRadius: '4px', color: 'var(--text-muted)' }}
           title="Cerrar aviso"
