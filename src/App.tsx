@@ -1154,6 +1154,12 @@ exit
           setDeviceModalInitialEdit(false);
           loadData();
         }}
+        onDeviceDeleted={(deletedId) => {
+          setDevices(prev => prev.filter(d => d.id !== deletedId));
+          setSelectedDevice(null);
+          setDeviceModalInitialEdit(false);
+          loadData();
+        }}
         onOpenSupportForDevice={() => {
           handleCloseDeviceModal();
           setActiveTab('support');

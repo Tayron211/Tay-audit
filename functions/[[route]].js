@@ -924,7 +924,16 @@ exit /b 0
       if (!subAction && method === 'DELETE') {
         const existing = await db.prepare('SELECT * FROM devices WHERE id = ?').bind(deviceId).first();
         if (!existing) return jsonResponse({ error: 'Dispositivo no encontrado' }, 404);
-        await db.prepare('DELETE FROM devices WHERE id = ?').bind(deviceId).run();
+
+        await db.batch([
+          db.prepare('DELETE FROM devices WHERE id = ?').bind(deviceId),
+          db.prepare('DELETE FROM agent_commands WHERE UPPER(hostname) = ?').bind(existing.hostname.toUpperCase()),
+          db.prepare(`
+            INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
+            VALUES (?, ?, ?, 'ELIMINACION_BIEN', ?, 'Administrador Web', ?)
+          `).bind(`log-${shortUuid()}`, deviceId, existing.hostname, `Bien ${existing.hostname} (${existing.brand || ''} ${existing.model || ''}) eliminado definitivamente del inventario`, new Date().toISOString())
+        ]);
+
         await touchSyncVersion(db);
         return jsonResponse({ message: 'Dispositivo eliminado correctamente', id: deviceId });
       }
@@ -1197,22 +1206,10 @@ exit /b 0
           `).bind(now, now, now, existing.id).run();
           if (wasOffline) await touchSyncVersion(db);
         }
-      } else {
-        // Auto-register unknown PC running STIVIE so no PC is ever invisible!
-        const devId = `dev-${shortUuid()}`;
-        await db.prepare(`
-          INSERT INTO devices (
-            id, hostname, deviceType, status, os, ram, cpu, storage,
-            ipAddress, macAddress, serialNumber, motherboard, compatibility, brand, model,
-            assignedUser, department, location, lastAuditDate, notes, qrCodeData,
-            stivieInstalled, lastAgentPing, createdAt, updatedAt
-          ) VALUES (?, ?, 'pc', 'instalado', 'Windows', 'Auto', 'Auto', 'Auto', '0.0.0.0', '00:00:00:00:00:00', 'SN-STIVIE', 'Auto', 'Compatible', 'Estación', 'Windows PC', ?, 'Operaciones', 'Conexión Cloud 24/7', ?, 'Conectado automáticamente vía STIVIE Cloud', ?, 1, ?, ?, ?)
-        `).bind(devId, cleanHostname, user || 'Usuario', now, `TAY-${cleanHostname}-${devId.replace('dev-', '').toUpperCase()}`, now, now, now).run();
-        await touchSyncVersion(db);
       }
 
       const commands = await getAndClearAgentCommands(db, cleanHostname);
-      return jsonResponse({ ok: true, timestamp: now, commands });
+      return jsonResponse({ ok: true, timestamp: now, commands, registered: Boolean(existing) });
     }
 
     // ------------------------------------------------------------------------

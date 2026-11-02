@@ -359,6 +359,10 @@ app.delete('/api/devices/:id', (req, res) => {
     if (!existing) return res.status(404).json({ error: 'Dispositivo no encontrado' });
 
     db.prepare('DELETE FROM devices WHERE id = ?').run(req.params.id);
+    db.prepare(`
+      INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
+      VALUES (?, ?, ?, 'ELIMINACION_BIEN', ?, 'Administrador Web', ?)
+    `).run(`log-${shortUuid()}`, req.params.id, existing.hostname, `Bien ${existing.hostname} (${existing.brand || ''} ${existing.model || ''}) eliminado definitivamente del inventario`, new Date().toISOString());
     broadcastEvent('DEVICE_DELETED', { id: req.params.id, hostname: existing.hostname });
 
     res.json({ message: 'Dispositivo eliminado correctamente', id: req.params.id });

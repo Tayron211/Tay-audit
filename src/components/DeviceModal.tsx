@@ -49,6 +49,7 @@ interface DeviceModalProps {
   initialEditMode?: boolean;
   onClose: () => void;
   onDeviceUpdated: (updated?: Device) => void;
+  onDeviceDeleted?: (deletedDeviceId: string) => void;
   onOpenSupportForDevice?: (device: Device) => void;
   currentUserRole?: UserRole;
 }
@@ -58,6 +59,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   initialEditMode = false,
   onClose,
   onDeviceUpdated,
+  onDeviceDeleted,
   currentUserRole = 'admin'
 }) => {
   const [device, setDevice] = useState<Device | null>(initialDevice);
@@ -284,11 +286,18 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
 
   const handleDelete = async () => {
     try {
+      setIsSaving(true);
       await api.deleteDevice(device.id);
-      onDeviceUpdated();
+      if (onDeviceDeleted) {
+        onDeviceDeleted(device.id);
+      } else {
+        onDeviceUpdated();
+      }
       onClose();
     } catch (err: any) {
       setActionMessage({ type: 'error', text: err.message });
+    } finally {
+      setIsSaving(false);
     }
   };
 
