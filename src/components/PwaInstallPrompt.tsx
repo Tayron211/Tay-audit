@@ -15,7 +15,6 @@ export const PwaInstallPrompt: React.FC = () => {
   const [showAndroidModal, setShowAndroidModal] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [installedSuccessfully, setInstalledSuccessfully] = useState<boolean>(false);
-  const [isWaitingPrompt, setIsWaitingPrompt] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -83,44 +82,8 @@ export const PwaInstallPrompt: React.FC = () => {
       return;
     }
 
-    // Si está en el navegador interno de WhatsApp, Instagram, etc., abrir en Google Chrome oficial
-    const ua = navigator.userAgent || '';
-    const isInApp = /FBAN|FBAV|Instagram|WhatsApp|Line|Twitter|Snapchat|musical_ly|BytedanceWebview/i.test(ua);
-    if (isInApp) {
-      try {
-        window.location.href = 'intent://tay-audit.pages.dev#Intent;scheme=https;package=com.android.chrome;end';
-        return;
-      } catch {}
-    }
-
-    let activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
-
-    // Si el evento beforeinstallprompt de Chrome aún está inicializando, esperar hasta 1200ms
-    if (!activePrompt) {
-      setIsWaitingPrompt(true);
-      for (let i = 0; i < 6; i++) {
-        await new Promise(r => setTimeout(r, 200));
-        activePrompt = deferredPrompt || (typeof window !== 'undefined' ? (window as any).__pwaInstallPrompt : null);
-        if (activePrompt) break;
-      }
-      setIsWaitingPrompt(false);
-    }
-
-    if (activePrompt) {
-      try {
-        await activePrompt.prompt();
-        const choice = await activePrompt.userChoice;
-        if (choice && choice.outcome === 'accepted') {
-          setInstalledSuccessfully(true);
-          setDeferredPrompt(null);
-          (window as any).__pwaInstallPrompt = null;
-        }
-      } catch {
-        setShowAndroidModal(true);
-      }
-    } else {
-      setShowAndroidModal(true);
-    }
+    // En Android, abrimos el modal de instalación nativa directa con opción de descarga de APK
+    setShowAndroidModal(true);
   };
 
   const handleDismiss = () => {
@@ -172,12 +135,12 @@ export const PwaInstallPrompt: React.FC = () => {
             <span style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {installedSuccessfully 
                 ? '¡App Instalada con Éxito!' 
-                : isIOS ? 'Usar como App en iPhone' : 'Instalar WebAPK Android'}
+                : isIOS ? 'Usar como App en iPhone' : 'Descargar App Android (.apk)'}
             </span>
             <span style={{ fontSize: '0.67rem', fontWeight: 600, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {installedSuccessfully 
                 ? 'Ábrela desde tu pantalla de inicio' 
-                : 'Sin barras de navegador, más rápida y en pantalla completa'}
+                : isIOS ? 'Sin barras de navegador y en pantalla completa' : 'App nativa independiente • Cero dependencia de Chrome'}
             </span>
           </div>
         </div>
@@ -187,7 +150,6 @@ export const PwaInstallPrompt: React.FC = () => {
             <button
               type="button"
               onClick={handleInstallClick}
-              disabled={isWaitingPrompt}
               style={{
                 backgroundColor: '#070c1e',
                 color: '#FFB800',
@@ -201,12 +163,11 @@ export const PwaInstallPrompt: React.FC = () => {
                 gap: '5px',
                 cursor: 'pointer',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                whiteSpace: 'nowrap',
-                opacity: isWaitingPrompt ? 0.75 : 1
+                whiteSpace: 'nowrap'
               }}
             >
               <Download size={13} strokeWidth={2.5} />
-              <span>{isWaitingPrompt ? 'Iniciando...' : isIOS ? 'Instalar' : 'Instalar WebAPK'}</span>
+              <span>{isIOS ? 'Instalar' : 'Descargar .APK'}</span>
             </button>
           )}
 
@@ -275,9 +236,9 @@ export const PwaInstallPrompt: React.FC = () => {
                   style={{ width: '40px', height: '40px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
                 />
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>Instalar WebAPK Android</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800 }}>App Nativa TayAudit (.apk)</h4>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #94a3b8)' }}>
-                    Aplicación Nativa en tu celular
+                    Instalador independiente para Android (Sin navegador)
                   </span>
                 </div>
               </div>
@@ -291,97 +252,129 @@ export const PwaInstallPrompt: React.FC = () => {
               </button>
             </div>
 
-            {/* Pasos Visuales para Android */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            {/* Botón Principal: Descargar APK Directo */}
+            <a
+              href="/TayAudit.apk"
+              download="TayAudit.apk"
+              className="btn-flat btn-primary"
+              style={{
+                width: '100%',
+                padding: '13px 16px',
+                borderRadius: '14px',
+                fontWeight: 900,
+                fontSize: '0.90rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                textDecoration: 'none',
+                boxShadow: '0 4px 18px rgba(255, 184, 0, 0.35)',
+                boxSizing: 'border-box'
+              }}
+            >
+              <Download size={18} />
+              <span>Descargar TayAudit.apk (5.1 MB)</span>
+            </a>
+
+            {/* Pasos de Instalación Rápida */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '12px 14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <div
                   style={{
-                    width: '28px',
-                    height: '28px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 184, 0, 0.15)',
+                    backgroundColor: 'rgba(255, 184, 0, 0.2)',
                     color: '#FFB800',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 900,
-                    fontSize: '0.80rem',
+                    fontSize: '0.75rem',
                     flexShrink: 0
                   }}
                 >
                   1
                 </div>
-                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Toca los <strong>tres puntos (⋮)</strong> en la esquina superior derecha de tu navegador Chrome.
+                <div style={{ fontSize: '0.79rem', lineHeight: 1.4 }}>
+                  Pulsa el botón de arriba para <strong>descargar TayAudit.apk</strong>.
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <div
                   style={{
-                    width: '28px',
-                    height: '28px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    backgroundColor: 'rgba(56, 189, 248, 0.2)',
                     color: '#38bdf8',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 900,
-                    fontSize: '0.80rem',
+                    fontSize: '0.75rem',
                     flexShrink: 0
                   }}
                 >
                   2
                 </div>
-                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Pulsa en <strong>"Instalar aplicación"</strong> <Download size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#38bdf8' }} /> (o <em>"Añadir a pantalla de inicio"</em>).
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                    color: '#22c55e',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 900,
-                    fontSize: '0.80rem',
-                    flexShrink: 0
-                  }}
-                >
-                  3
-                </div>
-                <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Toca <strong>Instalar</strong>. Android descargará y compilará la WebAPK oficial, apareciendo en tu lista de aplicaciones del celular.
+                <div style={{ fontSize: '0.79rem', lineHeight: 1.4 }}>
+                  Abre el archivo descargado y pulsa <strong>Instalar</strong>. Si el móvil pide confirmar instalación de fuentes desconocidas, selecciona <em>"Permitir desde esta fuente"</em>.
                 </div>
               </div>
             </div>
 
-            {/* Botón Entendido */}
+            {/* Alternativa: Versión Web ligera si el usuario la prefiere */}
+            {deferredPrompt && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await deferredPrompt.prompt();
+                    const choice = await deferredPrompt.userChoice;
+                    if (choice?.outcome === 'accepted') {
+                      setInstalledSuccessfully(true);
+                      setShowAndroidModal(false);
+                    }
+                  } catch {}
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px dashed rgba(255, 255, 255, 0.18)',
+                  color: 'var(--text-secondary, #94a3b8)',
+                  padding: '9px',
+                  borderRadius: '10px',
+                  fontSize: '0.73rem',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                O usar como acceso web rápido de Chrome
+              </button>
+            )}
+
+            {/* Botón Cerrar */}
             <button
               type="button"
               onClick={() => setShowAndroidModal(false)}
-              className="btn-flat btn-primary"
+              className="btn-flat"
               style={{
                 width: '100%',
-                padding: '11px',
-                borderRadius: '12px',
-                fontWeight: 800,
-                fontSize: '0.84rem',
+                padding: '9px',
+                borderRadius: '10px',
+                fontWeight: 700,
+                fontSize: '0.78rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px'
+                background: 'rgba(255,255,255,0.06)',
+                color: 'var(--text-primary, #ffffff)',
+                border: 'none',
+                cursor: 'pointer'
               }}
             >
-              <Check size={16} />
-              <span>Entendido</span>
+              <span>Cerrar</span>
             </button>
           </div>
         </div>

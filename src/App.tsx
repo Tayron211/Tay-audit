@@ -7,7 +7,8 @@ import {
   Bot,
   ShieldCheck,
   Globe,
-  Wifi
+  Wifi,
+  Smartphone
 } from 'lucide-react';
 import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification, AuthUser } from './types';
 import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
@@ -1261,6 +1262,55 @@ exit
                 }}>
                   {psOneLiner}
                 </pre>
+              </div>
+
+              {/* Opción 4: App Nativa Móvil Android (.APK) */}
+              <div className="acrylic-card" style={{ padding: '22px', border: '1px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: 'rgba(56, 189, 248, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#38bdf8'
+                    }}>
+                      <Smartphone size={20} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        Opción 4: App Nativa Móvil Android (.APK)
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 700 }}>
+                        Instalador Oficial Independiente (Cero dependencia de navegadores)
+                      </div>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="/TayAudit.apk" 
+                    download="TayAudit.apk"
+                    className="btn-flat btn-primary"
+                    style={{ padding: '8px 16px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Download size={15} />
+                    <span>Descargar TayAudit.apk (5.1 MB)</span>
+                  </a>
+                </div>
+
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 8px 0' }}>
+                    Instala TayAudit de forma 100% nativa en teléfonos y tablets Android para auditar equipos en campo sin barras de navegación:
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <li><strong>Escáner QR Nativo:</strong> Acceso directo a la cámara para escaneo rápido de hardware.</li>
+                    <li><strong>Notificaciones y Alertas:</strong> Sonido nativo en tiempo real para tickets y reportes urgentes.</li>
+                    <li><strong>Independiente:</strong> Funciona como aplicación propia del sistema operativo Android.</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
