@@ -1,82 +1,47 @@
 import fs from 'fs';
 import zlib from 'zlib';
 
-// 1. Decodificar upn-arrow-icon.png original
-const srcBuf = fs.readFileSync('public/upn-arrow-icon.png');
-let pos = 8;
-let ihdr = null;
-let idatBuffers = [];
-while (pos < srcBuf.length) {
-  const len = srcBuf.readUInt32BE(pos);
-  const type = srcBuf.toString('ascii', pos + 4, pos + 8);
-  const data = srcBuf.subarray(pos + 8, pos + 8 + len);
-  if (type === 'IHDR') ihdr = data;
-  if (type === 'IDAT') idatBuffers.push(data);
-  pos += 12 + len;
-}
+// Coordenadas canónicas en canvas de 108 x 108 dp
+const LEFT_PILLAR_108 = [
+  [52.65, 32.00],
+  [48.13, 32.00],
+  [35.95, 44.18],
+  [35.95, 51.41],
+  [46.22, 44.18],
+  [46.22, 76.00],
+  [52.65, 76.00]
+];
 
-const srcW = ihdr.readUInt32BE(0); // 148
-const srcH = ihdr.readUInt32BE(4); // 141
-const rawInflated = zlib.inflateSync(Buffer.concat(idatBuffers));
+const RIGHT_PILLAR_108 = [
+  [55.35, 32.00],
+  [59.87, 32.00],
+  [72.05, 44.18],
+  [72.05, 51.41],
+  [61.78, 44.18],
+  [61.78, 76.00],
+  [55.35, 76.00]
+];
 
-// Convertir scanlines filtrados a píxeles RGBA limpios
-const srcPixels = Buffer.alloc(srcW * srcH * 4);
-const rowBytes = srcW * 4;
-let prevRow = Buffer.alloc(rowBytes);
+const COLOR_GOLD = [255, 184, 0];    // #FFB800
+const COLOR_NAVY = [7, 12, 30];       // #070C1E
 
-for (let y = 0; y < srcH; y++) {
-  const filterType = rawInflated[y * (rowBytes + 1)];
-  const rowStart = y * (rowBytes + 1) + 1;
-  const currentRow = rawInflated.subarray(rowStart, rowStart + rowBytes);
-  const uncompressedRow = Buffer.alloc(rowBytes);
-
-  for (let x = 0; x < rowBytes; x++) {
-    const rawVal = currentRow[x];
-    const a = x >= 4 ? uncompressedRow[x - 4] : 0;
-    const b = prevRow[x];
-    const c = x >= 4 ? prevRow[x - 4] : 0;
-
-    let val = 0;
-    if (filterType === 0) val = rawVal;
-    else if (filterType === 1) val = (rawVal + a) & 0xff;
-    else if (filterType === 2) val = (rawVal + b) & 0xff;
-    else if (filterType === 3) val = (rawVal + Math.floor((a + b) / 2)) & 0xff;
-    else if (filterType === 4) {
-      const p = a + b - c;
-      const pa = Math.abs(p - a);
-      const pb = Math.abs(p - b);
-      const pc = Math.abs(p - c);
-      let pr = 0;
-      if (pa <= pb && pa <= pc) pr = a;
-      else if (pb <= pc) pr = b;
-      else pr = c;
-      val = (rawVal + pr) & 0xff;
-    }
-    uncompressedRow[x] = val;
+function pointInPoly(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-
-  uncompressedRow.copy(srcPixels, y * rowBytes);
-  uncompressedRow.copy(prevRow);
+  return inside;
 }
 
-function getSrcPixel(x, y) {
-  if (x < 0 || x >= srcW || y < 0 || y >= srcH) return [0, 0, 0, 0];
-  const offset = (Math.floor(y) * srcW + Math.floor(x)) * 4;
-  return [
-    srcPixels[offset],
-    srcPixels[offset + 1],
-    srcPixels[offset + 2],
-    srcPixels[offset + 3]
-  ];
-}
-
-// Generador de PNG estándar
 function encodePng(width, height, pixelFn) {
   const rowSize = width * 4 + 1;
   const rawData = Buffer.alloc(rowSize * height);
   for (let y = 0; y < height; y++) {
     const rowOffset = y * rowSize;
-    rawData[rowOffset] = 0; // Filter 0
+    rawData[rowOffset] = 0;
     for (let x = 0; x < width; x++) {
       const [r, g, b, a] = pixelFn(x, y, width, height);
       const pxOffset = rowOffset + 1 + x * 4;
@@ -134,55 +99,71 @@ function encodePng(width, height, pixelFn) {
   ]);
 }
 
-// Función de escalado y centrado
-function renderIcon(size, paddingRatio, bgDark = true) {
-  const contentSize = size * (1 - paddingRatio * 2);
-  const scale = contentSize / Math.max(srcW, srcH);
-  const drawW = srcW * scale;
-  const drawH = srcH * scale;
-  const offsetX = (size - drawW) / 2;
-  const offsetY = (size - drawH) / 2;
+function renderPwaIcon(size, emblemRatio = 0.54, cornerRadiusRatio = 0) {
+  const center = size / 2;
+  const targetH = size * emblemRatio;
+  const scale = targetH / 44;
+  const N = 4;
+  const cornerR = size * cornerRadiusRatio;
+
+  const minX = center - (19 * scale);
+  const maxX = center + (19 * scale);
+  const minY = center - (23 * scale);
+  const maxY = center + (23 * scale);
 
   return encodePng(size, size, (x, y) => {
-    // Coordenadas relativas al gráfico del logo
-    const imgX = (x - offsetX) / scale;
-    const imgY = (y - offsetY) / scale;
-
-    let [r, g, b, a] = [0, 0, 0, 0];
-    if (imgX >= 0 && imgX < srcW && imgY >= 0 && imgY < srcH) {
-      [r, g, b, a] = getSrcPixel(imgX, imgY);
+    let inCardAlpha = 1;
+    if (cornerR > 0) {
+      const px = x + 0.5, py = y + 0.5;
+      const qx = Math.max(cornerR - px, px - (size - cornerR), 0);
+      const qy = Math.max(cornerR - py, py - (size - cornerR), 0);
+      if (qx > 0 && qy > 0) {
+        const cornerDist = Math.sqrt(qx * qx + qy * qy);
+        if (cornerDist > cornerR) return [0, 0, 0, 0];
+        inCardAlpha = Math.max(0, Math.min(1, cornerR - cornerDist + 0.5));
+      }
     }
 
-    if (bgDark) {
-      // Fondo institucional #070c1e
-      const bgR = 7, bgG = 12, bgB = 30;
-      const alphaNorm = a / 255;
-      const finalR = Math.round(r * alphaNorm + bgR * (1 - alphaNorm));
-      const finalG = Math.round(g * alphaNorm + bgG * (1 - alphaNorm));
-      const finalB = Math.round(b * alphaNorm + bgB * (1 - alphaNorm));
-      return [finalR, finalG, finalB, 255];
-    } else {
-      return [r, g, b, a];
+    let cov = 0;
+    if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+      for (let sy = 0; sy < N; sy++) {
+        for (let sx = 0; sx < N; sx++) {
+          const subX = x + (sx + 0.5) / N;
+          const subY = y + (sy + 0.5) / N;
+          const canX = 54 + (subX - center) / scale;
+          const canY = 54 + (subY - center) / scale;
+          if (pointInPoly(canX, canY, LEFT_PILLAR_108) || pointInPoly(canX, canY, RIGHT_PILLAR_108)) {
+            cov++;
+          }
+        }
+      }
     }
+
+    const emblemAlpha = cov / (N * N);
+    const r = Math.round(COLOR_GOLD[0] * emblemAlpha + COLOR_NAVY[0] * (1 - emblemAlpha));
+    const g = Math.round(COLOR_GOLD[1] * emblemAlpha + COLOR_NAVY[1] * (1 - emblemAlpha));
+    const b = Math.round(COLOR_GOLD[2] * emblemAlpha + COLOR_NAVY[2] * (1 - emblemAlpha));
+    const a = Math.round(255 * inCardAlpha);
+
+    return [r, g, b, a];
   });
 }
 
 // 1. Icono estándar 192x192
-fs.writeFileSync('public/icon-192.png', renderIcon(192, 0.12, true));
+fs.writeFileSync('public/icon-192.png', renderPwaIcon(192, 0.56, 0.18));
 console.log('✓ public/icon-192.png generado');
 
 // 2. Icono estándar 512x512
-fs.writeFileSync('public/icon-512.png', renderIcon(512, 0.12, true));
+fs.writeFileSync('public/icon-512.png', renderPwaIcon(512, 0.56, 0.18));
 console.log('✓ public/icon-512.png generado');
 
-// 3. Icono maskable (zona segura de Android requiere 20% de padding)
-fs.writeFileSync('public/icon-maskable-192.png', renderIcon(192, 0.22, true));
+// 3. Icono maskable (zona segura de Android requiere 40% de altura de icono para que no corte)
+fs.writeFileSync('public/icon-maskable-192.png', renderPwaIcon(192, 0.44, 0));
 console.log('✓ public/icon-maskable-192.png generado');
 
-fs.writeFileSync('public/icon-maskable-512.png', renderIcon(512, 0.22, true));
+fs.writeFileSync('public/icon-maskable-512.png', renderPwaIcon(512, 0.44, 0));
 console.log('✓ public/icon-maskable-512.png generado');
 
 // 4. Apple Touch Icon 180x180 para iPhone / iPad
-fs.writeFileSync('public/apple-touch-icon.png', renderIcon(180, 0.14, true));
+fs.writeFileSync('public/apple-touch-icon.png', renderPwaIcon(180, 0.54, 0));
 console.log('✓ public/apple-touch-icon.png generado');
-

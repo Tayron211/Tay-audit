@@ -3,19 +3,12 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:translateX="22"
-        android:translateY="22"
-        android:scaleX="2.666"
-        android:scaleY="2.666">
-        <!-- Pilar Izquierdo con Corte Superior Horizontal y Ala Norte UPN -->
-        <path
-            android:fillColor="#FFB800"
-            android:pathData="M11.4,2.5H9.4L4,7.9V11.1L8.55,7.9V22H11.4V2.5Z" />
-        <!-- Pilar Derecho con Corte Superior Horizontal y Ala Norte UPN -->
-        <path
-            android:fillColor="#FFB800"
-            android:pathData="M12.6,2.5H14.6L20 7.9V11.1L15.45,7.9V22H12.6V2.5Z" />
-    </group>
+    <!-- Pilar Izquierdo UPN (Centrado Matemático 54x54 y Simetría Absoluta) -->
+    <path
+        android:fillColor="#FFB800"
+        android:pathData="M52.65,32H48.13L35.95,44.18V51.41L46.22,44.18V76H52.65Z" />
+    <!-- Pilar Derecho UPN (Centrado Matemático 54x54 y Simetría Absoluta) -->
+    <path
+        android:fillColor="#FFB800"
+        android:pathData="M55.35,32H59.87L72.05,44.18V51.41L61.78,44.18V76H55.35Z" />
 </vector>
-

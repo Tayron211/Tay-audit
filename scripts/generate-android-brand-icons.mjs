@@ -2,97 +2,49 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 
-// 1. Decodificar upn-arrow-icon.png original
-const srcBuf = fs.readFileSync('public/upn-arrow-icon.png');
-let pos = 8;
-let ihdr = null;
-let idatBuffers = [];
-while (pos < srcBuf.length) {
-  const len = srcBuf.readUInt32BE(pos);
-  const type = srcBuf.toString('ascii', pos + 4, pos + 8);
-  const data = srcBuf.subarray(pos + 8, pos + 8 + len);
-  if (type === 'IHDR') ihdr = data;
-  if (type === 'IDAT') idatBuffers.push(data);
-  pos += 12 + len;
-}
+// ============================================================================
+// GENERADOR MATEMÁTICO DE ICONOS UPN PARA ANDROID
+// 100% Simetría Geométrica, Cero Recorte y Centrado Exacto en Safe Zone
+// ============================================================================
 
-const srcW = ihdr.readUInt32BE(0); // 148
-const srcH = ihdr.readUInt32BE(4); // 141
-const rawInflated = zlib.inflateSync(Buffer.concat(idatBuffers));
+// Coordenadas canónicas en canvas de 108 x 108 dp (Android Adaptive Icon Specs)
+// Centro absoluto: (54.0, 54.0)
+// Altura: 44.0 dp (Y de 32.0 a 76.0 -> Margen superior: 32dp, Margen inferior: 32dp)
+// Ancho: 36.1 dp (X de 35.95 a 72.05 -> Margen izq: 35.95dp, Margen der: 35.95dp)
+const LEFT_PILLAR_108 = [
+  [52.65, 32.00], // Top inner
+  [48.13, 32.00], // Top flat
+  [35.95, 44.18], // Wing outer top
+  [35.95, 51.41], // Wing outer bottom
+  [46.22, 44.18], // Under-wing notch
+  [46.22, 76.00], // Stem outer bottom
+  [52.65, 76.00]  // Stem inner bottom
+];
 
-// Convertir scanlines filtrados a píxeles RGBA limpios
-const srcPixels = Buffer.alloc(srcW * srcH * 4);
-const rowBytes = srcW * 4;
-let prevRow = Buffer.alloc(rowBytes);
+const RIGHT_PILLAR_108 = [
+  [55.35, 32.00], // Top inner
+  [59.87, 32.00], // Top flat
+  [72.05, 44.18], // Wing outer top
+  [72.05, 51.41], // Wing outer bottom
+  [61.78, 44.18], // Under-wing notch
+  [61.78, 76.00], // Stem outer bottom
+  [55.35, 76.00]  // Stem inner bottom
+];
 
-for (let y = 0; y < srcH; y++) {
-  const filterType = rawInflated[y * (rowBytes + 1)];
-  const rowStart = y * (rowBytes + 1) + 1;
-  const currentRow = rawInflated.subarray(rowStart, rowStart + rowBytes);
-  const uncompressedRow = Buffer.alloc(rowBytes);
+// Colores Institucionales UPN / Tay-Audit
+const COLOR_GOLD = [255, 184, 0];    // #FFB800 (Lúcuma Gold UPN)
+const COLOR_NAVY = [7, 12, 30];       // #070C1E (Dark Navy institucional)
 
-  for (let x = 0; x < rowBytes; x++) {
-    const rawVal = currentRow[x];
-    const a = x >= 4 ? uncompressedRow[x - 4] : 0;
-    const b = prevRow[x];
-    const c = x >= 4 ? prevRow[x - 4] : 0;
-
-    let val = 0;
-    if (filterType === 0) val = rawVal;
-    else if (filterType === 1) val = (rawVal + a) & 0xff;
-    else if (filterType === 2) val = (rawVal + b) & 0xff;
-    else if (filterType === 3) val = (rawVal + Math.floor((a + b) / 2)) & 0xff;
-    else if (filterType === 4) {
-      const p = a + b - c;
-      const pa = Math.abs(p - a);
-      const pb = Math.abs(p - b);
-      const pc = Math.abs(p - c);
-      let pr = 0;
-      if (pa <= pb && pa <= pc) pr = a;
-      else if (pb <= pc) pr = b;
-      else pr = c;
-      val = (rawVal + pr) & 0xff;
-    }
-    uncompressedRow[x] = val;
+// Test de punto en polígono (Ray-casting)
+function pointInPoly(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-
-  uncompressedRow.copy(srcPixels, y * rowBytes);
-  uncompressedRow.copy(prevRow);
-}
-
-function getPixel(x, y) {
-  if (x < 0 || x >= srcW || y < 0 || y >= srcH) return [0, 0, 0, 0];
-  const offset = (y * srcW + x) * 4;
-  return [
-    srcPixels[offset],
-    srcPixels[offset + 1],
-    srcPixels[offset + 2],
-    srcPixels[offset + 3]
-  ];
-}
-
-// Muestreo bilineal para máxima nitidez sin pixelado
-function sampleBilinear(u, v) {
-  if (u < 0 || u >= srcW || v < 0 || v >= srcH) return [0, 0, 0, 0];
-  const x0 = Math.floor(u);
-  const y0 = Math.floor(v);
-  const x1 = Math.min(srcW - 1, x0 + 1);
-  const y1 = Math.min(srcH - 1, y0 + 1);
-  const fx = u - x0;
-  const fy = v - y0;
-
-  const p00 = getPixel(x0, y0);
-  const p10 = getPixel(x1, y0);
-  const p01 = getPixel(x0, y1);
-  const p11 = getPixel(x1, y1);
-
-  const res = [0, 0, 0, 0];
-  for (let i = 0; i < 4; i++) {
-    const top = p00[i] * (1 - fx) + p10[i] * fx;
-    const bot = p01[i] * (1 - fx) + p11[i] * fx;
-    res[i] = Math.round(top * (1 - fy) + bot * fy);
-  }
-  return res;
+  return inside;
 }
 
 // Encoder PNG optimizado
@@ -159,184 +111,223 @@ function encodePng(width, height, pixelFn) {
   ]);
 }
 
-// 1. Generador de Icono Clásico Cuadrado UPN (para ic_launcher.png)
-function renderLauncherSquare(size) {
-  const paddingRatio = 0.12;
-  const contentSize = size * (1 - paddingRatio * 2);
-  const scale = contentSize / Math.max(srcW, srcH);
-  const drawW = srcW * scale;
-  const drawH = srcH * scale;
-  const offsetX = (size - drawW) / 2;
-  const offsetY = (size - drawH) / 2;
-
-  // Fondo UPN Dark Navy #070C1E
-  const bgR = 7, bgG = 12, bgB = 30;
+// 1. Renderizador de Foreground Adaptativo (ic_launcher_foreground.png)
+// Tamaño size x size, fondo 100% transparente, símbolo UPN dorado centrado con antialiasing
+function renderLauncherForeground(size) {
+  const scale = size / 108;
+  const minX = 33 * scale, maxX = 75 * scale;
+  const minY = 30 * scale, maxY = 78 * scale;
+  const N = 4; // 4x4 = 16 submuestras por píxel
 
   return encodePng(size, size, (x, y) => {
-    const imgX = (x - offsetX) / scale;
-    const imgY = (y - offsetY) / scale;
-
-    let [r, g, b, a] = [0, 0, 0, 0];
-    if (imgX >= 0 && imgX < srcW && imgY >= 0 && imgY < srcH) {
-      [r, g, b, a] = sampleBilinear(imgX, imgY);
+    if (x < minX || x > maxX || y < minY || y > maxY) {
+      return [0, 0, 0, 0];
     }
 
-    const alphaNorm = a / 255;
-    const finalR = Math.round(r * alphaNorm + bgR * (1 - alphaNorm));
-    const finalG = Math.round(g * alphaNorm + bgG * (1 - alphaNorm));
-    const finalB = Math.round(b * alphaNorm + bgB * (1 - alphaNorm));
-    return [finalR, finalG, finalB, 255];
+    let cov = 0;
+    for (let sy = 0; sy < N; sy++) {
+      for (let sx = 0; sx < N; sx++) {
+        const cx = (x + (sx + 0.5) / N) / scale;
+        const cy = (y + (sy + 0.5) / N) / scale;
+        if (pointInPoly(cx, cy, LEFT_PILLAR_108) || pointInPoly(cx, cy, RIGHT_PILLAR_108)) {
+          cov++;
+        }
+      }
+    }
+
+    if (cov === 0) return [0, 0, 0, 0];
+    const alpha = Math.round((cov / (N * N)) * 255);
+    return [COLOR_GOLD[0], COLOR_GOLD[1], COLOR_GOLD[2], alpha];
   });
 }
 
-// 2. Generador de Icono Redondo UPN (para ic_launcher_round.png)
+// 2. Renderizador de Icono Redondo (ic_launcher_round.png)
+// Fondo circular Deep Navy #070C1E, símbolo dorado centrado (altura = 56% del diámetro)
 function renderLauncherRound(size) {
-  const paddingRatio = 0.15;
-  const contentSize = size * (1 - paddingRatio * 2);
-  const scale = contentSize / Math.max(srcW, srcH);
-  const drawW = srcW * scale;
-  const drawH = srcH * scale;
-  const offsetX = (size - drawW) / 2;
-  const offsetY = (size - drawH) / 2;
-
-  const bgR = 7, bgG = 12, bgB = 30;
   const radius = size / 2;
   const center = size / 2;
+  // Escalado del emblema UPN: en canvas de 108, la altura es 44. Queremos altura = size * 0.54
+  const targetH = size * 0.54;
+  const scale = targetH / 44; // escala relativa a los 44dp
+  const N = 4;
+
+  const minX = center - (19 * scale);
+  const maxX = center + (19 * scale);
+  const minY = center - (23 * scale);
+  const maxY = center + (23 * scale);
 
   return encodePng(size, size, (x, y) => {
     const dx = (x + 0.5) - center;
     const dy = (y + 0.5) - center;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // Antialiasing en el borde exterior del círculo
     if (dist > radius) {
       return [0, 0, 0, 0];
     }
-    const edgeAlpha = Math.max(0, Math.min(1, radius - dist));
+    const circleAlpha = Math.max(0, Math.min(1, radius - dist + 0.5));
 
-    const imgX = (x - offsetX) / scale;
-    const imgY = (y - offsetY) / scale;
-
-    let [r, g, b, a] = [0, 0, 0, 0];
-    if (imgX >= 0 && imgX < srcW && imgY >= 0 && imgY < srcH) {
-      [r, g, b, a] = sampleBilinear(imgX, imgY);
+    // Determinar cobertura del símbolo UPN
+    let cov = 0;
+    if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+      for (let sy = 0; sy < N; sy++) {
+        for (let sx = 0; sx < N; sx++) {
+          const subX = x + (sx + 0.5) / N;
+          const subY = y + (sy + 0.5) / N;
+          // Mapear de vuelta a canvas 108dp
+          const canX = 54 + (subX - center) / scale;
+          const canY = 54 + (subY - center) / scale;
+          if (pointInPoly(canX, canY, LEFT_PILLAR_108) || pointInPoly(canX, canY, RIGHT_PILLAR_108)) {
+            cov++;
+          }
+        }
+      }
     }
 
-    const alphaNorm = a / 255;
-    const finalR = Math.round(r * alphaNorm + bgR * (1 - alphaNorm));
-    const finalG = Math.round(g * alphaNorm + bgG * (1 - alphaNorm));
-    const finalB = Math.round(b * alphaNorm + bgB * (1 - alphaNorm));
-    const finalA = Math.round(255 * edgeAlpha);
+    const emblemAlpha = cov / (N * N);
+    const r = Math.round(COLOR_GOLD[0] * emblemAlpha + COLOR_NAVY[0] * (1 - emblemAlpha));
+    const g = Math.round(COLOR_GOLD[1] * emblemAlpha + COLOR_NAVY[1] * (1 - emblemAlpha));
+    const b = Math.round(COLOR_GOLD[2] * emblemAlpha + COLOR_NAVY[2] * (1 - emblemAlpha));
+    const a = Math.round(255 * circleAlpha);
 
-    return [finalR, finalG, finalB, finalA];
+    return [r, g, b, a];
   });
 }
 
-// 3. Generador de Foreground Adaptativo UPN (para ic_launcher_foreground.png)
-// En Android Adaptive Icons, el canvas es 108dp y la zona segura es el 66% (72dp)
-function renderLauncherForeground(size) {
-  const safeAreaRatio = 0.58; // 58% de ancho/alto garantiza que jamás se recorte en squircles
-  const contentSize = size * safeAreaRatio;
-  const scale = contentSize / Math.max(srcW, srcH);
-  const drawW = srcW * scale;
-  const drawH = srcH * scale;
-  const offsetX = (size - drawW) / 2;
-  const offsetY = (size - drawH) / 2;
+// 3. Renderizador de Icono Clásico Cuadrado / Squircle (ic_launcher.png)
+// Fondo Deep Navy #070C1E con esquinas redondeadas suaves, símbolo dorado centrado
+function renderLauncherSquare(size) {
+  const center = size / 2;
+  const targetH = size * 0.54;
+  const scale = targetH / 44;
+  const N = 4;
+  const cornerR = size * 0.20;
+
+  const minX = center - (19 * scale);
+  const maxX = center + (19 * scale);
+  const minY = center - (23 * scale);
+  const maxY = center + (23 * scale);
 
   return encodePng(size, size, (x, y) => {
-    const imgX = (x - offsetX) / scale;
-    const imgY = (y - offsetY) / scale;
-
-    if (imgX >= 0 && imgX < srcW && imgY >= 0 && imgY < srcH) {
-      return sampleBilinear(imgX, imgY);
+    // Cálculo de distancia a esquinas redondeadas
+    let inCardAlpha = 1;
+    const px = x + 0.5, py = y + 0.5;
+    const qx = Math.max(cornerR - px, px - (size - cornerR), 0);
+    const qy = Math.max(cornerR - py, py - (size - cornerR), 0);
+    if (qx > 0 && qy > 0) {
+      const cornerDist = Math.sqrt(qx * qx + qy * qy);
+      if (cornerDist > cornerR) return [0, 0, 0, 0];
+      inCardAlpha = Math.max(0, Math.min(1, cornerR - cornerDist + 0.5));
     }
-    return [0, 0, 0, 0]; // Fondo transparente para que use el background color #070C1E
+
+    let cov = 0;
+    if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+      for (let sy = 0; sy < N; sy++) {
+        for (let sx = 0; sx < N; sx++) {
+          const subX = x + (sx + 0.5) / N;
+          const subY = y + (sy + 0.5) / N;
+          const canX = 54 + (subX - center) / scale;
+          const canY = 54 + (subY - center) / scale;
+          if (pointInPoly(canX, canY, LEFT_PILLAR_108) || pointInPoly(canX, canY, RIGHT_PILLAR_108)) {
+            cov++;
+          }
+        }
+      }
+    }
+
+    const emblemAlpha = cov / (N * N);
+    const r = Math.round(COLOR_GOLD[0] * emblemAlpha + COLOR_NAVY[0] * (1 - emblemAlpha));
+    const g = Math.round(COLOR_GOLD[1] * emblemAlpha + COLOR_NAVY[1] * (1 - emblemAlpha));
+    const b = Math.round(COLOR_GOLD[2] * emblemAlpha + COLOR_NAVY[2] * (1 - emblemAlpha));
+    const a = Math.round(255 * inCardAlpha);
+
+    return [r, g, b, a];
   });
 }
 
-// 4. Generador de Pantalla Splash UPN (para splash.png)
+// 4. Renderizador de Pantalla Splash (splash.png)
+// Fondo Deep Navy #070C1E, emblema dorado centrado con tamaño proporcional
 function renderSplashScreen(w, h) {
   const minDim = Math.min(w, h);
-  const logoTargetSize = Math.min(minDim * 0.42, 280); // Tamaño proporcionado y elegante
-  const scale = logoTargetSize / Math.max(srcW, srcH);
-  const drawW = srcW * scale;
-  const drawH = srcH * scale;
-  const offsetX = (w - drawW) / 2;
-  const offsetY = (h - drawH) / 2;
+  const targetH = Math.min(minDim * 0.35, 300);
+  const scale = targetH / 44;
+  const centerX = w / 2;
+  const centerY = h / 2;
+  const N = 4;
 
-  const bgR = 7, bgG = 12, bgB = 30; // #070C1E
+  const minX = centerX - (19 * scale);
+  const maxX = centerX + (19 * scale);
+  const minY = centerY - (23 * scale);
+  const maxY = centerY + (23 * scale);
 
   return encodePng(w, h, (x, y) => {
-    const imgX = (x - offsetX) / scale;
-    const imgY = (y - offsetY) / scale;
-
-    let [r, g, b, a] = [0, 0, 0, 0];
-    if (imgX >= 0 && imgX < srcW && imgY >= 0 && imgY < srcH) {
-      [r, g, b, a] = sampleBilinear(imgX, imgY);
+    let cov = 0;
+    if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+      for (let sy = 0; sy < N; sy++) {
+        for (let sx = 0; sx < N; sx++) {
+          const subX = x + (sx + 0.5) / N;
+          const subY = y + (sy + 0.5) / N;
+          const canX = 54 + (subX - centerX) / scale;
+          const canY = 54 + (subY - centerY) / scale;
+          if (pointInPoly(canX, canY, LEFT_PILLAR_108) || pointInPoly(canX, canY, RIGHT_PILLAR_108)) {
+            cov++;
+          }
+        }
+      }
     }
 
-    const alphaNorm = a / 255;
-    const finalR = Math.round(r * alphaNorm + bgR * (1 - alphaNorm));
-    const finalG = Math.round(g * alphaNorm + bgG * (1 - alphaNorm));
-    const finalB = Math.round(b * alphaNorm + bgB * (1 - alphaNorm));
-    return [finalR, finalG, finalB, 255];
+    const emblemAlpha = cov / (N * N);
+    const r = Math.round(COLOR_GOLD[0] * emblemAlpha + COLOR_NAVY[0] * (1 - emblemAlpha));
+    const g = Math.round(COLOR_GOLD[1] * emblemAlpha + COLOR_NAVY[1] * (1 - emblemAlpha));
+    const b = Math.round(COLOR_GOLD[2] * emblemAlpha + COLOR_NAVY[2] * (1 - emblemAlpha));
+
+    return [r, g, b, 255];
   });
 }
 
-// Definición de densidades Android Mipmap
-const mipmaps = [
-  { dir: 'mipmap-mdpi', iconSize: 48, fgSize: 108 },
-  { dir: 'mipmap-hdpi', iconSize: 72, fgSize: 162 },
-  { dir: 'mipmap-xhdpi', iconSize: 96, fgSize: 216 },
-  { dir: 'mipmap-xxhdpi', iconSize: 144, fgSize: 324 },
-  { dir: 'mipmap-xxxhdpi', iconSize: 192, fgSize: 432 },
+console.log('--- GENERANDO ICONOS MATEMÁTICAMENTE CENTRADOS Y SIMÉTRICOS UPN ---');
+
+// Matriz de densidades Android
+const densities = [
+  { folder: 'mipmap-mdpi', iconSize: 48, fgSize: 108 },
+  { folder: 'mipmap-hdpi', iconSize: 72, fgSize: 162 },
+  { folder: 'mipmap-xhdpi', iconSize: 96, fgSize: 216 },
+  { folder: 'mipmap-xxhdpi', iconSize: 144, fgSize: 324 },
+  { folder: 'mipmap-xxxhdpi', iconSize: 192, fgSize: 432 }
 ];
 
-console.log('--- Generando Iconos Nativos UPN para Android ---');
-const resBase = 'android/app/src/main/res';
+const resDir = path.resolve('android/app/src/main/res');
 
-for (const m of mipmaps) {
-  const targetDir = path.join(resBase, m.dir);
-  if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+for (const d of densities) {
+  const dir = path.join(resDir, d.folder);
+  fs.mkdirSync(dir, { recursive: true });
 
-  // 1. ic_launcher.png
-  const squareBuf = renderLauncherSquare(m.iconSize);
-  fs.writeFileSync(path.join(targetDir, 'ic_launcher.png'), squareBuf);
+  fs.writeFileSync(path.join(dir, 'ic_launcher.png'), renderLauncherSquare(d.iconSize));
+  fs.writeFileSync(path.join(dir, 'ic_launcher_round.png'), renderLauncherRound(d.iconSize));
+  fs.writeFileSync(path.join(dir, 'ic_launcher_foreground.png'), renderLauncherForeground(d.fgSize));
 
-  // 2. ic_launcher_round.png
-  const roundBuf = renderLauncherRound(m.iconSize);
-  fs.writeFileSync(path.join(targetDir, 'ic_launcher_round.png'), roundBuf);
-
-  // 3. ic_launcher_foreground.png
-  const fgBuf = renderLauncherForeground(m.fgSize);
-  fs.writeFileSync(path.join(targetDir, 'ic_launcher_foreground.png'), fgBuf);
-
-  console.log(`✓ ${m.dir} generado (Icono ${m.iconSize}x${m.iconSize}, Foreground ${m.fgSize}x${m.fgSize})`);
+  console.log(`✓ ${d.folder}: ic_launcher (${d.iconSize}px), ic_launcher_round (${d.iconSize}px), ic_launcher_foreground (${d.fgSize}px)`);
 }
 
-// Definición de Splash Screens
-const splashes = [
-  { dir: 'drawable', w: 480, h: 320 },
-  { dir: 'drawable-port-mdpi', w: 320, h: 480 },
-  { dir: 'drawable-port-hdpi', w: 480, h: 800 },
-  { dir: 'drawable-port-xhdpi', w: 720, h: 1280 },
-  { dir: 'drawable-port-xxhdpi', w: 960, h: 1600 },
-  { dir: 'drawable-port-xxxhdpi', w: 1280, h: 1920 },
-  { dir: 'drawable-land-mdpi', w: 480, h: 320 },
-  { dir: 'drawable-land-hdpi', w: 800, h: 480 },
-  { dir: 'drawable-land-xhdpi', w: 1280, h: 720 },
-  { dir: 'drawable-land-xxhdpi', w: 1600, h: 960 },
-  { dir: 'drawable-land-xxxhdpi', w: 1920, h: 1280 },
+// Generación de pantallas de Splash UPN
+const splashConfigs = [
+  { folder: 'drawable', w: 480, h: 800 },
+  { folder: 'drawable-port-mdpi', w: 320, h: 480 },
+  { folder: 'drawable-port-hdpi', w: 480, h: 800 },
+  { folder: 'drawable-port-xhdpi', w: 720, h: 1280 },
+  { folder: 'drawable-port-xxhdpi', w: 960, h: 1600 },
+  { folder: 'drawable-port-xxxhdpi', w: 1280, h: 1920 },
+  { folder: 'drawable-land-mdpi', w: 480, h: 320 },
+  { folder: 'drawable-land-hdpi', w: 800, h: 480 },
+  { folder: 'drawable-land-xhdpi', w: 1280, h: 720 },
+  { folder: 'drawable-land-xxhdpi', w: 1600, h: 960 },
+  { folder: 'drawable-land-xxxhdpi', w: 1920, h: 1280 }
 ];
 
-console.log('--- Generando Splash Screens UPN para Android ---');
-for (const s of splashes) {
-  const targetDir = path.join(resBase, s.dir);
-  if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-  const splashBuf = renderSplashScreen(s.w, s.h);
-  fs.writeFileSync(path.join(targetDir, 'splash.png'), splashBuf);
-  console.log(`✓ ${s.dir}/splash.png generado (${s.w}x${s.h})`);
+for (const s of splashConfigs) {
+  const sDir = path.join(resDir, s.folder);
+  fs.mkdirSync(sDir, { recursive: true });
+  fs.writeFileSync(path.join(sDir, 'splash.png'), renderSplashScreen(s.w, s.h));
+  console.log(`✓ Splash UPN generado: ${s.folder}/splash.png (${s.w}x${s.h})`);
 }
 
-console.log('¡Todos los iconos y splash screens de UPN se generaron exitosamente!');
-
+console.log('¡TODOS LOS RECURSOS DE MARCA UPN GENERADOS CON ÉXITO Y SIMETRÍA 100%!');
