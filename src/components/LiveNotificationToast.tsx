@@ -78,24 +78,25 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
           </div>
 
           {/* Quick Action Button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
               onClick={() => onAtender(notification)}
               className="btn-primary"
               style={{
-                padding: '6px 14px',
-                fontSize: '0.74rem',
+                padding: '7px 15px',
+                fontSize: '0.78rem',
                 fontWeight: 800,
-                borderRadius: '8px',
+                borderRadius: '9px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minHeight: '34px'
               }}
             >
               <span>Atender Ahora</span>
-              <ArrowRight size={13} strokeWidth={2.5} />
+              <ArrowRight size={14} strokeWidth={2.5} />
             </button>
             <span className="live-toast-meta">
               {notification.category}
@@ -108,11 +109,11 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
           type="button"
           onClick={requestClose}
           className="modal-close-btn"
-          style={{ width: '28px', height: '28px', minWidth: '28px', minHeight: '28px' }}
+          style={{ width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', borderRadius: '8px' }}
           title="Cerrar aviso"
           aria-label="Cerrar aviso"
         >
-          <X size={14} strokeWidth={2.4} />
+          <X size={16} strokeWidth={2.4} />
         </button>
       </div>
 

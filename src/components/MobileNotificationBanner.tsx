@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, CheckCircle2, X } from 'lucide-react';
+import { isNativeCapacitor } from '../services/api';
 import { getSystemNotificationPermission, getSystemNotificationPermissionSync, requestPushNotificationPermission } from '../utils/pushNotifications';
 
 export const MobileNotificationBanner: React.FC = () => {
@@ -27,7 +28,7 @@ export const MobileNotificationBanner: React.FC = () => {
     }
   }, []);
 
-  if (!isMobile || permission === 'granted' || permission === 'unsupported' || dismissed) {
+  if (isNativeCapacitor() || !isMobile || permission === 'granted' || permission === 'unsupported' || dismissed) {
     return null;
   }
 
@@ -65,7 +66,7 @@ export const MobileNotificationBanner: React.FC = () => {
         zIndex: 999,
         backgroundColor: success ? 'rgba(34, 197, 94, 0.95)' : 'rgba(234, 179, 8, 0.96)',
         color: '#000000',
-        padding: '10px 14px',
+        padding: 'calc(10px + env(safe-area-inset-top, 0px)) 14px 10px 14px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
