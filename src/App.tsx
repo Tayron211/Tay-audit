@@ -448,12 +448,13 @@ const MainApp: React.FC = () => {
     checkCloudSync();
     const syncTimer = setInterval(checkCloudSync, 1200);
 
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        checkCloudSync();
-      }
+    const handleResumeOrFocus = () => {
+      checkCloudSync();
     };
-    document.addEventListener('visibilitychange', handleVisibility);
+    document.addEventListener('visibilitychange', handleResumeOrFocus);
+    window.addEventListener('focus', handleResumeOrFocus);
+    window.addEventListener('online', handleResumeOrFocus);
+    document.addEventListener('resume', handleResumeOrFocus as EventListener);
 
     // Optional instant SSE push when using local Express backend (?local=1)
     let eventSource: EventSource | null = null;
@@ -476,7 +477,10 @@ const MainApp: React.FC = () => {
     return () => {
       isMounted = false;
       clearInterval(syncTimer);
-      document.removeEventListener('visibilitychange', handleVisibility);
+      document.removeEventListener('visibilitychange', handleResumeOrFocus);
+      window.removeEventListener('focus', handleResumeOrFocus);
+      window.removeEventListener('online', handleResumeOrFocus);
+      document.removeEventListener('resume', handleResumeOrFocus as EventListener);
       if (eventSource) eventSource.close();
     };
   }, []);

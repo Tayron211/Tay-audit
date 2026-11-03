@@ -74,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenScanner,
   onOpenAuditModal,
   onGoHome,
-  isLiveConnected: _isLiveConnected,
+  isLiveConnected = false,
   totalDevices: _totalDevices = 0,
   openTicketsCount = 0,
   currentTheme,
@@ -210,6 +210,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
             <span className="nav-brand-badge">
               UPN TI
+            </span>
+            <span
+              className="live-status-pill"
+              title={isLiveConnected ? "Conexión activa 24/7 en tiempo real con Cloudflare D1" : "Conectando con la nube 24/7..."}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 6px',
+                borderRadius: '6px',
+                fontSize: '0.64rem',
+                fontWeight: 700,
+                letterSpacing: '0.03em',
+                background: isLiveConnected ? 'rgba(34, 197, 94, 0.14)' : 'rgba(239, 68, 68, 0.14)',
+                color: isLiveConnected ? '#22c55e' : '#ef4444',
+                border: isLiveConnected ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid rgba(239, 68, 68, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: isLiveConnected ? '#22c55e' : '#ef4444',
+                  boxShadow: isLiveConnected ? '0 0 6px #22c55e' : 'none'
+                }}
+              />
+              <span style={{ opacity: 0.9 }}>24/7</span>
             </span>
           </div>
         </div>

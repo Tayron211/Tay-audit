@@ -11,26 +11,54 @@ export interface ServerInfo {
 
 export const CLOUD_DEFAULT_URL = 'https://tay-audit.pages.dev';
 
-// Detect API base automatically: native HTTPS origin on Cloudflare Pages / custom domain, or 24/7 Cloud DB by default
-const getApiBaseUrl = () => {
+export const isNativeCapacitor = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const w = window as any;
+  if (w.Capacitor && typeof w.Capacitor.isNativePlatform === 'function') {
+    return w.Capacitor.isNativePlatform();
+  }
+  return false;
+};
+
+// Detect API base automatically:
+// 1. If VITE_API_BASE is set, use it.
+// 2. In native Capacitor APK (Android/iOS) or Capacitor webview scheme, ALWAYS connect directly to Cloudflare 24/7 backend.
+// 3. If explicit ?local=1 or localStorage flag is present, connect to local Express (port 3001).
+// 4. On localhost / 127.0.0.1 without ?local=1, connect directly to Cloudflare 24/7 backend so data stays 100% synchronized.
+// 5. On public production web hosting (tay-audit.pages.dev or custom domain), use origin.
+export const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_BASE as string | undefined;
   if (envUrl && envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, '');
   }
+
   if (typeof window !== 'undefined') {
     const { protocol, hostname, origin, search } = window.location;
     const params = new URLSearchParams(search);
+
     // Allow explicit local backend override via ?local=1 or localStorage flag
     if (params.get('local') === '1' || localStorage.getItem('tay_audit_use_local_api') === '1') {
-      return `http://${hostname}:3001`;
+      const devHost = (hostname === 'localhost' || !hostname) ? '127.0.0.1' : hostname;
+      return `http://${devHost}:3001`;
     }
-    // When running on Cloudflare Pages, custom HTTPS domain, or portless public host, use same origin
+
+    const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '';
+    const isCapacitorScheme = protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'file:';
+
+    // In native Capacitor APK (Android/iOS) or local web preview without ?local=1,
+    // ALWAYS connect directly to the live 24/7 Cloudflare D1 backend
+    if (isNativeCapacitor() || isCapacitorScheme || isLocalHost) {
+      return CLOUD_DEFAULT_URL;
+    }
+
+    // Public HTTPS production domain (e.g. tay-audit.pages.dev or custom corporate domain)
     if (protocol === 'https:' || hostname.endsWith('.pages.dev')) {
       return origin;
     }
-    // On localhost dev preview, connect directly to the live 24/7 Cloud DB so data is always unified
+
     return CLOUD_DEFAULT_URL;
   }
+
   return CLOUD_DEFAULT_URL;
 };
 
