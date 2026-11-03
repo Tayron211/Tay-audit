@@ -225,8 +225,8 @@ app.post('/api/devices', (req, res) => {
         id, hostname, deviceType, status, os, ram, cpu, storage,
         ipAddress, macAddress, serialNumber, motherboard, compatibility, brand, model,
         assignedUser, department, location, lastAuditDate, notes, supplies, specs, qrCodeData,
-        createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        createdAt, updatedAt, monitorBrand, monitorModel, monitorSerial, monitorSpecs
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insert.run(
@@ -254,7 +254,11 @@ app.post('/api/devices', (req, res) => {
       req.body.specs || null,
       qrCodeData,
       now,
-      now
+      now,
+      req.body.monitorBrand || null,
+      req.body.monitorModel || null,
+      req.body.monitorSerial || null,
+      req.body.monitorSpecs || null
     );
 
     // Add audit log
@@ -293,7 +297,8 @@ app.put('/api/devices/:id', (req, res) => {
         storage = ?, ipAddress = ?, macAddress = ?, serialNumber = ?,
         motherboard = ?, compatibility = ?, brand = ?,
         model = ?, assignedUser = ?, department = ?, location = ?, lastAuditDate = ?,
-        notes = ?, supplies = ?, specs = ?, qrCodeData = ?, updatedAt = ?
+        notes = ?, supplies = ?, specs = ?, qrCodeData = ?, updatedAt = ?,
+        monitorBrand = ?, monitorModel = ?, monitorSerial = ?, monitorSpecs = ?
       WHERE id = ?
     `);
 
@@ -321,6 +326,10 @@ app.put('/api/devices/:id', (req, res) => {
       req.body.specs !== undefined ? req.body.specs : (existing.specs || null),
       req.body.qrCodeData || existing.qrCodeData,
       now,
+      req.body.monitorBrand !== undefined ? req.body.monitorBrand : (existing.monitorBrand || null),
+      req.body.monitorModel !== undefined ? req.body.monitorModel : (existing.monitorModel || null),
+      req.body.monitorSerial !== undefined ? req.body.monitorSerial : (existing.monitorSerial || null),
+      req.body.monitorSpecs !== undefined ? req.body.monitorSpecs : (existing.monitorSpecs || null),
       req.params.id
     );
 
@@ -392,7 +401,11 @@ app.post('/api/agent/report', (req, res) => {
       assignedUser = null,
       department = null,
       location = null,
-      notes = null
+      notes = null,
+      monitorBrand = null,
+      monitorModel = null,
+      monitorSerial = null,
+      monitorSpecs = null
     } = req.body || {};
 
     if (!hostname) {
@@ -428,6 +441,10 @@ app.post('/api/agent/report', (req, res) => {
           model = COALESCE(?, model),
           assignedUser = COALESCE(?, assignedUser),
           notes = COALESCE(?, notes),
+          monitorBrand = COALESCE(?, monitorBrand),
+          monitorModel = COALESCE(?, monitorModel),
+          monitorSerial = COALESCE(?, monitorSerial),
+          monitorSpecs = COALESCE(?, monitorSpecs),
           status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
           stivieInstalled = CASE WHEN ? = 1 THEN 1 ELSE stivieInstalled END,
           lastAgentPing = CASE WHEN ? = 1 THEN ? ELSE lastAgentPing END,
@@ -437,6 +454,7 @@ app.post('/api/agent/report', (req, res) => {
       `).run(
         deviceType ?? null, os ?? null, ram ?? null, cpu ?? null, storage ?? null, ipAddress ?? null, macAddress ?? null, serialNumber ?? null,
         motherboard ?? null, compatibility ?? null, brand ?? null, model ?? null, assignedUser ?? null, notes ?? null,
+        monitorBrand ?? null, monitorModel ?? null, monitorSerial ?? null, monitorSpecs ?? null,
         (notes && notes.includes('STIVIE')) ? 1 : 0,
         (notes && notes.includes('STIVIE')) ? 1 : 0,
         now,
@@ -462,8 +480,9 @@ app.post('/api/agent/report', (req, res) => {
           ipAddress, macAddress, serialNumber, motherboard, compatibility, brand, model,
           assignedUser, department, location, lastAuditDate, notes, qrCodeData,
           stivieInstalled, lastAgentPing,
-          createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          createdAt, updatedAt,
+          monitorBrand, monitorModel, monitorSerial, monitorSpecs
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         deviceId,
         cleanHostname,
@@ -489,7 +508,11 @@ app.post('/api/agent/report', (req, res) => {
         isStivie ? 1 : 0,
         isStivie ? now : null,
         now,
-        now
+        now,
+        monitorBrand || null,
+        monitorModel || null,
+        monitorSerial || null,
+        monitorSpecs || null
       );
     }
 
@@ -863,6 +886,61 @@ try {
         }
     }
 
+    # Deteccion de Monitor Conectado (EDID / WmiMonitorID / Win32_VideoController)
+    $monList = @()
+    $pnpVendors = @{
+        'DEL' = 'Dell'; 'SAM' = 'Samsung'; 'SEC' = 'Samsung'; 'AOC' = 'AOC';
+        'GSM' = 'LG'; 'LGD' = 'LG'; 'HWP' = 'HP'; 'HPN' = 'HP'; 'LEN' = 'Lenovo';
+        'ACR' = 'Acer'; 'BNQ' = 'BenQ'; 'ACI' = 'ASUS'; 'ASU' = 'ASUS';
+        'VSC' = 'ViewSonic'; 'PHL' = 'Philips'; 'NEC' = 'NEC'; 'SNY' = 'Sony';
+        'TSB' = 'Toshiba'; 'CMN' = 'Innolux'; 'BOE' = 'BOE'; 'AUO' = 'AUO'
+    }
+
+    try {
+        $monIds = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorID -ErrorAction SilentlyContinue
+        $monParams = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorBasicDisplayParams -ErrorAction SilentlyContinue
+        $gpu = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -First 1
+
+        $resStr = ''
+        if ($gpu -and $gpu.CurrentHorizontalResolution) {
+            $resStr = "$($gpu.CurrentHorizontalResolution)x$($gpu.CurrentVerticalResolution) @ $($gpu.CurrentRefreshRate)Hz"
+        }
+
+        foreach ($m in $monIds) {
+            if (-not $m.Active) { continue }
+            $rawMfr = if ($m.ManufacturerName) { (-join ($m.ManufacturerName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+            $mfr = if ($pnpVendors.ContainsKey($rawMfr.ToUpper())) { $pnpVendors[$rawMfr.ToUpper()] } elseif ($rawMfr) { $rawMfr } else { 'Generico' }
+            $name = if ($m.UserFriendlyName) { (-join ($m.UserFriendlyName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+            $serial = if ($m.SerialNumberID) { (-join ($m.SerialNumberID | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+
+            $inchStr = ''
+            $p = $monParams | Where-Object { $_.InstanceName -eq $m.InstanceName } | Select-Object -First 1
+            if ($p -and $p.MaxHorizontalImageSize -gt 0 -and $p.MaxVerticalImageSize -gt 0) {
+                $w = $p.MaxHorizontalImageSize
+                $h = $p.MaxVerticalImageSize
+                $diag = [math]::Round([math]::Sqrt(($w*$w) + ($h*$h)) / 2.54, 0)
+                if ($diag -gt 0) { $inchStr = "$diag pulg." }
+            }
+
+            $specParts = @()
+            if ($inchStr) { $specParts += $inchStr }
+            if ($resStr) { $specParts += $resStr }
+            $specs = if ($specParts.Count -gt 0) { $specParts -join ' ' } else { 'Estandar' }
+
+            $monList += [PSCustomObject]@{
+                Brand = $mfr
+                Model = if ($name) { $name } else { 'Monitor Plug and Play' }
+                Serial = if ($serial -and $serial -ne '0') { $serial } else { 'SN-NO-REPORTADO' }
+                Specs = $specs
+            }
+        }
+    } catch {}
+
+    $monitorBrand = if ($monList.Count -gt 0) { ($monList.Brand -join ' | ') } else { '' }
+    $monitorModel = if ($monList.Count -gt 0) { ($monList.Model -join ' | ') } else { '' }
+    $monitorSerial = if ($monList.Count -gt 0) { ($monList.Serial -join ' | ') } else { '' }
+    $monitorSpecs = if ($monList.Count -gt 0) { ($monList.Specs -join ' | ') } else { '' }
+
     # 10. Transmitir ficha completa al panel
     $data = @{
         hostname      = $env:COMPUTERNAME
@@ -879,6 +957,10 @@ try {
         serialNumber  = $serialNumber
         compatibility = $comp
         assignedUser  = $env:USERNAME
+        monitorBrand  = $monitorBrand
+        monitorModel  = $monitorModel
+        monitorSerial = $monitorSerial
+        monitorSpecs  = $monitorSpecs
         notes         = "${notesContext} • $classificationDetail • MAC: $mac • Red: $netDesc"
     } | ConvertTo-Json -Depth 3
 
@@ -898,6 +980,12 @@ try {
     Write-Host " Memoria RAM    : $ram" -ForegroundColor White
     Write-Host " Procesador     : $cpu" -ForegroundColor White
     Write-Host " Serial BIOS    : $serialNumber" -ForegroundColor White
+    if ($monitorBrand -or $monitorModel) {
+        Write-Host " Monitor Conect.: $monitorBrand $monitorModel ($monitorSpecs)" -ForegroundColor White
+        if ($monitorSerial -and $monitorSerial -ne 'SN-NO-REPORTADO') {
+            Write-Host " Serial Monitor : $monitorSerial" -ForegroundColor White
+        }
+    }
     Write-Host " Compatibilidad : $comp" -ForegroundColor White
     Write-Host "==========================================================" -ForegroundColor Green
     ` : ''}
@@ -1683,6 +1771,9 @@ app.get(['/api/export/excel', '/api/export/inventory-excel'], async (req, res) =
       { header: 'PROCESADOR', key: 'cpu', width: 32 },
       { header: 'MEMORIA RAM', key: 'ram', width: 16 },
       { header: 'ALMACENAMIENTO', key: 'storage', width: 22 },
+      { header: 'MONITOR CONECTADO', key: 'monitor', width: 28 },
+      { header: 'SERIE MONITOR', key: 'monitorSerie', width: 22 },
+      { header: 'CARACT. MONITOR', key: 'monitorSpecs', width: 26 },
       { header: 'DIRECCIÓN IP', key: 'ip', width: 18 },
       { header: 'SISTEMA OPERATIVO', key: 'os', width: 24 },
       { header: 'ESTADO', key: 'estado', width: 16 }
@@ -1694,13 +1785,16 @@ app.get(['/api/export/excel', '/api/export/inventory-excel'], async (req, res) =
       bloque: extractBloqueStr(d.location),
       ambiente: extractAmbienteStr(d.department),
       modelo: toUpperStr(
-        d.brand && d.model ? `${d.brand} ${d.model}` : (d.model || d.brand || 'HP PROSTUDIO 4 ALL-IN-ONE G1I 23.8 INCH DESKTOP AI PC')
+        d.brand && d.model ? `${d.brand} ${d.model}` : (d.model || d.brand || 'HP PROSTUDIO 4 ALL-IN-ONE 23.8 INCH DESKTOP PC')
       ),
       serie: toUpperStr(d.serialNumber, 'SYSTEM SERIAL NUMBER'),
       placa: toUpperStr(d.motherboard, 'PLACA BASE ESTÁNDAR'),
       cpu: toUpperStr(d.cpu, 'INTEL CORE I5 / I7'),
       ram: toUpperStr(d.ram, '16 GB'),
       storage: toUpperStr(d.storage, '512 GB SSD'),
+      monitor: toUpperStr(d.monitorBrand && d.monitorModel ? `${d.monitorBrand} ${d.monitorModel}` : (d.monitorModel || d.monitorBrand || '-')),
+      monitorSerie: toUpperStr(d.monitorSerial, '-'),
+      monitorSpecs: toUpperStr(d.monitorSpecs, '-'),
       ip: toUpperStr(d.ipAddress, '127.0.0.1'),
       os: toUpperStr(d.os, 'WINDOWS 11 PRO'),
       estado: toUpperStr(d.status, 'INSTALADO')
@@ -1737,12 +1831,12 @@ app.get(['/api/export/excel', '/api/export/inventory-excel'], async (req, res) =
         ambiente: extractAmbienteStr(d.department),
         modelo: toUpperStr(d.model || `${d.brand || 'HP'} MONITOR 24" FHD IPS`),
         serie: toUpperStr(d.serialNumber, 'MON-SN-001'),
-        resolucion: '23.8 PULGADAS / 1920 X 1080 FHD',
+        resolucion: toUpperStr(d.specs || '23.8 PULGADAS / 1920 X 1080 FHD'),
         conectores: 'HDMI / DISPLAYPORT / VGA',
         estado: toUpperStr(d.status, 'INSTALADO')
       });
     });
-    // Si no hay monitores dedicados, mapear los puestos de trabajo registrados
+    // Si no hay monitores dedicados, mapear monitores detectados en las PCs
     if (monitorRows.length === 0) {
       caseDevices.forEach(d => {
         monitorRows.push({
@@ -1750,11 +1844,17 @@ app.get(['/api/export/excel', '/api/export/inventory-excel'], async (req, res) =
           usuario: toUpperStr(d.assignedUser, 'AUTONOMA'),
           bloque: extractBloqueStr(d.location),
           ambiente: extractAmbienteStr(d.department),
-          modelo: toUpperStr(d.brand ? `${d.brand} MONITOR 24" FHD IPS` : 'HP DISPLAY 23.8" FHD IPS'),
-          serie: toUpperStr(d.serialNumber ? `${d.serialNumber}-MON` : '8CN60402VM'),
-          resolucion: '23.8 PULGADAS / 1920 X 1080 FHD',
-          conectores: 'HDMI / DISPLAYPORT',
+          modelo: toUpperStr(
+            d.monitorBrand && d.monitorModel ? `${d.monitorBrand} ${d.monitorModel}`
+              : (d.monitorModel || d.monitorBrand || 'MONITOR PLUG AND PLAY')
+          ),
+          serie: toUpperStr(d.monitorSerial || 'SN-NO-REPORTADO'),
+          resolucion: toUpperStr(d.monitorSpecs || '23.8 PULGADAS / 1920 X 1080 FHD'),
+          conectores: 'HDMI / DISPLAYPORT / VGA',
           estado: toUpperStr(d.status, 'INSTALADO')
+        });
+      });
+    }
         });
       });
     }

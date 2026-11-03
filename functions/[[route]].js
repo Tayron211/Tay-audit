@@ -82,7 +82,8 @@ async function ensureSchema(db) {
       os TEXT, ram TEXT, cpu TEXT, storage TEXT, ipAddress TEXT, macAddress TEXT, serialNumber TEXT,
       motherboard TEXT, compatibility TEXT, brand TEXT, model TEXT, assignedUser TEXT, department TEXT,
       location TEXT, lastAuditDate TEXT, notes TEXT, supplies TEXT, specs TEXT, qrCodeData TEXT,
-      stivieInstalled INTEGER DEFAULT 0, lastAgentPing TEXT, createdAt TEXT, updatedAt TEXT
+      stivieInstalled INTEGER DEFAULT 0, lastAgentPing TEXT, createdAt TEXT, updatedAt TEXT,
+      monitorBrand TEXT, monitorModel TEXT, monitorSerial TEXT, monitorSpecs TEXT
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS audit_logs (
       id TEXT PRIMARY KEY, deviceId TEXT, hostname TEXT, action TEXT, details TEXT, performedBy TEXT, timestamp TEXT
@@ -108,6 +109,13 @@ async function ensureSchema(db) {
     )`),
     db.prepare(`INSERT OR IGNORE INTO system_meta (key, value) VALUES ('last_change_ts', '1')`)
   ]);
+
+  const monitorCols = ['monitorBrand', 'monitorModel', 'monitorSerial', 'monitorSpecs'];
+  for (const c of monitorCols) {
+    try {
+      await db.prepare(`ALTER TABLE devices ADD COLUMN ${c} TEXT`).run();
+    } catch {}
+  }
   schemaVerified = true;
 }
 
@@ -420,6 +428,61 @@ try {
         }
     }
 
+    # Deteccion de Monitor Conectado (EDID / WmiMonitorID / Win32_VideoController)
+    $monList = @()
+    $pnpVendors = @{
+        'DEL' = 'Dell'; 'SAM' = 'Samsung'; 'SEC' = 'Samsung'; 'AOC' = 'AOC';
+        'GSM' = 'LG'; 'LGD' = 'LG'; 'HWP' = 'HP'; 'HPN' = 'HP'; 'LEN' = 'Lenovo';
+        'ACR' = 'Acer'; 'BNQ' = 'BenQ'; 'ACI' = 'ASUS'; 'ASU' = 'ASUS';
+        'VSC' = 'ViewSonic'; 'PHL' = 'Philips'; 'NEC' = 'NEC'; 'SNY' = 'Sony';
+        'TSB' = 'Toshiba'; 'CMN' = 'Innolux'; 'BOE' = 'BOE'; 'AUO' = 'AUO'
+    }
+
+    try {
+        $monIds = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorID -ErrorAction SilentlyContinue
+        $monParams = Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorBasicDisplayParams -ErrorAction SilentlyContinue
+        $gpu = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -First 1
+
+        $resStr = ''
+        if ($gpu -and $gpu.CurrentHorizontalResolution) {
+            $resStr = "$($gpu.CurrentHorizontalResolution)x$($gpu.CurrentVerticalResolution) @ $($gpu.CurrentRefreshRate)Hz"
+        }
+
+        foreach ($m in $monIds) {
+            if (-not $m.Active) { continue }
+            $rawMfr = if ($m.ManufacturerName) { (-join ($m.ManufacturerName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+            $mfr = if ($pnpVendors.ContainsKey($rawMfr.ToUpper())) { $pnpVendors[$rawMfr.ToUpper()] } elseif ($rawMfr) { $rawMfr } else { 'Generico' }
+            $name = if ($m.UserFriendlyName) { (-join ($m.UserFriendlyName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+            $serial = if ($m.SerialNumberID) { (-join ($m.SerialNumberID | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })).Trim() } else { '' }
+
+            $inchStr = ''
+            $p = $monParams | Where-Object { $_.InstanceName -eq $m.InstanceName } | Select-Object -First 1
+            if ($p -and $p.MaxHorizontalImageSize -gt 0 -and $p.MaxVerticalImageSize -gt 0) {
+                $w = $p.MaxHorizontalImageSize
+                $h = $p.MaxVerticalImageSize
+                $diag = [math]::Round([math]::Sqrt(($w*$w) + ($h*$h)) / 2.54, 0)
+                if ($diag -gt 0) { $inchStr = "$diag pulg." }
+            }
+
+            $specParts = @()
+            if ($inchStr) { $specParts += $inchStr }
+            if ($resStr) { $specParts += $resStr }
+            $specs = if ($specParts.Count -gt 0) { $specParts -join ' ' } else { 'Estandar' }
+
+            $monList += [PSCustomObject]@{
+                Brand = $mfr
+                Model = if ($name) { $name } else { 'Monitor Plug and Play' }
+                Serial = if ($serial -and $serial -ne '0') { $serial } else { 'SN-NO-REPORTADO' }
+                Specs = $specs
+            }
+        }
+    } catch {}
+
+    $monitorBrand = if ($monList.Count -gt 0) { ($monList.Brand -join ' | ') } else { '' }
+    $monitorModel = if ($monList.Count -gt 0) { ($monList.Model -join ' | ') } else { '' }
+    $monitorSerial = if ($monList.Count -gt 0) { ($monList.Serial -join ' | ') } else { '' }
+    $monitorSpecs = if ($monList.Count -gt 0) { ($monList.Specs -join ' | ') } else { '' }
+
     $data = @{
         hostname      = $env:COMPUTERNAME
         deviceType    = $deviceType
@@ -435,6 +498,10 @@ try {
         serialNumber  = $serialNumber
         compatibility = $comp
         assignedUser  = $env:USERNAME
+        monitorBrand  = $monitorBrand
+        monitorModel  = $monitorModel
+        monitorSerial = $monitorSerial
+        monitorSpecs  = $monitorSpecs
         notes         = "${notesContext} • $classificationDetail • MAC: $mac • Red: $netDesc"
     } | ConvertTo-Json -Depth 3
 
@@ -453,6 +520,12 @@ try {
     Write-Host " Memoria RAM    : $ram" -ForegroundColor White
     Write-Host " Procesador     : $cpu" -ForegroundColor White
     Write-Host " Serial BIOS    : $serialNumber" -ForegroundColor White
+    if ($monitorBrand -or $monitorModel) {
+        Write-Host " Monitor Conect.: $monitorBrand $monitorModel ($monitorSpecs)" -ForegroundColor White
+        if ($monitorSerial -and $monitorSerial -ne 'SN-NO-REPORTADO') {
+            Write-Host " Serial Monitor : $monitorSerial" -ForegroundColor White
+        }
+    }
     Write-Host "==========================================================" -ForegroundColor Green
     ` : ''}
 } catch {
@@ -935,8 +1008,8 @@ exit /b 0
             id, hostname, deviceType, status, os, ram, cpu, storage,
             ipAddress, macAddress, serialNumber, motherboard, compatibility, brand, model,
             assignedUser, department, location, lastAuditDate, notes, supplies, specs, qrCodeData,
-            createdAt, updatedAt
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            createdAt, updatedAt, monitorBrand, monitorModel, monitorSerial, monitorSpecs
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           id, hostname, deviceType, status,
           body.os || 'Desconocido', body.ram || 'No especificado', body.cpu || 'No especificado', body.storage || 'No especificado',
@@ -944,7 +1017,8 @@ exit /b 0
           body.motherboard || 'Genérica', body.compatibility || 'Compatible', body.brand || 'Genérico', body.model || 'Genérico',
           body.assignedUser || 'Sin Asignar', body.department || 'General', body.location || 'Oficina Principal',
           now, body.notes || 'Auditoría manual registrada.', body.supplies || null, body.specs || null,
-          qrCodeData, now, now
+          qrCodeData, now, now,
+          body.monitorBrand || null, body.monitorModel || null, body.monitorSerial || null, body.monitorSpecs || null
         ),
         db.prepare(`
           INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
@@ -985,7 +1059,8 @@ exit /b 0
               storage = ?, ipAddress = ?, macAddress = ?, serialNumber = ?,
               motherboard = ?, compatibility = ?, brand = ?,
               model = ?, assignedUser = ?, department = ?, location = ?, lastAuditDate = ?,
-              notes = ?, supplies = ?, specs = ?, qrCodeData = ?, updatedAt = ?
+              notes = ?, supplies = ?, specs = ?, qrCodeData = ?, updatedAt = ?,
+              monitorBrand = ?, monitorModel = ?, monitorSerial = ?, monitorSpecs = ?
             WHERE id = ?
           `).bind(
             nextHostname,
@@ -1011,6 +1086,10 @@ exit /b 0
             body.specs !== undefined ? body.specs : (existing.specs || null),
             body.qrCodeData || existing.qrCodeData,
             now,
+            body.monitorBrand !== undefined ? body.monitorBrand : (existing.monitorBrand || null),
+            body.monitorModel !== undefined ? body.monitorModel : (existing.monitorModel || null),
+            body.monitorSerial !== undefined ? body.monitorSerial : (existing.monitorSerial || null),
+            body.monitorSpecs !== undefined ? body.monitorSpecs : (existing.monitorSpecs || null),
             deviceId
           ),
           db.prepare(`
@@ -1206,7 +1285,8 @@ exit /b 0
       const {
         hostname, deviceType = null, os = null, ram = null, cpu = null, storage = null,
         ipAddress = null, macAddress = null, serialNumber = null, motherboard = null,
-        compatibility = null, brand = null, model = null, assignedUser = null, notes = null
+        compatibility = null, brand = null, model = null, assignedUser = null, notes = null,
+        monitorBrand = null, monitorModel = null, monitorSerial = null, monitorSpecs = null
       } = body || {};
 
       if (!hostname) return jsonResponse({ error: 'El campo hostname es requerido' }, 400);
@@ -1238,6 +1318,10 @@ exit /b 0
             model = COALESCE(?, model),
             assignedUser = COALESCE(?, assignedUser),
             notes = COALESCE(?, notes),
+            monitorBrand = COALESCE(?, monitorBrand),
+            monitorModel = COALESCE(?, monitorModel),
+            monitorSerial = COALESCE(?, monitorSerial),
+            monitorSpecs = COALESCE(?, monitorSpecs),
             status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
             stivieInstalled = CASE WHEN ? = 1 THEN 1 ELSE stivieInstalled END,
             lastAgentPing = CASE WHEN ? = 1 THEN ? ELSE lastAgentPing END,
@@ -1247,6 +1331,7 @@ exit /b 0
         `).bind(
           deviceType, os, ram, cpu, storage, ipAddress, macAddress, serialNumber,
           motherboard, compatibility, brand, model, assignedUser, notes,
+          monitorBrand, monitorModel, monitorSerial, monitorSpecs,
           isStivie ? 1 : 0, isStivie ? 1 : 0, now, now, now, deviceId
         ).run();
       } else {
@@ -1262,8 +1347,9 @@ exit /b 0
             id, hostname, deviceType, status, os, ram, cpu, storage,
             ipAddress, macAddress, serialNumber, motherboard, compatibility, brand, model,
             assignedUser, department, location, lastAuditDate, notes, qrCodeData,
-            stivieInstalled, lastAgentPing, createdAt, updatedAt
-          ) VALUES (?, ?, ?, 'instalado', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Operaciones', 'Red Pública Cloud', ?, ?, ?, ?, ?, ?, ?)
+            stivieInstalled, lastAgentPing, createdAt, updatedAt,
+            monitorBrand, monitorModel, monitorSerial, monitorSpecs
+          ) VALUES (?, ?, ?, 'instalado', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Operaciones', 'Red Pública Cloud', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           deviceId, cleanHostname, finalDeviceType,
           os || 'Windows desconocido', ram || 'No detectada', cpu || 'No detectado', storage || 'No detectado',
@@ -1271,7 +1357,8 @@ exit /b 0
           motherboard || 'Placa Base Estándar', compatibility || 'Compatible',
           brand || 'Genérico', model || 'Estación de Trabajo', assignedUser || 'Usuario Local',
           now, notes || 'Reporte levantado automáticamente mediante agente Tay-Audit Cloud.',
-          qrCode, isStivie ? 1 : 0, isStivie ? now : null, now, now
+          qrCode, isStivie ? 1 : 0, isStivie ? now : null, now, now,
+          monitorBrand, monitorModel, monitorSerial, monitorSpecs
         ).run();
       }
 
@@ -1705,6 +1792,9 @@ exit /b 0
         { header: 'PROCESADOR', key: 'cpu', width: 32 },
         { header: 'MEMORIA RAM', key: 'ram', width: 16 },
         { header: 'ALMACENAMIENTO', key: 'storage', width: 22 },
+        { header: 'MONITOR CONECTADO', key: 'monitor', width: 28 },
+        { header: 'SERIE MONITOR', key: 'monitorSerie', width: 22 },
+        { header: 'CARACT. MONITOR', key: 'monitorSpecs', width: 26 },
         { header: 'DIRECCIÓN IP', key: 'ip', width: 18 },
         { header: 'SISTEMA OPERATIVO', key: 'os', width: 24 },
         { header: 'ESTADO', key: 'estado', width: 16 }
@@ -1721,6 +1811,9 @@ exit /b 0
         cpu: toUpperStr(d.cpu, 'INTEL / AMD'),
         ram: toUpperStr(d.ram, '16 GB'),
         storage: toUpperStr(d.storage, '512 GB SSD'),
+        monitor: toUpperStr(d.monitorBrand && d.monitorModel ? `${d.monitorBrand} ${d.monitorModel}` : (d.monitorModel || d.monitorBrand || '-')),
+        monitorSerie: toUpperStr(d.monitorSerial, '-'),
+        monitorSpecs: toUpperStr(d.monitorSpecs, '-'),
         ip: toUpperStr(d.ipAddress, '127.0.0.1'),
         os: toUpperStr(d.os, 'WINDOWS 11 PRO'),
         estado: toUpperStr(d.status, 'INSTALADO')
@@ -1747,10 +1840,13 @@ exit /b 0
         usuario: toUpperStr(d.assignedUser, 'AUTONOMA'),
         bloque: extractBloqueStr(d.location),
         ambiente: extractAmbienteStr(d.department),
-        modelo: toUpperStr(d.brand ? `${d.brand} MONITOR 24" FHD IPS` : 'HP DISPLAY 23.8" FHD IPS'),
-        serie: toUpperStr(d.serialNumber ? `${d.serialNumber}-MON` : 'MON-SN-001'),
-        resolucion: '23.8 PULGADAS / 1920 X 1080 FHD',
-        conectores: 'HDMI / DISPLAYPORT',
+        modelo: toUpperStr(
+          d.monitorBrand && d.monitorModel ? `${d.monitorBrand} ${d.monitorModel}`
+            : (d.monitorModel || d.monitorBrand || (d.deviceType === 'monitor' ? (d.brand ? `${d.brand} ${d.model}` : d.model) : 'MONITOR ESTÁNDAR'))
+        ),
+        serie: toUpperStr(d.monitorSerial || (d.deviceType === 'monitor' ? d.serialNumber : 'S/N')),
+        resolucion: toUpperStr(d.monitorSpecs || (d.deviceType === 'monitor' ? d.specs : 'FULL HD 1080P')),
+        conectores: 'HDMI / DISPLAYPORT / VGA',
         estado: toUpperStr(d.status, 'INSTALADO')
       }));
       populateStyledWorksheet(wb.addWorksheet('MONITOR'), monitorColumns, monitorRows);

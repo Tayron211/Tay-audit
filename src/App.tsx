@@ -15,7 +15,7 @@ import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
 import { Navbar, type NavTab } from './components/Navbar';
 import { DeviceModal } from './components/DeviceModal';
 import { QRScannerModal } from './components/QRScannerModal';
-import { AuditFormModal } from './components/AuditFormModal';
+import { AuditFormModal, type FieldScanResult } from './components/AuditFormModal';
 import { AuditSection } from './components/AuditSection';
 import { SupportSection } from './components/SupportSection';
 import { StivieClientApp } from './components/StivieClientApp';
@@ -117,7 +117,7 @@ const MainApp: React.FC = () => {
 
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [scannedCodePrefill, setScannedCodePrefill] = useState<string | undefined>(undefined);
-  const [scannerFieldPrefill, setScannerFieldPrefill] = useState<{ field: 'hostname' | 'serialNumber'; value: string; ts: number } | null>(null);
+  const [scannerFieldPrefill, setScannerFieldPrefill] = useState<FieldScanResult | null>(null);
   const [copiedPs, setCopiedPs] = useState(false);
 
   // Historial de navegación y gestión de retroceso (Atrás / Swipe en móviles / Botón Atrás en PC)
@@ -611,10 +611,13 @@ const MainApp: React.FC = () => {
   };
 
   // Form field scanner open: antepone el escáner sobre el formulario y auto-completa el campo al escanear
-  const handleOpenFieldScanner = (field: 'hostname' | 'serialNumber') => {
-    handleOpenScannerModal(`Escanear ${field === 'hostname' ? 'Hostname' : 'Número de Serie (S/N)'}`, (code: string) => {
-      setScannerFieldPrefill({ field, value: code, ts: Date.now() });
-    });
+  const handleOpenFieldScanner = (field: 'hostname' | 'serialNumber' | 'monitorSerial') => {
+    handleOpenScannerModal(
+      `Escanear ${field === 'hostname' ? 'Hostname / Código' : field === 'monitorSerial' ? 'Serial de Monitor (S/N)' : 'Número de Serie (S/N)'}`,
+      (code: string) => {
+        setScannerFieldPrefill({ field, value: code, ts: Date.now() });
+      }
+    );
   };
 
   // Disparador para resetear vista a inicio al hacer clic en el botón de marca/logo

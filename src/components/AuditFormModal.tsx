@@ -39,7 +39,7 @@ const FORM_STATUS_OPTIONS: SelectOption<DeviceStatus>[] = [
 ];
 
 export interface FieldScanResult {
-  field: 'hostname' | 'serialNumber';
+  field: 'hostname' | 'serialNumber' | 'monitorSerial';
   value: string;
   ts: number;
 }
@@ -50,7 +50,7 @@ interface AuditFormModalProps {
   onDeviceSaved: () => void;
   prefillCode?: string;
   fieldPrefill?: FieldScanResult | null;
-  onOpenFieldScanner?: (field: 'hostname' | 'serialNumber') => void;
+  onOpenFieldScanner?: (field: 'hostname' | 'serialNumber' | 'monitorSerial') => void;
 }
 
 export const AuditFormModal: React.FC<AuditFormModalProps> = ({
@@ -92,6 +92,10 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
     location: 'Sede Principal',
     supplies: '',
     specs: '',
+    monitorBrand: '',
+    monitorModel: '',
+    monitorSerial: '',
+    monitorSpecs: '',
     notes: 'Levantamiento de inventario registrado.'
   });
 
@@ -167,6 +171,8 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
       setFormData(prev => ({ ...prev, hostname: clean.toUpperCase() }));
     } else if (field === 'serialNumber') {
       setFormData(prev => ({ ...prev, serialNumber: clean }));
+    } else if (field === 'monitorSerial') {
+      setFormData(prev => ({ ...prev, monitorSerial: clean }));
     }
   }, [fieldPrefill]);
 
@@ -1806,6 +1812,113 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                   </div>
                 </div>
               </div>
+
+                {/* Sección 4: Monitor / Pantalla Conectada */}
+                <div style={{
+                  backgroundColor: 'var(--bg-canvas-subtle)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-acrylic)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px',
+                  marginTop: '14px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      <Tv size={16} color="#06b6d4" />
+                      <span>4. Monitor / Pantalla Conectada</span>
+                    </div>
+                    <span style={{ fontSize: '0.7rem', color: '#06b6d4', fontWeight: 700 }}>
+                      Detección automática por Batch / Script o registro manual
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Marca del Monitor</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ej: Dell, HP, Samsung, LG, AOC, Lenovo..."
+                        value={formData.monitorBrand || ''}
+                        onChange={(e) => setFormData({ ...formData, monitorBrand: e.target.value })}
+                        style={{ height: '38px' }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Modelo del Monitor</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ej: P2419H, 24MK430H, E2211H, 24G2..."
+                        value={formData.monitorModel || ''}
+                        onChange={(e) => setFormData({ ...formData, monitorModel: e.target.value })}
+                        style={{ height: '38px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Número de Serie del Monitor (S/N)</label>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="Ej: CN0F8V2V74445856..."
+                          value={formData.monitorSerial || ''}
+                          onChange={(e) => setFormData({ ...formData, monitorSerial: e.target.value })}
+                          style={{ fontFamily: 'monospace', fontWeight: 700, flex: 1, height: '38px' }}
+                        />
+                        {onOpenFieldScanner && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenFieldScanner('monitorSerial')}
+                            className="btn-flat btn-primary"
+                            style={{ padding: '0 12px', height: '38px', fontSize: '0.74rem', gap: '5px' }}
+                            title="Escanear Código de Barras o Serial del Monitor"
+                          >
+                            <Barcode size={15} />
+                            <span>Escanear</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Características / Pulgadas / Conexión</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ej: 24'' Full HD (1920x1080) @ 75Hz, HDMI/VGA/DP"
+                        value={formData.monitorSpecs || ''}
+                        onChange={(e) => setFormData({ ...formData, monitorSpecs: e.target.value })}
+                        style={{ height: '38px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                      Sugerencias de marca para el monitor:
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {['Dell', 'HP', 'Samsung', 'LG', 'AOC', 'Lenovo', 'ViewSonic', 'ASUS', 'BenQ', 'Philips'].map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, monitorBrand: b }))}
+                          className="btn-flat"
+                          style={{ padding: '3px 8px', fontSize: '0.68rem', borderRadius: '6px' }}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
             </div>
           )}
 

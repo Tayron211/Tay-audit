@@ -178,6 +178,12 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
           <div style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             Placa: {device.motherboard || 'Placa Base Estándar'}
           </div>
+          {(device.monitorBrand || device.monitorModel) && (
+            <div style={{ fontSize: '0.70rem', color: '#06b6d4', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+              <Tv size={11} style={{ flexShrink: 0 }} />
+              <span>Monitor: {device.monitorBrand} {device.monitorModel} {device.monitorSerial && device.monitorSerial !== 'SN-NO-REPORTADO' ? `(${device.monitorSerial})` : ''}</span>
+            </div>
+          )}
         </div>
 
         {/* Hardware Spec Grid */}

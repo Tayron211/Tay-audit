@@ -26,6 +26,10 @@ export interface Device {
   notes?: string;
   supplies?: string;
   specs?: string;
+  monitorBrand?: string;
+  monitorModel?: string;
+  monitorSerial?: string;
+  monitorSpecs?: string;
   qrCodeData?: string;
   stivieInstalled?: boolean | number;
   lastAgentPing?: string;

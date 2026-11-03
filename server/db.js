@@ -40,6 +40,12 @@ export function initDB() {
       location TEXT,
       lastAuditDate TEXT,
       notes TEXT,
+      supplies TEXT,
+      specs TEXT,
+      monitorBrand TEXT,
+      monitorModel TEXT,
+      monitorSerial TEXT,
+      monitorSpecs TEXT,
       qrCodeData TEXT,
       createdAt TEXT,
       updatedAt TEXT
@@ -127,6 +133,18 @@ export function initDB() {
   } catch (err) {}
   try {
     db.exec("ALTER TABLE devices ADD COLUMN lastAgentPing TEXT;");
+  } catch (err) {}
+  try {
+    db.exec("ALTER TABLE devices ADD COLUMN monitorBrand TEXT;");
+  } catch (err) {}
+  try {
+    db.exec("ALTER TABLE devices ADD COLUMN monitorModel TEXT;");
+  } catch (err) {}
+  try {
+    db.exec("ALTER TABLE devices ADD COLUMN monitorSerial TEXT;");
+  } catch (err) {}
+  try {
+    db.exec("ALTER TABLE devices ADD COLUMN monitorSpecs TEXT;");
   } catch (err) {}
 
   // Backfill motherboard and compatibility for existing inventory items if needed

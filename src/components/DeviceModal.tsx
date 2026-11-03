@@ -16,7 +16,8 @@ import {
   FileText,
   ChevronDown,
   Check,
-  Lock
+  Lock,
+  Tv
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import type { Device, DeviceStatus, DeviceType, UserRole } from '../types';
@@ -121,6 +122,10 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     location: string;
     supplies?: string;
     specs?: string;
+    monitorBrand?: string;
+    monitorModel?: string;
+    monitorSerial?: string;
+    monitorSpecs?: string;
     notes: string;
   }>({
     hostname: '',
@@ -141,6 +146,10 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     location: '',
     supplies: '',
     specs: '',
+    monitorBrand: '',
+    monitorModel: '',
+    monitorSerial: '',
+    monitorSpecs: '',
     notes: ''
   });
 
@@ -197,6 +206,10 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         location: initialDevice.location || '',
         supplies: initialDevice.supplies || '',
         specs: initialDevice.specs || '',
+        monitorBrand: initialDevice.monitorBrand || '',
+        monitorModel: initialDevice.monitorModel || '',
+        monitorSerial: initialDevice.monitorSerial || '',
+        monitorSpecs: initialDevice.monitorSpecs || '',
         notes: initialDevice.notes || ''
       });
     }
@@ -982,6 +995,75 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               </div>
             </div>
 
+            {/* BLOQUE DE MONITOR CONECTADO */}
+            <div className="device-modal-section" style={{ borderLeft: '3px solid #06b6d4' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '7px',
+                  background: 'rgba(6, 182, 212, 0.15)',
+                  color: '#06b6d4',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Tv size={15} />
+                </div>
+                <h4 style={{ fontSize: '0.84rem', color: 'var(--text-primary)', margin: 0, fontWeight: 800 }}>
+                  MONITOR / PANTALLA ASOCIADA
+                </h4>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+                <div>
+                  <label className="device-modal-label">Marca del Monitor</label>
+                  <input
+                    type="text"
+                    value={editForm.monitorBrand || ''}
+                    onChange={(e) => setEditForm({ ...editForm, monitorBrand: e.target.value })}
+                    placeholder="ej. Dell, Samsung, LG, HP, AOC"
+                    className="device-modal-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="device-modal-label">Modelo del Monitor</label>
+                  <input
+                    type="text"
+                    value={editForm.monitorModel || ''}
+                    onChange={(e) => setEditForm({ ...editForm, monitorModel: e.target.value })}
+                    placeholder="ej. P2419H, 24MK430H, E2211H"
+                    className="device-modal-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="device-modal-label">Número de Serie del Monitor (S/N)</label>
+                  <input
+                    type="text"
+                    value={editForm.monitorSerial || ''}
+                    onChange={(e) => setEditForm({ ...editForm, monitorSerial: e.target.value })}
+                    placeholder="ej. CN0F8V2V..."
+                    className="device-modal-input"
+                    style={{ fontFamily: 'monospace' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="device-modal-label">Características / Pulgadas / Conectores</label>
+                  <input
+                    type="text"
+                    value={editForm.monitorSpecs || ''}
+                    onChange={(e) => setEditForm({ ...editForm, monitorSpecs: e.target.value })}
+                    placeholder="ej. 24'' Full HD (1920x1080) @ 75Hz, HDMI/VGA"
+                    className="device-modal-input"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* BLOQUE 4: NOTAS DE INVENTARIO */}
             <div className="device-modal-section">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -1202,6 +1284,41 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Monitor / Pantalla Conectada Card */}
+            {(device.monitorBrand || device.monitorModel || device.monitorSerial || device.monitorSpecs) && (
+              <div className="device-modal-section" style={{ borderLeft: '3px solid #06b6d4', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <h4 style={{ fontSize: '0.78rem', color: '#06b6d4', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                    <Tv size={15} /> MONITOR / PANTALLA ASOCIADA
+                  </h4>
+                  <span style={{ fontSize: '0.68rem', color: '#06b6d4', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', backgroundColor: 'rgba(6, 182, 212, 0.12)' }}>
+                    Hardware Detectado
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '0.8rem' }}>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                    <span style={{ fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>
+                      {device.monitorBrand || ''} {device.monitorModel || 'Monitor Conectado'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                    <span style={{ color: 'var(--accent-secondary, #38bdf8)', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, display: 'block' }}>
+                      {device.monitorSerial || 'SN-NO-REPORTADO'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Características / Pulgadas / Conexión</span>
+                    <span style={{ color: 'var(--text-secondary)', display: 'block' }}>
+                      {device.monitorSpecs || 'Estándar Plug and Play'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Notes if present */}
             {device.notes && (
