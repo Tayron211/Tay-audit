@@ -114,7 +114,7 @@ export const PwaInstallPrompt: React.FC = () => {
             <span style={{ fontSize: '0.67rem', fontWeight: 600, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {installedSuccessfully 
                 ? 'Ábrela desde tu pantalla de inicio' 
-                : isIOS ? 'Sin barras de navegador y en pantalla completa' : 'App nativa independiente • Cero dependencia de Chrome'}
+                : isIOS ? 'En pantalla completa' : 'App nativa independiente • Cero dependencia de Chrome'}
             </span>
           </div>
         </div>

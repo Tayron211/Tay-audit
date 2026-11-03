@@ -506,7 +506,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <p style={{ margin: 0 }}>
-              Al instalar la aplicación en tu pantalla de inicio, <strong>se elimina la barra del navegador</strong> y se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
+              Al instalar la aplicación en tu pantalla de inicio, se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
             </p>
 
             {/* Android Card con Logo Oficial Android */}

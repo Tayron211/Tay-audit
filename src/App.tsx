@@ -1321,7 +1321,7 @@ exit
 
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   <p style={{ margin: '0 0 8px 0' }}>
-                    Instala TayAudit de forma 100% nativa en teléfonos y tablets Android para auditar equipos en campo sin barras de navegación:
+                    Instala TayAudit de forma 100% nativa en teléfonos y tablets Android:
                   </p>
                   <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <li><strong>Escáner QR Nativo:</strong> Acceso directo a la cámara para escaneo rápido de hardware.</li>
