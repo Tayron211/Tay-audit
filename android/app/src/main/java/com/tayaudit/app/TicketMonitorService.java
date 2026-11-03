@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
@@ -29,6 +30,8 @@ import java.util.Set;
 public class TicketMonitorService extends Service {
     private static final String TAG = "TicketMonitorService";
     public static final String CHANNEL_ID = "tay_audit_tickets_channel";
+    public static final String SILENT_CHANNEL_ID = "tay_audit_service_channel";
+    private static final int FOREGROUND_NOTIFICATION_ID = 9901;
     private static final String PREFS_NAME = "tay_ticket_monitor_prefs";
     private static final String PREF_NOTIFIED_IDS = "notified_ticket_ids";
     private static final String CLOUD_URL = "https://tay-audit.pages.dev";
@@ -41,10 +44,41 @@ public class TicketMonitorService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
+        createSilentNotificationChannel();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        createNotificationChannel();
+        createSilentNotificationChannel();
+
+        // En Android 8.0+ activar modo primer plano para ejecución 24/7 ininterrumpida
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                Intent appIntent = new Intent(this, MainActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this, 0, appIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+                );
+
+                NotificationCompat.Builder fgBuilder = new NotificationCompat.Builder(this, SILENT_CHANNEL_ID)
+                    .setContentTitle("TayAudit Activo")
+                    .setContentText("Sincronización y alertas 24/7 activas")
+                    .setSmallIcon(R.drawable.ic_stat_notification)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setOngoing(true)
+                    .setContentIntent(pendingIntent);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(FOREGROUND_NOTIFICATION_ID, fgBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+                } else {
+                    startForeground(FOREGROUND_NOTIFICATION_ID, fgBuilder.build());
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "No se pudo iniciar en primer plano: " + e.getMessage());
+            }
+        }
+
         if (!isRunning) {
             isRunning = true;
             startMonitoring();
@@ -64,6 +98,23 @@ public class TicketMonitorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void createSilentNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                SILENT_CHANNEL_ID,
+                "Monitor 24/7 TayAudit",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            serviceChannel.setDescription("Mantiene la conexión y alertas de nuevos tickets en segundo plano");
+            serviceChannel.setShowBadge(false);
+            serviceChannel.enableVibration(false);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -111,8 +162,8 @@ public class TicketMonitorService extends Service {
                 }
 
                 try {
-                    // Consultar cada 3.5 segundos
-                    Thread.sleep(3500);
+                    // Consultar cada 3 segundos
+                    Thread.sleep(3000);
                 } catch (InterruptedException ie) {
                     break;
                 }
@@ -124,13 +175,16 @@ public class TicketMonitorService extends Service {
 
     private void checkTickets(boolean isFirstRun) {
         try {
-            // 1. Consultar sync-state ultra-rápido (apenas unos bytes)
-            URL syncUrl = new URL(CLOUD_URL + "/api/sync-state");
+            // 1. Consultar sync-state ultra-rápido sin caché
+            URL syncUrl = new URL(CLOUD_URL + "/api/sync-state?t=" + System.currentTimeMillis());
             HttpURLConnection conn = (HttpURLConnection) syncUrl.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(4000);
             conn.setReadTimeout(4000);
-            conn.setRequestProperty("Cache-Control", "no-cache");
+            conn.setUseCaches(false);
+            conn.setDefaultUseCaches(false);
+            conn.setRequestProperty("Cache-Control", "no-cache, no-store, must-revalidate");
+            conn.setRequestProperty("Pragma", "no-cache");
 
             if (conn.getResponseCode() != 200) {
                 conn.disconnect();
@@ -155,12 +209,15 @@ public class TicketMonitorService extends Service {
             lastSyncVersion = currentVersion;
 
             // 2. Si es la primera ejecución o la versión cambió, consultar los tickets
-            URL ticketsUrl = new URL(CLOUD_URL + "/api/tickets");
+            URL ticketsUrl = new URL(CLOUD_URL + "/api/tickets?t=" + System.currentTimeMillis());
             HttpURLConnection tConn = (HttpURLConnection) ticketsUrl.openConnection();
             tConn.setRequestMethod("GET");
             tConn.setConnectTimeout(5000);
             tConn.setReadTimeout(5000);
-            tConn.setRequestProperty("Cache-Control", "no-cache");
+            tConn.setUseCaches(false);
+            tConn.setDefaultUseCaches(false);
+            tConn.setRequestProperty("Cache-Control", "no-cache, no-store, must-revalidate");
+            tConn.setRequestProperty("Pragma", "no-cache");
 
             if (tConn.getResponseCode() != 200) {
                 tConn.disconnect();
@@ -251,7 +308,7 @@ public class TicketMonitorService extends Service {
             Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.notification);
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_notification)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))

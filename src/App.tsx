@@ -11,7 +11,7 @@ import {
   Smartphone
 } from 'lucide-react';
 import type { Device, SystemStats, AuditLog, SupportTicket, StivieKnowledge, AppNotification, AuthUser } from './types';
-import { api, API_BASE, CLOUD_DEFAULT_URL } from './services/api';
+import { api, API_BASE, CLOUD_DEFAULT_URL, isNativeCapacitor } from './services/api';
 import { Navbar, type NavTab } from './components/Navbar';
 import { DeviceModal } from './components/DeviceModal';
 import { QRScannerModal } from './components/QRScannerModal';
@@ -27,7 +27,7 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
-import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush, setupNativeNotificationChannel } from './utils/pushNotifications';
+import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush, setupNativeNotificationChannel, requestPushNotificationPermission } from './utils/pushNotifications';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
 
@@ -495,8 +495,11 @@ const MainApp: React.FC = () => {
     };
   }, []);
 
-  // Inicialización de Service Worker, suscripción Web Push y desbloqueo de audio en móviles
+  // Inicialización de Service Worker, suscripción Web Push y permisos nativos en APK
   useEffect(() => {
+    if (isNativeCapacitor()) {
+      requestPushNotificationPermission().catch(() => {});
+    }
     setupNativeNotificationChannel().catch(() => {});
     registerNotificationServiceWorker().then(() => {
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {

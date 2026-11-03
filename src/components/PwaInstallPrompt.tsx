@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, X, Check } from 'lucide-react';
 import { AndroidIcon, AppleIcon } from './BrandIcons';
+import { isNativeCapacitor } from '../services/api';
 
 export const PwaInstallPrompt: React.FC = () => {
-  const [isStandalone, setIsStandalone] = useState<boolean>(false);
+  const [isStandalone, setIsStandalone] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return isNativeCapacitor()
+      || Boolean((window as any).Capacitor?.isNativePlatform?.())
+      || (window as any).Capacitor?.platform === 'android'
+      || window.location.protocol === 'capacitor:'
+      || window.matchMedia('(display-mode: standalone)').matches 
+      || (window.navigator as any).standalone === true
+      || document.referrer.includes('android-app://');
+  });
   const [isIOS, setIsIOS] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showIOSModal, setShowIOSModal] = useState<boolean>(false);
@@ -13,9 +23,15 @@ export const PwaInstallPrompt: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // 1. Detectar si ya corre en modo standalone (App Nativa instalada)
+    // 1. Detectar si ya corre en modo nativo / standalone (APK Android o PWA instalada)
     const checkStandalone = () => {
-      const standalone = window.matchMedia('(display-mode: standalone)').matches 
+      const isNative = isNativeCapacitor()
+        || Boolean((window as any).Capacitor?.isNativePlatform?.())
+        || (window as any).Capacitor?.platform === 'android'
+        || window.location.protocol === 'capacitor:';
+
+      const standalone = isNative 
+        || window.matchMedia('(display-mode: standalone)').matches 
         || (window.navigator as any).standalone === true
         || document.referrer.includes('android-app://');
       setIsStandalone(standalone);
@@ -40,7 +56,7 @@ export const PwaInstallPrompt: React.FC = () => {
 
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    if (sessionStorage.getItem('tay_pwa_banner_dismissed') === '1') {
+    if (localStorage.getItem('tay_pwa_banner_dismissed') === '1' || sessionStorage.getItem('tay_pwa_banner_dismissed') === '1') {
       setDismissed(true);
     }
 
@@ -49,8 +65,8 @@ export const PwaInstallPrompt: React.FC = () => {
     };
   }, []);
 
-  // Si ya está instalada como app nativa o no es móvil o fue descartada en la sesión, no mostrar banner
-  if (isStandalone || !isMobile || dismissed) {
+  // Si ya corre en APK nativo Android o standalone o no es móvil o fue descartada, NUNCA mostrar banner
+  if (isStandalone || isNativeCapacitor() || !isMobile || dismissed) {
     return null;
   }
 
@@ -63,6 +79,7 @@ export const PwaInstallPrompt: React.FC = () => {
   const handleDismiss = () => {
     setDismissed(true);
     try {
+      localStorage.setItem('tay_pwa_banner_dismissed', '1');
       sessionStorage.setItem('tay_pwa_banner_dismissed', '1');
     } catch {}
   };

@@ -257,7 +257,7 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
             summaryText: `Ticket ${notif.ticketId}`,
             channelId: 'tay_audit_tickets_channel',
             sound: 'notification.wav',
-            smallIcon: 'ic_launcher',
+            smallIcon: 'ic_stat_notification',
             iconColor: '#FFB800',
             autoCancel: true,
             foreground: true,
