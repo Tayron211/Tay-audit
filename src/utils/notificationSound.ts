@@ -5,6 +5,7 @@ let cachedAudioBuffer: AudioBuffer | null = null;
 let globalAudioEl: HTMLAudioElement | null = null;
 let isAudioUnlocked = false;
 let lastChimeTs = 0;
+const appInitTimestamp = typeof window !== 'undefined' ? Date.now() : 0;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -64,13 +65,16 @@ export const unlockNotificationAudio = () => {
     isAudioUnlocked = true;
   }
 
-  const audio = getGlobalAudio();
-  if (audio) {
-    audio.play().then(() => {
-      audio.pause();
-      audio.currentTime = 0;
+  // Desbloqueo 100% inaudible (cero volumen / muestra silenciosa) sin emitir pitidos al iniciar
+  if (ctx && ctx.state === 'running' && !isAudioUnlocked) {
+    try {
+      const silentBuf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = silentBuf;
+      src.connect(ctx.destination);
+      src.start(0);
       isAudioUnlocked = true;
-    }).catch(() => {});
+    } catch {}
   }
 
   if (!cachedAudioBuffer) {
@@ -155,6 +159,11 @@ const synthesizeChime = (ctx: AudioContext) => {
  */
 export const playNotificationChime = () => {
   if (typeof window === 'undefined') return;
+
+  // Supresión estricta de pitidos durante los primeros 4 segundos de apertura de la aplicación
+  if (Date.now() - appInitTimestamp < 4000) {
+    return;
+  }
 
   // Throttle de 600ms para evitar solapamiento o chasquidos por llamadas repetitivas simultáneas
   const now = Date.now();

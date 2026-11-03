@@ -76,94 +76,111 @@ export const PwaInstallPrompt: React.FC = () => {
           position: 'sticky',
           top: 0,
           zIndex: 9998,
-          background: 'linear-gradient(135deg, rgba(255, 184, 0, 0.95), rgba(245, 158, 11, 0.95))',
-          color: '#000000',
+          background: 'linear-gradient(90deg, #070c1e 0%, #0d1530 100%)',
+          color: '#ffffff',
           padding: '8px 12px',
-          boxShadow: '0 4px 16px rgba(245, 158, 11, 0.35)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '8px',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(0,0,0,0.1)'
+          gap: '10px',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 184, 0, 0.25)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
           <div
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              backgroundColor: '#070c1e',
+              width: '34px',
+              height: '34px',
+              borderRadius: '9px',
+              backgroundColor: isIOS ? 'rgba(255, 255, 255, 0.08)' : 'rgba(61, 220, 132, 0.12)',
+              border: `1px solid ${isIOS ? 'rgba(255, 255, 255, 0.2)' : 'rgba(61, 220, 132, 0.3)'}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
             }}
           >
-            {isIOS ? <AppleIcon size={17} color="#ffffff" /> : <AndroidIcon size={18} color="#3DDC84" />}
+            {isIOS ? <AppleIcon size={18} color="#ffffff" /> : <AndroidIcon size={19} color="#3DDC84" />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 900, lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.80rem', fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {installedSuccessfully 
+                  ? '¡App Instalada!' 
+                  : isIOS ? 'TayAudit en iPhone' : 'TayAudit para Android'}
+              </span>
+              {!installedSuccessfully && (
+                <span style={{
+                  fontSize: '0.58rem',
+                  fontWeight: 800,
+                  padding: '1px 5px',
+                  borderRadius: '4px',
+                  backgroundColor: isIOS ? 'rgba(255, 255, 255, 0.15)' : 'rgba(61, 220, 132, 0.2)',
+                  color: isIOS ? '#FFFFFF' : '#3DDC84',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  {isIOS ? 'PWA' : 'APK'}
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: '0.67rem', color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {installedSuccessfully 
-                ? '¡App Instalada con Éxito!' 
-                : isIOS ? 'Usar como App en iPhone' : 'Descargar App Android (.apk)'}
-            </span>
-            <span style={{ fontSize: '0.67rem', fontWeight: 600, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {installedSuccessfully 
-                ? 'Ábrela desde tu pantalla de inicio' 
-                : isIOS ? 'En pantalla completa' : 'App nativa independiente • Cero dependencia de Chrome'}
+                ? 'Lista en tu pantalla de inicio' 
+                : isIOS ? 'Acceso en pantalla de inicio' : 'App oficial con alertas en vivo'}
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           {!installedSuccessfully && (
             !isIOS ? (
               <a
                 href="/TayAudit.apk"
                 download="TayAudit.apk"
                 style={{
-                  backgroundColor: '#070c1e',
-                  color: '#FFB800',
+                  background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
+                  color: '#070C1E',
                   textDecoration: 'none',
-                  padding: '5px 12px',
-                  borderRadius: '8px',
-                  fontSize: '0.72rem',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.74rem',
                   fontWeight: 900,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  gap: '5px',
+                  boxShadow: '0 2px 10px rgba(255, 184, 0, 0.35)',
                   whiteSpace: 'nowrap'
                 }}
               >
-                <AndroidIcon size={14} color="#3DDC84" />
-                <span>Descargar .APK</span>
+                <Download size={13} strokeWidth={2.8} />
+                <span>Instalar</span>
               </a>
             ) : (
               <button
                 type="button"
                 onClick={handleInstallClick}
                 style={{
-                  backgroundColor: '#070c1e',
-                  color: '#FFB800',
+                  background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
+                  color: '#070C1E',
                   border: 'none',
-                  padding: '5px 12px',
-                  borderRadius: '8px',
-                  fontSize: '0.72rem',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.74rem',
                   fontWeight: 900,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  boxShadow: '0 2px 10px rgba(255, 184, 0, 0.35)',
                   whiteSpace: 'nowrap'
                 }}
               >
-                <Download size={13} strokeWidth={2.5} />
+                <Download size={13} strokeWidth={2.8} />
                 <span>Instalar</span>
               </button>
             )
@@ -174,17 +191,20 @@ export const PwaInstallPrompt: React.FC = () => {
             onClick={handleDismiss}
             aria-label="Cerrar aviso de instalación"
             style={{
-              background: 'transparent',
+              background: 'rgba(255, 255, 255, 0.08)',
               border: 'none',
-              color: 'rgba(0, 0, 0, 0.65)',
-              padding: '4px',
+              color: '#94A3B8',
+              width: '26px',
+              height: '26px',
+              borderRadius: '7px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
       </aside>
