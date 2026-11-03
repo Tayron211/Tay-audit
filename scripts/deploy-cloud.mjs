@@ -44,17 +44,45 @@ if (fs.existsSync(csPath)) {
 }
 
 // 2. Compilar Frontend (TypeScript + Vite)
-console.log('\n[2/4] Compilando interfaz web (dist/)...');
+console.log('\n[2/5] Compilando interfaz web (dist/)...');
 execSync('npm run build', { stdio: 'inherit', cwd: rootDir, shell: 'cmd.exe' });
 
-// 3. Publicar Frontend + Funciones Edge en Cloudflare Pages (sin tocar los datos de D1)
-console.log('\n[3/4] Subiendo actualizacion a https://tay-audit.pages.dev ...');
+// 3. Sincronizar y compilar App Nativa Android (TayAudit.apk)
+console.log('\n[3/5] Sincronizando y compilando APK nativo de Android...');
+execSync('npx cap sync android', { stdio: 'inherit', cwd: rootDir, shell: 'cmd.exe' });
+
+// Eliminar APK anidado si Capacitor lo copió a assets para evitar sobrepeso
+const nestedApk = path.join(rootDir, 'android', 'app', 'src', 'main', 'assets', 'public', 'TayAudit.apk');
+if (fs.existsSync(nestedApk)) {
+  fs.unlinkSync(nestedApk);
+}
+
+// Compilar APK con Gradle usando JDK configurado
+const javaHome = process.env.JAVA_HOME || 'C:\\Program Files\\Microsoft\\jdk-21.0.13.21-hotspot';
+const gradleEnv = { ...process.env, JAVA_HOME: javaHome };
+execSync('gradlew.bat assembleDebug', {
+  stdio: 'inherit',
+  cwd: path.join(rootDir, 'android'),
+  env: gradleEnv,
+  shell: 'cmd.exe'
+});
+
+const builtApk = path.join(rootDir, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk');
+if (fs.existsSync(builtApk)) {
+  fs.copyFileSync(builtApk, path.join(rootDir, 'public', 'TayAudit.apk'));
+  fs.copyFileSync(builtApk, path.join(rootDir, 'dist', 'TayAudit.apk'));
+  fs.copyFileSync(builtApk, path.join(rootDir, 'TayAudit.apk'));
+  console.log('      TayAudit.apk nativo compilado y sincronizado con éxito.');
+}
+
+// 4. Publicar Frontend + Funciones Edge + APK en Cloudflare Pages
+console.log('\n[4/5] Subiendo actualizacion a https://tay-audit.pages.dev ...');
 execSync('npx wrangler pages deploy dist --project-name=tay-audit --branch=main --commit-dirty=true', {
   stdio: 'inherit',
   cwd: rootDir,
   shell: 'cmd.exe'
 });
 
-console.log('\n[4/4] ¡Actualizacion publicada con exito en https://tay-audit.pages.dev !');
+console.log('\n[5/5] ¡Actualizacion publicada con exito en https://tay-audit.pages.dev !');
 console.log('      (La base de datos Cloud tay-audit-db permanece intacta con todos tus registros).');
 
