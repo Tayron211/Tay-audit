@@ -1303,7 +1303,7 @@ exit
                         Opción 4: App Nativa Móvil Android (.APK)
                       </div>
                       <div style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 700 }}>
-                        Instalador Oficial Independiente (Cero dependencia de navegadores)
+                        Instalador Oficial Android
                       </div>
                     </div>
                   </div>

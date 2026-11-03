@@ -505,32 +505,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <p style={{ margin: 0 }}>
-              Al instalar la aplicación en tu pantalla de inicio, se abre a <strong>pantalla completa nativa</strong> adaptándose al 100% de los colores institucionales:
-            </p>
-
             {/* Android Card con Logo Oficial Android */}
-            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(61, 220, 132, 0.08)', border: '1px solid rgba(61, 220, 132, 0.28)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <AndroidIcon size={20} color="#3DDC84" />
-                  <strong style={{ color: '#3DDC84', fontSize: '0.88rem' }}>
-                    Android (App Nativa .APK)
-                  </strong>
-                </div>
-                <a 
-                  href="/TayAudit.apk" 
-                  download="TayAudit.apk"
-                  className="btn-flat btn-primary"
-                  style={{ padding: '6px 14px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <Download size={14} />
-                  <span>Descargar TayAudit.apk</span>
-                </a>
+            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(61, 220, 132, 0.08)', border: '1px solid rgba(61, 220, 132, 0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AndroidIcon size={20} color="#3DDC84" />
+                <strong style={{ color: '#3DDC84', fontSize: '0.88rem' }}>
+                  Android (.APK)
+                </strong>
               </div>
-              <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-                Instalador APK directo con icono oficial UPN. Cero dependencia del navegador.
-              </span>
+              <a 
+                href="/TayAudit.apk" 
+                download="TayAudit.apk"
+                className="btn-flat btn-primary"
+                style={{ padding: '6px 14px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Download size={14} />
+                <span>Descargar TayAudit.apk</span>
+              </a>
             </div>
 
             {/* Apple iOS Card con Logo Oficial Apple */}
@@ -541,9 +532,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Apple iOS (iPhone / iPad)
                 </strong>
               </div>
-              <span style={{ fontSize: '0.80rem', lineHeight: 1.45 }}>
-                1. Toca el botón <strong>Compartir</strong> (icono con flecha hacia arriba en Safari).<br />
-                2. Desliza hacia abajo y selecciona <strong>"Añadir a pantalla de inicio"</strong>.
+              <span style={{ fontSize: '0.80rem', lineHeight: 1.5 }}>
+                1. Toca el botón <strong>Compartir</strong> en Safari.<br />
+                2. Selecciona <strong>"Añadir a pantalla de inicio"</strong>.
               </span>
             </div>
           </div>
