@@ -74,27 +74,29 @@ export const PwaInstallPrompt: React.FC = () => {
         aria-label="Instalar aplicación móvil"
         style={{
           position: 'sticky',
-          top: 0,
+          top: '6px',
           zIndex: 9998,
-          background: 'linear-gradient(90deg, #070c1e 0%, #0d1530 100%)',
+          margin: '6px 10px',
+          background: 'linear-gradient(135deg, rgba(7, 12, 30, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
           color: '#ffffff',
           padding: '8px 12px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.45)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 184, 0, 0.35)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(255, 184, 0, 0.12)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '10px',
+          gap: '8px',
           backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(255, 184, 0, 0.25)'
+          WebkitBackdropFilter: 'blur(16px)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
           <div
             style={{
               width: '34px',
               height: '34px',
-              borderRadius: '9px',
+              borderRadius: '10px',
               backgroundColor: isIOS ? 'rgba(255, 255, 255, 0.08)' : 'rgba(61, 220, 132, 0.12)',
               border: `1px solid ${isIOS ? 'rgba(255, 255, 255, 0.2)' : 'rgba(61, 220, 132, 0.3)'}`,
               display: 'flex',
@@ -107,19 +109,20 @@ export const PwaInstallPrompt: React.FC = () => {
             {isIOS ? <AppleIcon size={18} color="#ffffff" /> : <AndroidIcon size={19} color="#3DDC84" />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.80rem', fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap' }}>
                 {installedSuccessfully 
                   ? '¡App Instalada!' 
-                  : isIOS ? 'TayAudit en iPhone' : 'TayAudit para Android'}
+                  : isIOS ? 'TayAudit iOS' : 'TayAudit'}
               </span>
               {!installedSuccessfully && (
                 <span style={{
-                  fontSize: '0.58rem',
+                  fontSize: '0.60rem',
                   fontWeight: 800,
-                  padding: '1px 5px',
-                  borderRadius: '4px',
+                  padding: '1px 6px',
+                  borderRadius: '6px',
                   backgroundColor: isIOS ? 'rgba(255, 255, 255, 0.15)' : 'rgba(61, 220, 132, 0.2)',
+                  border: isIOS ? '1px solid rgba(255, 255, 255, 0.25)' : '1px solid rgba(61, 220, 132, 0.35)',
                   color: isIOS ? '#FFFFFF' : '#3DDC84',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px'
@@ -128,10 +131,10 @@ export const PwaInstallPrompt: React.FC = () => {
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '0.67rem', color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ fontSize: '0.67rem', color: '#94A3B8', fontWeight: 500, whiteSpace: 'nowrap' }}>
               {installedSuccessfully 
                 ? 'Lista en tu pantalla de inicio' 
-                : isIOS ? 'Acceso en pantalla de inicio' : 'App oficial con alertas en vivo'}
+                : isIOS ? 'Acceso en pantalla de inicio' : 'App oficial con alertas'}
             </span>
           </div>
         </div>
@@ -146,7 +149,7 @@ export const PwaInstallPrompt: React.FC = () => {
                   background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
                   color: '#070C1E',
                   textDecoration: 'none',
-                  padding: '6px 12px',
+                  padding: '6px 13px',
                   borderRadius: '20px',
                   fontSize: '0.74rem',
                   fontWeight: 900,
@@ -168,7 +171,7 @@ export const PwaInstallPrompt: React.FC = () => {
                   background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
                   color: '#070C1E',
                   border: 'none',
-                  padding: '6px 12px',
+                  padding: '6px 13px',
                   borderRadius: '20px',
                   fontSize: '0.74rem',
                   fontWeight: 900,
@@ -196,7 +199,7 @@ export const PwaInstallPrompt: React.FC = () => {
               color: '#94A3B8',
               width: '26px',
               height: '26px',
-              borderRadius: '7px',
+              borderRadius: '50%',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
