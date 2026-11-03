@@ -10,7 +10,7 @@ import {
   BellRing
 } from 'lucide-react';
 import type { AppNotification } from '../types';
-import { getSystemNotificationPermission, requestPushNotificationPermission } from '../utils/pushNotifications';
+import { getSystemNotificationPermission, getSystemNotificationPermissionSync, requestPushNotificationPermission } from '../utils/pushNotifications';
 
 interface NotificationDropdownProps {
   notifications: AppNotification[];
@@ -127,7 +127,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   }, [isOpen]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
-  const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermission());
+  const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermissionSync());
+
+  useEffect(() => {
+    getSystemNotificationPermission().then(setPushPermission);
+  }, []);
 
   const handleEnablePush = async () => {
     const granted = await requestPushNotificationPermission();

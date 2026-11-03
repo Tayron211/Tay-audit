@@ -1,6 +1,7 @@
 import type { AppNotification } from '../types';
-import { API_BASE } from '../services/api';
+import { API_BASE, isNativeCapacitor } from '../services/api';
 import { playNotificationChime } from './notificationSound';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 export const VAPID_PUBLIC_KEY = 'BGkSXnXaQ6GLubO9tK0uaFxsBm10mCoHbEjVHY-UsA4g6jC0CNfPrnywmxr_owgO-r2mDTN_3sKWT6Q39x6BrIk';
 
@@ -19,7 +20,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 /**
- * Registra el Service Worker para permitir notificaciones push en segundo plano en Móviles y Windows
+ * Registra el Service Worker para permitir notificaciones push en segundo plano en Navegadores Web (PWA)
  */
 export const registerNotificationServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
@@ -34,12 +35,51 @@ export const registerNotificationServiceWorker = async (): Promise<ServiceWorker
   }
 };
 
+let isChannelCreated = false;
+
 /**
- * Suscribe este dispositivo móvil o PC al servidor Cloudflare / Express para recibir Web Push en segundo plano
+ * Configura el canal de notificaciones nativas en Android (Heads-Up, sonido alto y vibración)
+ */
+export const setupNativeNotificationChannel = async () => {
+  if (typeof window === 'undefined' || !isNativeCapacitor() || isChannelCreated) return;
+  try {
+    await LocalNotifications.createChannel({
+      id: 'tay_audit_tickets_channel',
+      name: 'Tickets de Soporte TI UPN',
+      description: 'Notificaciones en tiempo real de nuevos tickets de soporte e incidencias',
+      importance: 5, // High / Heads-up
+      visibility: 1, // Public
+      sound: 'notification.wav',
+      vibration: true,
+      lights: true,
+      lightColor: '#FFB800'
+    });
+    isChannelCreated = true;
+
+    // Escuchar cuando el usuario hace clic o toca la notificación en la bandeja del sistema
+    LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+      const ticketId = action.notification.extra?.ticketId;
+      if (ticketId && typeof window !== 'undefined') {
+        const event = new CustomEvent('app-open-ticket', { detail: { ticketId } });
+        window.dispatchEvent(event);
+      }
+    });
+  } catch (err) {
+    console.warn('Error configurando canal nativo de notificaciones:', err);
+  }
+};
+
+/**
+ * Suscribe este dispositivo al servidor Cloudflare / Express para recibir Web Push (en navegadores PWA)
  */
 export const subscribeDeviceToPush = async (): Promise<{ success: boolean; error?: string; endpoint?: string }> => {
   if (typeof window === 'undefined') {
     return { success: false, error: 'Entorno no es navegador' };
+  }
+  if (isNativeCapacitor()) {
+    // En APK nativo, las notificaciones se gestionan vía LocalNotifications y servicio nativo
+    await setupNativeNotificationChannel();
+    return { success: true, endpoint: 'native-capacitor' };
   }
   if (!('serviceWorker' in navigator)) {
     return { success: false, error: 'ServiceWorker no soportado en este dispositivo' };
@@ -49,14 +89,11 @@ export const subscribeDeviceToPush = async (): Promise<{ success: boolean; error
   }
 
   try {
-    // 1. Asegurar registro del Service Worker y aguardar a que esté ACTIVO
     await registerNotificationServiceWorker();
     const reg = await navigator.serviceWorker.ready;
 
-    // 2. Verificar suscripción existente
     let subscription = await reg.pushManager.getSubscription();
 
-    // 3. Si no existe, crear nueva suscripción con la clave VAPID actual
     if (!subscription) {
       const appKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       subscription = await reg.pushManager.subscribe({
@@ -103,20 +140,69 @@ export const subscribeDeviceToPush = async (): Promise<{ success: boolean; error
 };
 
 /**
- * Consulta el estado actual de los permisos de notificaciones del sistema
+ * Consulta el estado actual de los permisos de notificaciones del sistema (Asíncrono para APK + Web)
  */
-export const getSystemNotificationPermission = (): NotificationPermission | 'unsupported' => {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+export const getSystemNotificationPermission = async (): Promise<NotificationPermission | 'unsupported'> => {
+  if (typeof window === 'undefined') {
+    return 'unsupported';
+  }
+
+  if (isNativeCapacitor()) {
+    try {
+      const status = await LocalNotifications.checkPermissions();
+      if (status.display === 'granted') return 'granted';
+      if (status.display === 'denied') return 'denied';
+      return 'default';
+    } catch {
+      return 'default';
+    }
+  }
+
+  if (!('Notification' in window)) {
     return 'unsupported';
   }
   return Notification.permission;
 };
 
 /**
- * Solicita permisos de notificación al usuario y suscribe el dispositivo automáticamente
+ * Consulta sincrónica rápida del permiso
+ */
+export const getSystemNotificationPermissionSync = (): NotificationPermission | 'unsupported' => {
+  if (typeof window === 'undefined') return 'unsupported';
+  if (isNativeCapacitor()) {
+    const saved = localStorage.getItem('tay_native_perm_granted');
+    return saved === '1' ? 'granted' : 'default';
+  }
+  if (!('Notification' in window)) return 'unsupported';
+  return Notification.permission;
+};
+
+/**
+ * Solicita permisos de notificación al usuario (Dialog nativo en Android 13+ o Web Prompt)
  */
 export const requestPushNotificationPermission = async (): Promise<boolean> => {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  // 1. En APK Nativo Android (Capacitor)
+  if (isNativeCapacitor()) {
+    try {
+      await setupNativeNotificationChannel();
+      const status = await LocalNotifications.requestPermissions();
+      const ok = status.display === 'granted';
+      if (ok) {
+        localStorage.setItem('tay_native_perm_granted', '1');
+      }
+      return ok;
+    } catch (err) {
+      console.warn('Error solicitando permisos nativos en APK:', err);
+      return false;
+    }
+  }
+
+  // 2. En Navegador Web (Chrome, Edge, etc.)
+  if (!('Notification' in window)) {
     return false;
   }
 
@@ -135,24 +221,63 @@ export const requestPushNotificationPermission = async (): Promise<boolean> => {
 };
 
 /**
- * Despacha una notificación nativa del sistema operativo tanto en Windows (Action Center)
- * como en teléfonos móviles (Bandeja del sistema con vibración y sonido).
+ * Despacha una notificación nativa del sistema operativo:
+ * - En APK Android Nativo: Dispara notificación heads-up nativa vía LocalNotifications con canal de alta prioridad.
+ * - En Navegadores Web: Dispara ServiceWorker.showNotification o Web Notification.
  */
 export const sendNativePushNotification = async (notif: AppNotification): Promise<boolean> => {
   if (typeof window === 'undefined') {
     return false;
   }
 
-  // Siempre ejecutar timbre y vibración
+  // Siempre ejecutar timbre sonoro y vibración inmediata
   playNotificationChime();
-
-  if (!('Notification' in window) || Notification.permission !== 'granted') {
-    return false;
-  }
 
   const urgencyTag = notif.urgency === 'critica' ? '🔴 CRÍTICA' : notif.urgency === 'alta' ? '🟠 ALTA' : '🟡 TI';
   const title = `🎫 [${urgencyTag}] ${notif.category} • ${notif.hostname}`;
   const body = `${notif.userName || 'Usuario / Docente'}: ${notif.description || 'Nueva incidencia reportada desde STIVIE'}`;
+
+  // 1. Caso APK Nativo Android
+  if (isNativeCapacitor()) {
+    try {
+      await setupNativeNotificationChannel();
+      let notifId = 100;
+      try {
+        const digits = notif.ticketId.replace(/\D+/g, '');
+        if (digits) notifId = parseInt(digits, 10);
+      } catch {}
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notifId,
+            title,
+            body,
+            largeBody: `${notif.userName || 'Usuario'}\nUrgencia: ${notif.urgency}\n${notif.description}`,
+            summaryText: `Ticket ${notif.ticketId}`,
+            channelId: 'tay_audit_tickets_channel',
+            sound: 'notification.wav',
+            smallIcon: 'ic_launcher',
+            iconColor: '#FFB800',
+            autoCancel: true,
+            foreground: true,
+            isExactNotification: false,
+            extra: {
+              ticketId: notif.ticketId
+            }
+          }
+        ]
+      });
+      return true;
+    } catch (capErr) {
+      console.warn('Error emitiendo LocalNotification en APK:', capErr);
+    }
+  }
+
+  // 2. Caso Navegador Web (PWA / Chrome / Edge)
+  if (!('Notification' in window) || Notification.permission !== 'granted') {
+    return false;
+  }
 
   const notificationOptions: any = {
     body,
@@ -173,7 +298,6 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
     ]
   };
 
-  // En Android / Chrome Móvil es indispensable usar ServiceWorkerRegistration.showNotification
   try {
     if ('serviceWorker' in navigator) {
       let reg: ServiceWorkerRegistration | null | undefined = await navigator.serviceWorker.getRegistration();
@@ -189,7 +313,6 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
     console.warn('Fallback a notificación directa de ventana:', swErr);
   }
 
-  // Fallback para entornos de escritorio (Windows / Mac)
   try {
     const n = new Notification(title, notificationOptions);
     n.onclick = (e) => {
@@ -201,7 +324,7 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
     };
     return true;
   } catch (err) {
-    console.error('Error al emitir notificación nativa:', err);
+    console.error('Error al emitir notificación web:', err);
     return false;
   }
 };

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, CheckCircle2, X } from 'lucide-react';
-import { getSystemNotificationPermission, requestPushNotificationPermission } from '../utils/pushNotifications';
+import { getSystemNotificationPermission, getSystemNotificationPermissionSync, requestPushNotificationPermission } from '../utils/pushNotifications';
 
 export const MobileNotificationBanner: React.FC = () => {
-  const [permission, setPermission] = useState<string>('granted');
+  const [permission, setPermission] = useState<string>(() => getSystemNotificationPermissionSync());
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [isActivating, setIsActivating] = useState<boolean>(false);
@@ -13,11 +13,13 @@ export const MobileNotificationBanner: React.FC = () => {
     if (typeof window === 'undefined') return;
     const ua = navigator.userAgent || '';
     const mobileDetected = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua) ||
-      (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 820);
-    setIsMobile(mobileDetected);
+      (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 820) ||
+      Boolean((window as any).Capacitor?.isNativePlatform?.());
+    setIsMobile(Boolean(mobileDetected));
 
-    const currentPerm = getSystemNotificationPermission();
-    setPermission(currentPerm);
+    getSystemNotificationPermission().then(p => {
+      setPermission(p);
+    });
 
     // Si ya fue descartado en esta sesión
     if (sessionStorage.getItem('tay_notif_banner_dismissed') === '1') {
@@ -40,7 +42,8 @@ export const MobileNotificationBanner: React.FC = () => {
           setDismissed(true);
         }, 3000);
       } else {
-        setPermission(getSystemNotificationPermission());
+        const p = await getSystemNotificationPermission();
+        setPermission(p);
       }
     } finally {
       setIsActivating(false);

@@ -13,6 +13,13 @@ const config: CapacitorConfig = {
       '*.cloudflare.com',
       '*.workers.dev'
     ]
+  },
+  plugins: {
+    LocalNotifications: {
+      smallIcon: "ic_launcher",
+      iconColor: "#FFB800",
+      sound: "notification.wav"
+    }
   }
 };
 

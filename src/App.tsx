@@ -27,7 +27,7 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
-import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush } from './utils/pushNotifications';
+import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush, setupNativeNotificationChannel } from './utils/pushNotifications';
 
 const VALID_TABS: NavTab[] = ['audit', 'dashboard', 'inventory', 'support', 'agent'];
 
@@ -373,11 +373,13 @@ const MainApp: React.FC = () => {
 
   const lastSyncVersionRef = useRef<string | null>(null);
   const lastFullLoadTsRef = useRef<number>(0);
+  const lastFastTicketCheckTsRef = useRef<number>(0);
 
   useEffect(() => {
     let isMounted = true;
     loadData().then(() => {
       lastFullLoadTsRef.current = Date.now();
+      lastFastTicketCheckTsRef.current = Date.now();
     });
 
     const checkFastTicketsSync = async () => {
@@ -432,12 +434,20 @@ const MainApp: React.FC = () => {
         if (!isMounted) return;
         setIsLiveConnected(true);
         const now = Date.now();
+        const versionChanged = lastSyncVersionRef.current !== null && sync.version !== lastSyncVersionRef.current;
+        const ticketCheckIntervalPassed = (now - lastFastTicketCheckTsRef.current) > 2500;
+
         if (lastSyncVersionRef.current === null) {
           lastSyncVersionRef.current = sync.version;
-        } else if (sync.version !== lastSyncVersionRef.current || now - lastFullLoadTsRef.current > 10000) {
+          lastFastTicketCheckTsRef.current = now;
+        } else if (versionChanged || ticketCheckIntervalPassed) {
+          lastFastTicketCheckTsRef.current = now;
+          await checkFastTicketsSync();
+        }
+
+        if (versionChanged || (now - lastFullLoadTsRef.current > 10000)) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
-          await checkFastTicketsSync();
           loadData();
         }
       } catch {
@@ -487,6 +497,7 @@ const MainApp: React.FC = () => {
 
   // Inicialización de Service Worker, suscripción Web Push y desbloqueo de audio en móviles
   useEffect(() => {
+    setupNativeNotificationChannel().catch(() => {});
     registerNotificationServiceWorker().then(() => {
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
         subscribeDeviceToPush().catch(() => {});
