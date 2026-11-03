@@ -70,7 +70,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         if (scannerRef.current.isScanning) {
           await scannerRef.current.stop();
         }
-      } catch (err) {
+      } catch {
         // Ignorar excepciones al detener un escáner en transición o ya detenido
       }
 

@@ -537,22 +537,10 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                     }
                     setShowResolveForm(!showResolveForm);
                   }}
-                  className="btn-flat btn-remote"
-                  style={{
-                    border: showResolveForm ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic-active)',
-                    background: showResolveForm ? 'rgba(234, 179, 8, 0.2)' : 'transparent',
-                    color: 'var(--text-primary)',
-                    padding: '0 8px',
-                    height: '28px',
-                    minWidth: '32px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '6px'
-                  }}
+                  className={`btn-flat btn-stivie-note ${showResolveForm ? 'btn-stivie-note--active' : ''}`}
                   title={showResolveForm ? 'Cerrar nota para STIVIE' : 'Agregar o editar nota interna para STIVIE'}
                 >
-                  <Bot size={15} color="var(--accent-primary)" />
+                  <Bot size={15} color="var(--accent-primary, #FFB800)" />
                 </button>
               </div>
             </div>

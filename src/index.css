@@ -1640,7 +1640,7 @@ code, pre {
   border-radius: 10px !important;
   gap: 6px !important;
   white-space: nowrap;
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center !important;
   justify-content: center !important;
   transition: all 0.2s ease;
@@ -2614,6 +2614,10 @@ select option {
   align-items: start;
 }
 
+.hide-on-desktop {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
   .audit-metrics-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -2663,15 +2667,11 @@ select option {
   }
 
   .hide-on-desktop {
-  display: flex;
-}
-
-@media (min-width: 901px) {
-  .hide-on-desktop {
-    display: none !important;
+    display: flex !important;
   }
-}
 
+  .hide-on-mobile,
+  .nav-register-btn,
   .hide-on-mobile-text {
     display: none !important;
   }
@@ -3297,6 +3297,35 @@ div.desktop-inventory-table.force-visible {
 
 [data-mode="light"] .btn-flat.btn-remote:not(.btn-primary):not(.btn-accent):not(.btn-danger):not(.btn-success):not(.btn-warning) {
   background: color-mix(in srgb, var(--rc) 12%, #ffffff) !important;
+}
+
+/* Botón de Nota a STIVIE con contorno visible nítido y ergonómico */
+.btn-stivie-note {
+  border: 1.5px solid rgba(255, 184, 0, 0.55) !important;
+  background: rgba(255, 184, 0, 0.08) !important;
+  color: var(--accent-primary, #FFB800) !important;
+  border-radius: 8px !important;
+  height: 28px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.18s ease !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+  cursor: pointer !important;
+}
+
+.btn-stivie-note:hover {
+  border-color: var(--accent-primary, #FFB800) !important;
+  background: rgba(255, 184, 0, 0.22) !important;
+  box-shadow: 0 0 8px rgba(255, 184, 0, 0.35) !important;
+}
+
+.btn-stivie-note--active {
+  border-color: var(--accent-primary, #FFB800) !important;
+  background: rgba(255, 184, 0, 0.26) !important;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.4) !important;
 }
 
 /* ==================================================================== */
