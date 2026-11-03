@@ -4,12 +4,9 @@ import {
   Plus, 
   ClipboardCheck, 
   LifeBuoy, 
-  Palette, 
   Sun, 
   Moon, 
   Bot, 
-  Check,
-  Sparkles,
   ShieldCheck,
   User,
   LogOut,
@@ -18,7 +15,6 @@ import {
   Download,
   X
 } from 'lucide-react';
-import { computeIntelligentContrast } from '../utils/theme';
 import { NotificationDropdown } from './NotificationDropdown';
 import { AndroidIcon, AppleIcon } from './BrandIcons';
 import type { AppNotification, AuthUser } from '../types';
@@ -77,10 +73,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   isLiveConnected: _isLiveConnected = false,
   totalDevices: _totalDevices = 0,
   openTicketsCount = 0,
-  currentTheme,
-  onSelectTheme,
-  customColor = '#8b5cf6',
-  onSelectCustomColor,
+  currentTheme: _currentTheme,
+  onSelectTheme: _onSelectTheme,
+  customColor: _customColor = '#8b5cf6',
+  onSelectCustomColor: _onSelectCustomColor,
   colorMode,
   onToggleColorMode,
   notifications = [],
@@ -92,10 +88,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onLogout
 }) => {
-  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
-  const [isColorDropdownClosing, setIsColorDropdownClosing] = useState(false);
-  const colorDropdownRef = useRef<HTMLDivElement>(null);
-
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isUserMenuClosing, setIsUserMenuClosing] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -117,23 +109,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     setShowInstallModal(true);
   };
 
-  const closeColorDropdown = () => {
-    if (isColorDropdownClosing || !isColorDropdownOpen) return;
-    setIsColorDropdownClosing(true);
-    setTimeout(() => {
-      setIsColorDropdownClosing(false);
-      setIsColorDropdownOpen(false);
-    }, 180);
-  };
-
-  const toggleColorDropdown = () => {
-    if (isColorDropdownOpen) {
-      closeColorDropdown();
-    } else {
-      setIsColorDropdownOpen(true);
-    }
-  };
-
   const closeUserMenu = () => {
     if (isUserMenuClosing || !isUserMenuOpen) return;
     setIsUserMenuClosing(true);
@@ -153,32 +128,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
-        closeColorDropdown();
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         closeUserMenu();
       }
     };
-    if (isColorDropdownOpen || isUserMenuOpen) {
+    if (isUserMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isColorDropdownOpen, isColorDropdownClosing, isUserMenuOpen, isUserMenuClosing]);
-
-  const themes = [
-    { id: 'upn', label: 'UPN Oro Lúcuma', color: '#ffb800' },
-    { id: 'violet', label: 'Violet Mica', color: '#8b5cf6' },
-    { id: 'azure', label: 'Glacier Blue', color: '#0284c7' },
-    { id: 'indigo', label: 'Deep Indigo', color: '#6366f1' },
-    { id: 'emerald', label: 'Cyber Emerald', color: '#10b981' },
-    { id: 'teal', label: 'Mint Teal', color: '#0d9488' },
-    { id: 'amber', label: 'Titanium Amber', color: '#d97706' },
-    { id: 'rose', label: 'Crimson Ruby', color: '#e11d48' },
-    { id: 'slate', label: 'Graphite Slate', color: '#475569' },
-  ];
+  }, [isUserMenuOpen, isUserMenuClosing]);
 
   return (
     <>
@@ -283,248 +243,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Registrar</span>
           </button>
 
-          {/* UN SOLO BOTÓN: APARIENCIA Y TEMA */}
-          <div style={{ position: 'relative' }} ref={colorDropdownRef}>
-            <button
-              type="button"
-              onClick={toggleColorDropdown}
-              className="btn-flat"
-              style={{
-                height: '36px',
-                padding: '0 9px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '10px',
-                gap: '6px',
-                border: isColorDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
-                backgroundColor: isColorDropdownOpen ? 'rgba(148, 163, 184, 0.16)' : 'rgba(148, 163, 184, 0.08)'
-              }}
-              title="Personalizar apariencia y colores"
-              aria-haspopup="true"
-              aria-expanded={isColorDropdownOpen}
-            >
-              <Palette size={16} color={currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')} />
-              <span 
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6'),
-                  boxShadow: `0 0 6px ${currentTheme === 'custom' ? customColor : (themes.find(t => t.id === currentTheme)?.color || '#8b5cf6')}`,
-                  display: 'inline-block'
-                }}
-              />
-            </button>
-
-          {/* Desplegable de Apariencia & Tema (Limpio, sin texto de pantone ni botón aplicar) */}
-          {(isColorDropdownOpen || isColorDropdownClosing) && (
-            <div 
-              className={`acrylic-popover ${isColorDropdownClosing ? 'closing' : ''}`}
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                right: 0,
-                width: '240px',
-                padding: '14px',
-                borderRadius: '16px',
-                zIndex: 1000,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                animation: 'fadeIn 0.18s ease'
-              }}
-            >
-              {/* Header */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingBottom: '8px',
-                borderBottom: '1px solid var(--border-acrylic)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <Palette size={15} color="var(--accent-primary)" />
-                  <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                    Apariencia y Tema
-                  </span>
-                </div>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  {colorMode === 'dark' ? 'Oscuro' : 'Claro'}
-                </span>
-              </div>
-
-              {/* 1. Selector de Modo: Claro / Oscuro */}
-              <div>
-                <div style={{
-                  fontSize: '0.66rem',
-                  fontWeight: 800,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px'
-                }}>
-                  {colorMode === 'dark' ? <Moon size={11} /> : <Sun size={11} />}
-                  <span>Modo de Pantalla</span>
-                </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '6px',
-                  background: 'rgba(148, 163, 184, 0.08)',
-                  padding: '3px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-acrylic)'
-                }}>
-                  <button
-                    type="button"
-                    onClick={() => colorMode !== 'dark' && onToggleColorMode()}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '5px',
-                      padding: '6px 8px',
-                      borderRadius: '8px',
-                      border: colorMode === 'dark' ? '1px solid var(--accent-primary)' : '1px solid transparent',
-                      background: colorMode === 'dark' ? 'var(--accent-primary)' : 'transparent',
-                      color: colorMode === 'dark' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                      fontWeight: 700,
-                      fontSize: '0.74rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.18s ease'
-                    }}
-                  >
-                    <Moon size={12} />
-                    <span>Oscuro</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => colorMode !== 'light' && onToggleColorMode()}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '5px',
-                      padding: '6px 8px',
-                      borderRadius: '8px',
-                      border: colorMode === 'light' ? '1px solid var(--accent-primary)' : '1px solid transparent',
-                      background: colorMode === 'light' ? 'var(--accent-primary)' : 'transparent',
-                      color: colorMode === 'light' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                      fontWeight: 700,
-                      fontSize: '0.74rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.18s ease'
-                    }}
-                  >
-                    <Sun size={12} />
-                    <span>Claro</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Temas Predeterminados y Color Personalizado en Círculos */}
-              <div>
-                <div style={{
-                  fontSize: '0.66rem',
-                  fontWeight: 800,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '8px'
-                }}>
-                  Colores del Sistema
-                </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 1fr)',
-                  gap: '8px',
-                  justifyItems: 'center',
-                  alignItems: 'center'
-                }}>
-                  {themes.map(t => {
-                    const isSelected = currentTheme === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => onSelectTheme(t.id)}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          backgroundColor: t.color,
-                          border: isSelected ? '2.5px solid #ffffff' : '2px solid rgba(255, 255, 255, 0.18)',
-                          boxShadow: isSelected ? `0 0 10px ${t.color}` : '0 2px 5px rgba(0, 0, 0, 0.25)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.18s ease',
-                          transform: isSelected ? 'scale(1.14)' : 'scale(1)',
-                          padding: 0
-                        }}
-                        title={t.label}
-                        aria-label={t.label}
-                      >
-                        {isSelected && <Check size={14} color={computeIntelligentContrast(t.id)} strokeWidth={3} />}
-                      </button>
-                    );
-                  })}
-
-                  {/* 9no Círculo: Botón de Color Personalizado con selector nativo instantáneo */}
-                  <label
-                    style={{
-                      position: 'relative',
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: currentTheme === 'custom' 
-                        ? customColor 
-                        : 'conic-gradient(from 180deg at 50% 50%, #f43f5e, #eab308, #22c55e, #06b6d4, #8b5cf6, #ec4899, #f43f5e)',
-                      border: currentTheme === 'custom' ? '2.5px solid #ffffff' : '2px dashed rgba(255, 255, 255, 0.5)',
-                      boxShadow: currentTheme === 'custom' ? `0 0 10px ${customColor}` : '0 2px 5px rgba(0, 0, 0, 0.25)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.18s ease',
-                      transform: currentTheme === 'custom' ? 'scale(1.14)' : 'scale(1)',
-                      flexShrink: 0
-                    }}
-                    title="Elegir color personalizado"
-                  >
-                    {currentTheme === 'custom' ? (
-                      <Check size={14} color={computeIntelligentContrast('custom', customColor)} strokeWidth={3} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))' }} />
-                    ) : (
-                      <Sparkles size={13} color="#ffffff" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))' }} />
-                    )}
-                    <input
-                      type="color"
-                      value={customColor || '#8b5cf6'}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (onSelectCustomColor) onSelectCustomColor(val);
-                      }}
-                      style={{
-                        position: 'absolute',
-                        opacity: 0,
-                        width: '100%',
-                        height: '100%',
-                        top: 0,
-                        left: 0,
-                        cursor: 'pointer'
-                      }}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+          {/* BOTÓN DIRECTO: MODO OSCURO / MODO CLARO */}
+          <button
+            type="button"
+            onClick={onToggleColorMode}
+            className="btn-flat"
+            style={{
+              height: '36px',
+              padding: '0 10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '10px',
+              border: '1px solid var(--border-acrylic)',
+              backgroundColor: 'rgba(148, 163, 184, 0.08)',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease'
+            }}
+            title={colorMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            aria-label="Cambiar modo de pantalla"
+          >
+            {colorMode === 'dark' ? (
+              <Moon size={16} color="var(--accent-primary)" />
+            ) : (
+              <Sun size={16} color="var(--accent-primary)" />
+            )}
+          </button>
 
         {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK (MÁXIMO 5 CON ALERTA TEMPORAL) */}
         <NotificationDropdown
