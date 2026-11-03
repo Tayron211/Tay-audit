@@ -539,15 +539,20 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   }}
                   className="btn-flat btn-remote"
                   style={{
-                    border: '1px solid var(--border-acrylic-active)',
-                    background: showResolveForm ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
+                    border: showResolveForm ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic-active)',
+                    background: showResolveForm ? 'rgba(234, 179, 8, 0.2)' : 'transparent',
                     color: 'var(--text-primary)',
-                    fontSize: '0.72rem'
+                    padding: '0 8px',
+                    height: '28px',
+                    minWidth: '32px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '6px'
                   }}
-                  title="Agregar o editar comentario interno para el aprendizaje de STIVIE"
+                  title={showResolveForm ? 'Cerrar nota para STIVIE' : 'Agregar o editar nota interna para STIVIE'}
                 >
-                  <Bot size={13} color="var(--accent-primary)" />
-                  <span>{showResolveForm ? 'Cerrar Nota' : '+ Nota a STIVIE'}</span>
+                  <Bot size={15} color="var(--accent-primary)" />
                 </button>
               </div>
             </div>
