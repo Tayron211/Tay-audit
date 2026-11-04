@@ -845,6 +845,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
                   style={{
                     borderRadius: '6px',
                     border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
+                    borderLeft: `5px solid ${catColor || 'var(--border-acrylic)'}`,
                     background: isExpanded ? 'var(--bg-canvas-subtle)' : 'var(--bg-acrylic-card)',
                     boxShadow: isExpanded 
                       ? '0 3px 10px -2px rgba(15, 23, 42, 0.16), 0 0 0 1px var(--accent-primary)' 
@@ -1270,10 +1271,12 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               <div
                 key={`mob-${device.id}`}
                 id={`inventory-card-mob-${device.id}`}
+                data-category={device.deviceType}
                 className="inventory-card"
                 style={{
                   borderRadius: '8px',
                   border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
+                  borderLeft: `5px solid ${catColor || 'var(--border-acrylic)'}`,
                   background: isExpanded ? 'var(--bg-canvas-subtle)' : 'var(--bg-acrylic-card)',
                   padding: '8px 10px',
                   display: 'flex',

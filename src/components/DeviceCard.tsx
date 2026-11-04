@@ -73,6 +73,7 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
   return (
     <div
       onClick={() => onSelect(device)}
+      data-category={device.deviceType}
       className="acrylic-card"
       style={{
         padding: '18px 20px',
@@ -81,7 +82,7 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
         justifyContent: 'space-between',
         cursor: 'pointer',
         position: 'relative',
-        borderLeft: `3px solid ${categoryColor}`,
+        borderLeft: `4.5px solid ${categoryColor}`,
         minHeight: '225px'
       }}
     >

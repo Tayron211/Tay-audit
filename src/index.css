@@ -2072,8 +2072,8 @@ select option {
   border-top: 1px solid var(--border-acrylic);
   border-right: 1px solid var(--border-acrylic);
   border-bottom: 1px solid var(--border-acrylic);
-  border-left-width: 5px;
-  border-left-style: solid;
+  border-left-width: 5px !important;
+  border-left-style: solid !important;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
@@ -2094,6 +2094,11 @@ select option {
 .inventory-card[data-category="server"] { border-left-color: var(--accent-amber) !important; }
 .inventory-card[data-category="printer"] { border-left-color: var(--accent-secondary) !important; }
 .inventory-card[data-category="network"] { border-left-color: var(--accent-rose) !important; }
+.inventory-card[data-category="speaker"] { border-left-color: #f97316 !important; }
+.inventory-card[data-category="ecran"] { border-left-color: #a855f7 !important; }
+.inventory-card[data-category="monitor"] { border-left-color: #06b6d4 !important; }
+.inventory-card[data-category="component"] { border-left-color: #f59e0b !important; }
+.inventory-card[data-category="other"] { border-left-color: #94a3b8 !important; }
 
 /* Light Mode Card Division and Crisp Separation */
 [data-mode="light"] .inventory-card {
