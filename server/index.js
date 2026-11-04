@@ -229,19 +229,29 @@ app.post('/api/devices', (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
+    const isComp = deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server';
+    const isNet = deviceType === 'network' || deviceType === 'printer';
+    const cleanIp = (isComp || isNet) ? (req.body.ipAddress && req.body.ipAddress !== '0.0.0.0' ? req.body.ipAddress : '') : '';
+    const cleanMac = (isComp || isNet) ? (req.body.macAddress && req.body.macAddress !== '00:00:00:00:00:00' ? req.body.macAddress : '') : '';
+    const cleanRam = isComp ? (req.body.ram || 'No especificado') : (req.body.ram || '');
+    const cleanCpu = isComp ? (req.body.cpu || 'No especificado') : (req.body.cpu || '');
+    const cleanStorage = isComp ? (req.body.storage || 'No especificado') : (req.body.storage || '');
+    const cleanMotherboard = isComp ? (req.body.motherboard || 'Genérica') : (req.body.motherboard || '');
+    const cleanOs = isComp ? (req.body.os || 'Windows') : (req.body.os || (deviceType === 'speaker' ? 'Dispositivo de Audio' : deviceType === 'ecran' ? 'Pantalla de Proyección' : deviceType === 'monitor' ? 'Monitor / Display' : ''));
+
     insert.run(
       id,
       hostname,
       deviceType,
       status,
-      req.body.os || 'Desconocido',
-      req.body.ram || 'No especificado',
-      req.body.cpu || 'No especificado',
-      req.body.storage || 'No especificado',
-      req.body.ipAddress || '0.0.0.0',
-      req.body.macAddress || '00:00:00:00:00:00',
+      cleanOs,
+      cleanRam,
+      cleanCpu,
+      cleanStorage,
+      cleanIp,
+      cleanMac,
       req.body.serialNumber || 'S/N',
-      req.body.motherboard || 'Genérica',
+      cleanMotherboard,
       req.body.compatibility || 'Compatible',
       req.body.brand || 'Genérico',
       req.body.model || 'Genérico',
@@ -291,6 +301,23 @@ app.put('/api/devices/:id', (req, res) => {
     if (!existing) return res.status(404).json({ error: 'Dispositivo no encontrado' });
 
     const now = new Date().toISOString();
+    const dType = req.body.deviceType !== undefined ? req.body.deviceType : existing.deviceType;
+    const isComp = dType === 'pc' || dType === 'laptop' || dType === 'server';
+    const isNet = dType === 'network';
+    const isPrint = dType === 'printer';
+
+    const rawIp = req.body.ipAddress !== undefined ? req.body.ipAddress : existing.ipAddress;
+    const cleanIp = (isComp || isNet || isPrint) ? (rawIp && rawIp !== '0.0.0.0' ? rawIp : (isComp ? '127.0.0.1' : '')) : '';
+    
+    const rawMac = req.body.macAddress !== undefined ? req.body.macAddress : existing.macAddress;
+    const cleanMac = (isComp || isNet || isPrint) ? (rawMac && rawMac !== '00:00:00:00:00:00' ? rawMac : '') : '';
+
+    const cleanMb = isComp ? (req.body.motherboard !== undefined ? req.body.motherboard : existing.motherboard) : '';
+    const cleanCpu = isComp ? (req.body.cpu !== undefined ? req.body.cpu : existing.cpu) : '';
+    const cleanRam = isComp ? (req.body.ram !== undefined ? req.body.ram : existing.ram) : '';
+    const cleanStorage = isComp ? (req.body.storage !== undefined ? req.body.storage : existing.storage) : (dType === 'component' ? (req.body.storage || existing.storage || '') : '');
+    const cleanOs = isComp ? (req.body.os !== undefined ? req.body.os : existing.os) : (dType === 'component' ? (req.body.os || existing.os || '') : '');
+
     const update = db.prepare(`
       UPDATE devices SET
         hostname = ?, deviceType = ?, status = ?, os = ?, ram = ?, cpu = ?,
@@ -304,16 +331,16 @@ app.put('/api/devices/:id', (req, res) => {
 
     update.run(
       req.body.hostname !== undefined ? String(req.body.hostname).trim() : existing.hostname,
-      req.body.deviceType !== undefined ? req.body.deviceType : existing.deviceType,
+      dType,
       req.body.status !== undefined ? req.body.status : existing.status,
-      req.body.os !== undefined ? req.body.os : existing.os,
-      req.body.ram !== undefined ? req.body.ram : existing.ram,
-      req.body.cpu !== undefined ? req.body.cpu : existing.cpu,
-      req.body.storage !== undefined ? req.body.storage : existing.storage,
-      req.body.ipAddress !== undefined ? req.body.ipAddress : existing.ipAddress,
-      req.body.macAddress !== undefined ? req.body.macAddress : existing.macAddress,
+      cleanOs,
+      cleanRam,
+      cleanCpu,
+      cleanStorage,
+      cleanIp,
+      cleanMac,
       req.body.serialNumber !== undefined ? req.body.serialNumber : existing.serialNumber,
-      req.body.motherboard !== undefined ? req.body.motherboard : existing.motherboard,
+      cleanMb,
       req.body.compatibility !== undefined ? req.body.compatibility : existing.compatibility,
       req.body.brand !== undefined ? req.body.brand : existing.brand,
       req.body.model !== undefined ? req.body.model : existing.model,

@@ -359,6 +359,49 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
         }
       }
 
+      // Diferenciación inteligente: nunca asociar IP, MAC o RAM/Disco dummy a bienes que no son computadoras
+      if (formData.deviceType === 'speaker') {
+        payload.ipAddress = '';
+        payload.macAddress = '';
+        payload.cpu = '';
+        payload.ram = '';
+        payload.storage = '';
+        payload.motherboard = '';
+        payload.os = 'Dispositivo de Audio';
+      } else if (formData.deviceType === 'ecran') {
+        payload.ipAddress = '';
+        payload.macAddress = '';
+        payload.cpu = '';
+        payload.ram = '';
+        payload.storage = '';
+        payload.motherboard = '';
+        payload.os = 'Pantalla de Proyección';
+      } else if (formData.deviceType === 'monitor') {
+        payload.ipAddress = '';
+        payload.macAddress = '';
+        payload.cpu = '';
+        payload.ram = '';
+        payload.storage = '';
+        payload.motherboard = '';
+        payload.os = 'Monitor / Display';
+      } else if (formData.deviceType === 'printer') {
+        payload.cpu = '';
+        payload.ram = '';
+        payload.storage = '';
+        payload.motherboard = '';
+        if (!formData.ipAddress || formData.ipAddress.toLowerCase() === 'usb' || formData.ipAddress.trim() === '') {
+          payload.ipAddress = '';
+          payload.macAddress = '';
+        }
+      } else if (formData.deviceType === 'other') {
+        payload.ipAddress = '';
+        payload.macAddress = '';
+        payload.cpu = '';
+        payload.ram = '';
+        payload.storage = '';
+        payload.motherboard = '';
+      }
+
       await api.createDevice(payload);
       onDeviceSaved();
       requestClose();

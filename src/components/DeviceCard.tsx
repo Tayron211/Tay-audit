@@ -15,6 +15,12 @@ import {
   Projector
 } from 'lucide-react';
 import type { Device, DeviceType } from '../types';
+import {
+  supportsComputeSpecs,
+  isValidIpAddress,
+  isValidMacAddress,
+  getAssetSmartFields
+} from '../utils/assetCategories';
 
 interface DeviceCardProps {
   device: Device;
@@ -175,9 +181,15 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
               );
             })()}
           </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Placa: {device.motherboard || 'Placa Base Estándar'}
-          </div>
+          {supportsComputeSpecs(device.deviceType) ? (
+            <div style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Placa: {device.motherboard || 'Placa Base Estándar'}
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Categoría: {getAssetSmartFields(device).categoryBadge}
+            </div>
+          )}
           {(device.monitorBrand || device.monitorModel) && (
             <div style={{ fontSize: '0.70rem', color: '#06b6d4', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
               <Tv size={11} style={{ flexShrink: 0 }} />
@@ -186,53 +198,110 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
           )}
         </div>
 
-        {/* Hardware Spec Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '8px',
-          padding: '10px 12px',
-          borderRadius: '10px',
-          backgroundColor: 'rgba(148, 163, 184, 0.08)',
-          border: '1px solid var(--border-acrylic)',
-          marginBottom: '14px'
-        }}>
-          {/* RAM */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Cpu size={13} color="var(--accent-primary)" />
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>RAM:</span>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>
-              {device.ram || 'N/A'}
-            </span>
-          </div>
+        {/* Hardware Spec Grid Inteligente y Adaptativo */}
+        {(() => {
+          const isComp = supportsComputeSpecs(device.deviceType);
+          const smart = getAssetSmartFields(device);
+          const hasIp = isValidIpAddress(device.ipAddress);
+          const hasMac = isValidMacAddress(device.macAddress);
 
-          {/* IP Address */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Wifi size={13} color="var(--accent-cyan)" />
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>IP:</span>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>
-              {device.ipAddress || 'LAN'}
-            </span>
-          </div>
+          if (isComp) {
+            return (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(148, 163, 184, 0.08)',
+                border: '1px solid var(--border-acrylic)',
+                marginBottom: '14px'
+              }}>
+                {/* RAM */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Cpu size={13} color="var(--accent-primary)" />
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>RAM:</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {device.ram || 'N/A'}
+                  </span>
+                </div>
 
-          {/* Disco / Almacenamiento */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <HardDrive size={13} color="var(--accent-amber)" />
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Disco:</span>
-            <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {device.storage || 'Estándar'}
-            </span>
-          </div>
+                {/* IP Address */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Wifi size={13} color="var(--accent-cyan)" />
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>IP:</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {hasIp ? device.ipAddress : 'LAN'}
+                  </span>
+                </div>
 
-          {/* MAC Address */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Network size={13} color="var(--accent-primary)" />
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>MAC:</span>
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={device.macAddress || 'No detectada'}>
-              {device.macAddress || 'N/A'}
-            </span>
-          </div>
-        </div>
+                {/* Disco / Almacenamiento */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <HardDrive size={13} color="var(--accent-amber)" />
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Disco:</span>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {device.storage || 'Estándar'}
+                  </span>
+                </div>
+
+                {/* MAC Address */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Network size={13} color="var(--accent-primary)" />
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>MAC:</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={hasMac ? device.macAddress : 'No detectada'}>
+                    {hasMac ? device.macAddress : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+
+          // Vista Adaptada para Bienes No-Cómputo (Parlantes, Monitores, Ecrans, etc.)
+          return (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '8px',
+              padding: '10px 12px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(148, 163, 184, 0.08)',
+              border: '1px solid var(--border-acrylic)',
+              marginBottom: '14px'
+            }}>
+              {/* Campo 1 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 700 }}>{smart.box2Label}</span>
+                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--accent-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={smart.box2Value}>
+                  {smart.box2Value}
+                </span>
+              </div>
+
+              {/* Campo 2 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 700 }}>{smart.box3Label}</span>
+                <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {smart.box3Value}
+                </span>
+              </div>
+
+              {/* Campo 3 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 700 }}>UBICACIÓN:</span>
+                <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#10b981', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {device.location || 'Sede Central'}
+                </span>
+              </div>
+
+              {/* Campo 4 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 700 }}>ASIGNADO A:</span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {device.assignedUser || 'Uso Compartido'}
+                </span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Bottom Inventory Audit Action Strip */}

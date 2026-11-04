@@ -17,6 +17,21 @@ import {
 } from 'lucide-react';
 import type { Device } from '../types';
 import { getCategoryIcon } from './DeviceCard';
+import {
+  isComputerType,
+  isSpeakerType,
+  isMonitorType,
+  isEcranType,
+  isPrinterType,
+  isComponentType,
+  isNetworkType,
+  supportsComputeSpecs,
+  supportsNetworkAddress,
+  isValidIpAddress,
+  isValidMacAddress,
+  getAssetSmartFields
+} from '../utils/assetCategories';
+import { Volume2, Tv, Projector, Droplet } from 'lucide-react';
 import { api } from '../services/api';
 import { scrollElementIntoView } from '../utils/autoScroll';
 import { Pagination } from './Pagination';
@@ -201,8 +216,18 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
   // Consistent Column Grid Template (Ultra-compact, no-wrap)
   const gridTemplate = 'minmax(195px, 1.4fr) minmax(130px, 1fr) 96px minmax(110px, 0.9fr) minmax(110px, 0.9fr) minmax(125px, 1fr) 110px';
 
-  // Ficha técnica desplegable (reutilizable en desktop y mobile)
+  // Ficha técnica desplegable adaptativa e inteligente (reutilizable en desktop y mobile)
   const renderDetailDrawer = (device: Device) => {
+    const isComp = isComputerType(device.deviceType);
+    const isSpk = isSpeakerType(device.deviceType);
+    const isMon = isMonitorType(device.deviceType);
+    const isEcr = isEcranType(device.deviceType);
+    const isPrn = isPrinterType(device.deviceType);
+    const isCmp = isComponentType(device.deviceType);
+    const isNet = isNetworkType(device.deviceType);
+    const hasRealNetwork = supportsNetworkAddress(device.deviceType) && (isValidIpAddress(device.ipAddress) || isValidMacAddress(device.macAddress));
+    const smart = getAssetSmartFields(device);
+
     return (
       <div
         className="inventory-card-drawer"
@@ -215,13 +240,13 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
           gap: '10px'
         }}
       >
-        {/* Tarjetas de Ficha Técnica Desplegadas */}
+        {/* Tarjetas de Ficha Técnica Desplegadas Inteligentes */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '8px'
         }}>
-          {/* Bloque 1: Identificación Crítica & Placa Madre */}
+          {/* Bloque 1: Identificación del Bien */}
           <div className="acrylic-card" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-acrylic)', backgroundColor: 'var(--bg-acrylic-card)' }}>
             <div style={{
               fontSize: '0.68rem',
@@ -235,50 +260,57 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               gap: '5px'
             }}>
               <Barcode size={12} />
-              <span>Identificadores & Placa Base</span>
+              <span>{isComp ? 'Identificadores & Placa Base' : `Identificadores: ${smart.categoryBadge}`}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.72rem' }}>
               <div>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Número de Serie (S/N):</span>
-                <span 
+                <span
                   onClick={(e) => device.serialNumber && handleCopy(device.serialNumber, `sn-${device.id}`, e)}
                   className="copy-chip copy-chip-purple"
                   style={{ fontFamily: 'monospace' }}
                   title={device.serialNumber ? "Clic para copiar número de serie" : undefined}
                 >
-                  <span>{device.serialNumber || 'Sin S/N'}</span>
+                  <span>{device.serialNumber || device.barcode || 'Sin S/N'}</span>
                   {copiedId === `sn-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
                 </span>
               </div>
+              {isComp ? (
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Modelo de Placa Madre:</span>
+                  <span
+                    onClick={(e) => device.motherboard && handleCopy(device.motherboard, `mb-${device.id}`, e)}
+                    className="copy-chip copy-chip-cyan"
+                    title={device.motherboard ? "Clic para copiar placa madre" : undefined}
+                  >
+                    <span>{device.motherboard || 'Placa Base Estándar'}</span>
+                    {copiedId === `mb-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Categoría de Bien:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--accent-cyan)' }}>{smart.box3Value}</span>
+                </div>
+              )}
               <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Modelo de Placa Madre:</span>
-                <span 
-                  onClick={(e) => device.motherboard && handleCopy(device.motherboard, `mb-${device.id}`, e)}
-                  className="copy-chip copy-chip-cyan"
-                  title={device.motherboard ? "Clic para copiar placa madre" : undefined}
-                >
-                  <span>{device.motherboard || 'Placa Base Estándar'}</span>
-                  {copiedId === `mb-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
-                </span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Tipo / Modelo de Equipo:</span>
-                <span 
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Modelo / Marca:</span>
+                <span
                   onClick={(e) => {
-                    const modelStr = device.model ? `${device.brand || ''} ${device.model}`.trim() : (device.deviceType === 'pc' ? 'Computadora Ensamblada' : (device.brand || 'Equipo Corporativo'));
+                    const modelStr = `${device.brand || ''} ${device.model || ''}`.trim() || 'Equipo Corporativo';
                     handleCopy(modelStr, `model-${device.id}`, e);
                   }}
                   className="copy-chip copy-chip-slate"
                   title="Clic para copiar modelo"
                 >
-                  <span>{device.model ? `${device.brand || ''} ${device.model}`.trim() : (device.deviceType === 'pc' ? 'Computadora Ensamblada' : (device.brand || 'Equipo Corporativo'))}</span>
+                  <span>{`${device.brand || ''} ${device.model || ''}`.trim() || (isComp ? 'Computadora Ensamblada' : 'Equipo Corporativo')}</span>
                   {copiedId === `model-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Bloque 2: Hardware & Rendimiento */}
+          {/* Bloque 2: Características Específicas del Bien */}
           <div className="acrylic-card" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-acrylic)', backgroundColor: 'var(--bg-acrylic-card)' }}>
             <div style={{
               fontSize: '0.68rem',
@@ -291,38 +323,111 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               alignItems: 'center',
               gap: '5px'
             }}>
-              <Cpu size={12} />
-              <span>Hardware & Rendimiento</span>
+              {isSpk && <Volume2 size={12} color="#f97316" />}
+              {isMon && <Tv size={12} color="#06b6d4" />}
+              {isEcr && <Projector size={12} color="#a855f7" />}
+              {isPrn && <Droplet size={12} color="var(--accent-secondary)" />}
+              {isCmp && <HardDrive size={12} color="#f59e0b" />}
+              {isComp && <Cpu size={12} />}
+              {isNet && <Network size={12} />}
+              <span>
+                {isSpk ? 'Especificaciones de Audio' :
+                 isMon ? 'Especificaciones de Pantalla' :
+                 isEcr ? 'Dimensiones y Formato' :
+                 isPrn ? 'Suministros & Impresión' :
+                 isCmp ? 'Detalles de Componente' :
+                 isNet ? 'Puertos & Enlace de Red' :
+                 'Hardware & Rendimiento'}
+              </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.72rem' }}>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Procesador:</span>
-                <span 
-                  onClick={(e) => device.cpu && handleCopy(device.cpu, `cpu-${device.id}`, e)}
-                  className="copy-chip copy-chip-slate"
-                  title={device.cpu ? "Clic para copiar procesador" : undefined}
-                >
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{device.cpu || 'No detectado'}</span>
-                  {copiedId === `cpu-${device.id}` && <Check size={11} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />}
-                </span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Memoria RAM:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.ram || 'No especificada'}</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Almacenamiento:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.storage || 'Disco estándar'}</span>
-              </div>
+              {isComp ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Procesador:</span>
+                    <span
+                      onClick={(e) => device.cpu && handleCopy(device.cpu, `cpu-${device.id}`, e)}
+                      className="copy-chip copy-chip-slate"
+                      title={device.cpu ? "Clic para copiar procesador" : undefined}
+                    >
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{device.cpu || 'No detectado'}</span>
+                      {copiedId === `cpu-${device.id}` && <Check size={11} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Memoria RAM:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.ram || 'No especificada'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Almacenamiento:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.storage || 'Disco estándar'}</span>
+                  </div>
+                </>
+              ) : isSpk ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Conexión / Audio:</span>
+                    <span style={{ fontWeight: 700, color: '#f97316' }}>{device.specs || 'Bluetooth 5.0 + Jack 3.5mm'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Tipo de Dispositivo:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Altavoces / Parlantes Estéreo</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Alimentación:</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>Fuente externa / USB 5V</span>
+                  </div>
+                </>
+              ) : isMon ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Panel y Entradas:</span>
+                    <span style={{ fontWeight: 700, color: '#06b6d4' }}>{device.specs || 'Full HD (HDMI / DisplayPort / VGA)'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Pantalla Asociada:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.model || 'Monitor LCD/LED'}</span>
+                  </div>
+                </>
+              ) : isPrn ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Tinta / Tóner Compatible:</span>
+                    <span style={{ fontWeight: 800, color: '#10b981' }}>{device.supplies || 'Suministro oficial según catálogo'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Tipo de Conexión:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{isValidIpAddress(device.ipAddress) ? `Red Ethernet / Wi-Fi (${device.ipAddress})` : 'Conexión USB Local'}</span>
+                  </div>
+                </>
+              ) : isEcr ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Medidas y Montaje:</span>
+                    <span style={{ fontWeight: 700, color: '#a855f7' }}>{device.specs || 'Pantalla Retráctil 100" (Pared / Techo)'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Formato:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Relación 4:3 / 16:9 Estándar</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Especificaciones:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.specs || device.storage || 'Componente de Cómputo'}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Bloque 3: Red & Conectividad */}
+          {/* Bloque 3: Conectividad o Asignación */}
           <div className="acrylic-card" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-acrylic)', backgroundColor: 'var(--bg-acrylic-card)' }}>
             <div style={{
               fontSize: '0.68rem',
               fontWeight: 800,
-              color: 'var(--accent-primary)',
+              color: hasRealNetwork ? 'var(--accent-primary)' : '#10b981',
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
               marginBottom: '6px',
@@ -330,120 +435,59 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               alignItems: 'center',
               gap: '5px'
             }}>
-              <Network size={12} />
-              <span>Red & Conectividad</span>
+              {hasRealNetwork ? <Network size={12} /> : <MapPin size={12} />}
+              <span>{hasRealNetwork ? 'Red & Conectividad' : 'Ubicación & Asignación'}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.72rem' }}>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Dirección MAC (Hardware):</span>
-                <span 
-                  onClick={(e) => device.macAddress && handleCopy(device.macAddress, `mac-net-${device.id}`, e)}
-                  className="copy-chip copy-chip-blue"
-                  style={{ fontFamily: 'JetBrains Mono, monospace' }}
-                  title={device.macAddress ? "Clic para copiar dirección MAC" : undefined}
-                >
-                  <span>{device.macAddress || 'No detectada'}</span>
-                  {copiedId === `mac-net-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
-                </span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Dirección IP (LAN):</span>
-                <span 
-                  onClick={(e) => device.ipAddress && handleCopy(device.ipAddress, `ip-net-${device.id}`, e)}
-                  className="copy-chip copy-chip-cyan"
-                  style={{ fontFamily: 'JetBrains Mono, monospace' }}
-                  title="Clic para copiar IP"
-                >
-                  <span>{device.ipAddress || '127.0.0.1'}</span>
-                  {copiedId === `ip-net-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
-                </span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Sistema Operativo:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.os?.replace('Microsoft ', '') || 'Windows'}</span>
-              </div>
+              {hasRealNetwork ? (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Dirección MAC (Hardware):</span>
+                    <span
+                      onClick={(e) => isValidMacAddress(device.macAddress) && handleCopy(device.macAddress, `mac-net-${device.id}`, e)}
+                      className="copy-chip copy-chip-blue"
+                      style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                      title={isValidMacAddress(device.macAddress) ? "Clic para copiar dirección MAC" : undefined}
+                    >
+                      <span>{isValidMacAddress(device.macAddress) ? device.macAddress : 'No detectada'}</span>
+                      {copiedId === `mac-net-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Dirección IP (LAN):</span>
+                    <span
+                      onClick={(e) => isValidIpAddress(device.ipAddress) && handleCopy(device.ipAddress, `ip-net-${device.id}`, e)}
+                      className="copy-chip copy-chip-cyan"
+                      style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                      title="Clic para copiar IP"
+                    >
+                      <span>{isValidIpAddress(device.ipAddress) ? device.ipAddress : '127.0.0.1'}</span>
+                      {copiedId === `ip-net-${device.id}` && <Check size={11} color="var(--accent-emerald)" />}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Sistema / Protocolo:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.os?.replace('Microsoft ', '') || (isNet ? 'TCP/IP Ethernet' : 'Windows')}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Ubicación Asignada:</span>
+                    <span style={{ fontWeight: 700, color: '#10b981' }}>{device.location || 'Sede Central'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Responsable / Custodio:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.assignedUser || 'Almacén TI / Stock'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Departamento:</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{device.department || 'Tecnologías de la Información'}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-
-          {/* Bloque 4: Ubicación y Asignación */}
-          <div className="acrylic-card" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-acrylic)', backgroundColor: 'var(--bg-acrylic-card)' }}>
-            <div style={{
-              fontSize: '0.68rem',
-              fontWeight: 800,
-              color: '#10b981',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              marginBottom: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px'
-            }}>
-              <MapPin size={12} />
-              <span>Ubicación & Asignación</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem' }}>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Ubicación Física:</span>
-                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{device.location || 'Sede Central'}</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Área / Departamento:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.department || 'General'}</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.62rem', fontWeight: 600, display: 'block' }}>Usuario Responsable:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{device.assignedUser || 'Estación Común'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Especificaciones Técnicas del Componente si aplica */}
-        {device.specs && (
-          <div style={{
-            padding: '8px 12px',
-            borderRadius: '6px',
-            background: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
-            fontSize: '0.72rem',
-            color: 'var(--text-primary)'
-          }}>
-            <strong style={{ color: 'var(--accent-primary)' }}>Especificaciones Técnicas:</strong> {device.specs}
-          </div>
-        )}
-
-        {/* Notas de Inventario si existen */}
-        {device.notes && (
-          <div style={{
-            padding: '8px 12px',
-            borderRadius: '6px',
-            background: 'rgba(148, 163, 184, 0.05)',
-            border: '1px solid var(--border-acrylic)',
-            fontSize: '0.70rem',
-            color: 'var(--text-secondary)'
-          }}>
-            <strong style={{ color: 'var(--text-primary)' }}>Notas:</strong> {device.notes}
-          </div>
-        )}
-
-        {/* Pie de acciones del Drawer */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: '8px',
-          paddingTop: '2px'
-        }}>
-          <button
-            type="button"
-            onClick={() => onSelectDevice(device)}
-            className="btn-flat btn-primary"
-            style={{ padding: '5px 12px', fontSize: '0.72rem', fontWeight: 700, gap: '5px', borderRadius: '6px' }}
-            title="Ver ficha técnica completa y código QR del equipo"
-          >
-            <Monitor size={12} />
-            <span>Ver Ficha Técnica Completa</span>
-          </button>
         </div>
       </div>
     );
@@ -767,7 +811,7 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
             lineHeight: 1.2
           }}>
             <div>EQUIPO / MODELO / S/N</div>
-            <div>PROCESADOR & PLACA</div>
+            <div>ESPECIFICACIONES / CPU</div>
             <div>MEMORIA RAM</div>
             <div>ALMACENAMIENTO</div>
             <div>SISTEMA & RED</div>
@@ -894,80 +938,225 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
                       </div>
                     </div>
 
-                    {/* COLUMNA 2: PROCESADOR & PLACA */}
+                    {/* COLUMNA 2: ESPECIFICACIONES / CPU (Adaptativo Inteligente) */}
                     <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                      <div 
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} 
-                        title={device.cpu || 'No detectado'}
-                      >
-                        <Cpu size={11} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
-                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                          {formatCpuName(device.cpu)}
-                        </span>
-                      </div>
-                      <div 
-                        style={{ fontSize: '0.62rem', color: 'var(--accent-cyan)', fontWeight: 600, marginTop: '1px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} 
-                        title={device.motherboard || 'Placa Base Estándar'}
-                      >
-                        Placa: {device.motherboard || 'Estándar'}
-                      </div>
+                      {isComputerType(device.deviceType) ? (
+                        <>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}
+                            title={device.cpu || 'No detectado'}
+                          >
+                            <Cpu size={11} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {formatCpuName(device.cpu)}
+                            </span>
+                          </div>
+                          <div
+                            style={{ fontSize: '0.62rem', color: 'var(--accent-cyan)', fontWeight: 600, marginTop: '1px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}
+                            title={device.motherboard || 'Placa Base Estándar'}
+                          >
+                            Placa: {device.motherboard || 'Estándar'}
+                          </div>
+                        </>
+                      ) : isSpeakerType(device.deviceType) ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} title={device.specs || 'Parlantes de Audio'}>
+                            <Volume2 size={11} color="#f97316" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.specs || 'Parlantes Estéreo'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#f97316', fontWeight: 600, marginTop: '1px' }}>Audio / Parlantes</div>
+                        </>
+                      ) : isMonitorType(device.deviceType) ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} title={device.specs || 'Monitor Display'}>
+                            <Tv size={11} color="#06b6d4" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.specs || 'Monitor / Pantalla'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#06b6d4', fontWeight: 600, marginTop: '1px' }}>Monitor / Display</div>
+                        </>
+                      ) : isEcranType(device.deviceType) ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} title={device.specs || 'Pantalla de Proyección'}>
+                            <Projector size={11} color="#a855f7" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.specs || 'Pantalla Retráctil'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#a855f7', fontWeight: 600, marginTop: '1px' }}>Ecran / Proyección</div>
+                        </>
+                      ) : isPrinterType(device.deviceType) ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} title={device.supplies || 'Tinta / Tóner'}>
+                            <Droplet size={11} color="var(--accent-secondary)" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.supplies || 'Suministro Oficial'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--accent-secondary)', fontWeight: 600, marginTop: '1px' }}>Impresora & Tintas</div>
+                        </>
+                      ) : isNetworkType(device.deviceType) ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                            <Network size={11} color="var(--accent-rose)" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.specs || device.model || 'Equipo de Red'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--accent-rose)', fontWeight: 600, marginTop: '1px' }}>Switch / Router</div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.70rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                            <HardDrive size={11} color="#f59e0b" style={{ flexShrink: 0 }} />
+                            <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              {device.specs || device.model || 'Hardware'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#f59e0b', fontWeight: 600, marginTop: '1px' }}>{device.os || 'Componente'}</div>
+                        </>
+                      )}
                     </div>
 
-                    {/* COLUMNA 3: MEMORIA RAM */}
+                    {/* COLUMNA 3: MEMORIA RAM (Solo para cómputo) */}
                     <div>
-                      <span style={{
-                        fontSize: '0.67rem',
-                        fontWeight: 800,
-                        padding: '1px 6px',
-                        borderRadius: '5px',
-                        backgroundColor: 'var(--bg-canvas-subtle)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--border-acrylic)',
-                        display: 'inline-block',
-                        lineHeight: 1.3
-                      }}>
-                        {device.ram || '8 GB'}
-                      </span>
-                    </div>
-
-                    {/* COLUMNA 4: ALMACENAMIENTO (DISCO) */}
-                    <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                      <div 
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }} 
-                        title={device.storage || 'Disco estándar'}
-                      >
-                        <HardDrive size={11} color="var(--accent-amber)" style={{ flexShrink: 0 }} />
-                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                          {formatDiskString(device.storage)}
+                      {supportsComputeSpecs(device.deviceType) ? (
+                        <span style={{
+                          fontSize: '0.67rem',
+                          fontWeight: 800,
+                          padding: '1px 6px',
+                          borderRadius: '5px',
+                          backgroundColor: 'var(--bg-canvas-subtle)',
+                          color: 'var(--text-primary)',
+                          border: '1px solid var(--border-acrylic)',
+                          display: 'inline-block',
+                          lineHeight: 1.3
+                        }}>
+                          {device.ram || '8 GB'}
                         </span>
-                      </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 600, opacity: 0.5 }}>—</span>
+                      )}
                     </div>
 
-                    {/* COLUMNA 5: SISTEMA & RED */}
+                    {/* COLUMNA 4: ALMACENAMIENTO (DISCO) (Solo para cómputo) */}
                     <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                      <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
-                        {device.os?.replace('Microsoft ', '') || 'Windows'}
-                      </div>
-                      <div
-                        onClick={(e) => handleCopy(device.ipAddress, `ip-${device.id}`, e)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '3px',
-                          fontFamily: 'monospace',
-                          fontSize: '0.64rem',
-                          fontWeight: 700,
-                          color: 'var(--accent-cyan)',
-                          marginTop: '1px',
-                          cursor: 'pointer',
-                          lineHeight: 1.2
-                        }}
-                        title="Dirección IP - Clic para copiar"
-                      >
-                        <Wifi size={9} color="var(--accent-cyan)" />
-                        <span>{device.ipAddress || '127.0.0.1'}</span>
-                        {copiedId === `ip-${device.id}` && <Check size={9} color="var(--accent-emerald)" />}
-                      </div>
+                      {supportsComputeSpecs(device.deviceType) ? (
+                        <div
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}
+                          title={device.storage || 'Disco estándar'}
+                        >
+                          <HardDrive size={11} color="var(--accent-amber)" style={{ flexShrink: 0 }} />
+                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                            {formatDiskString(device.storage)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 600, opacity: 0.5 }}>—</span>
+                      )}
+                    </div>
+
+                    {/* COLUMNA 5: SISTEMA & RED (Diferenciado por categoría) */}
+                    <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                      {isComputerType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                            {device.os?.replace('Microsoft ', '') || 'Windows'}
+                          </div>
+                          <div
+                            onClick={(e) => handleCopy(device.ipAddress, `ip-${device.id}`, e)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              fontFamily: 'monospace',
+                              fontSize: '0.64rem',
+                              fontWeight: 700,
+                              color: 'var(--accent-cyan)',
+                              marginTop: '1px',
+                              cursor: 'pointer',
+                              lineHeight: 1.2
+                            }}
+                            title="Dirección IP - Clic para copiar"
+                          >
+                            <Wifi size={9} color="var(--accent-cyan)" />
+                            <span>{device.ipAddress || '127.0.0.1'}</span>
+                            {copiedId === `ip-${device.id}` && <Check size={9} color="var(--accent-emerald)" />}
+                          </div>
+                        </>
+                      ) : isNetworkType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent-rose)', lineHeight: 1.2 }}>
+                            Red Ethernet
+                          </div>
+                          <div
+                            onClick={(e) => isValidIpAddress(device.ipAddress) && handleCopy(device.ipAddress, `ip-${device.id}`, e)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              fontFamily: 'monospace',
+                              fontSize: '0.64rem',
+                              fontWeight: 700,
+                              color: 'var(--accent-cyan)',
+                              marginTop: '1px',
+                              cursor: isValidIpAddress(device.ipAddress) ? 'pointer' : 'default',
+                              lineHeight: 1.2
+                            }}
+                          >
+                            <Network size={9} color="var(--accent-cyan)" />
+                            <span>{isValidIpAddress(device.ipAddress) ? device.ipAddress : 'LAN'}</span>
+                          </div>
+                        </>
+                      ) : isPrinterType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--accent-secondary)', lineHeight: 1.2 }}>
+                            Impresora
+                          </div>
+                          {isValidIpAddress(device.ipAddress) ? (
+                            <div
+                              onClick={(e) => handleCopy(device.ipAddress, `ip-${device.id}`, e)}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontFamily: 'monospace', fontSize: '0.64rem', fontWeight: 700, color: 'var(--accent-cyan)', cursor: 'pointer', lineHeight: 1.2 }}
+                            >
+                              <Wifi size={9} color="var(--accent-cyan)" />
+                              <span>{device.ipAddress}</span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Conexión USB</span>
+                          )}
+                        </>
+                      ) : isSpeakerType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f97316', lineHeight: 1.2 }}>
+                            Audio Analógico / BT
+                          </div>
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Periférico Pasivo</span>
+                        </>
+                      ) : isMonitorType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#06b6d4', lineHeight: 1.2 }}>
+                            Video HDMI / DP
+                          </div>
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Pantalla Display</span>
+                        </>
+                      ) : isEcranType(device.deviceType) ? (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#a855f7', lineHeight: 1.2 }}>
+                            Pantalla Proyección
+                          </div>
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Accesorio Pasivo</span>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f59e0b', lineHeight: 1.2 }}>
+                            Hardware / Stock
+                          </div>
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Custodia TI</span>
+                        </>
+                      )}
                     </div>
 
                     {/* COLUMNA 6: UBICACIÓN & USUARIO */}
@@ -1146,47 +1335,75 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
                   </div>
                 </div>
 
-                {/* Grid de Datos 2x2 para Móvil (100% visible, sin cortes) */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: '4px 8px',
-                  fontSize: '0.68rem',
-                  backgroundColor: 'var(--bg-canvas-subtle)',
-                  padding: '6px 8px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--border-acrylic)'
-                }}>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>S/N:</span>
-                    <span style={{ fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-primary)', fontSize: '0.64rem' }}>
-                      {device.serialNumber || device.barcode || 'Sin S/N'}
-                    </span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>RAM & DISCO:</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.64rem' }}>
-                      {device.ram || '8 GB'} • {formatDiskString(device.storage)}
-                    </span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>IP / MAC:</span>
-                    <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-cyan)', fontSize: '0.64rem', display: 'block' }}>
-                      {device.ipAddress || '127.0.0.1'}
-                    </span>
-                    {device.macAddress && (
-                      <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-primary)', fontSize: '0.58rem' }}>
-                        {device.macAddress}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>UBICACIÓN:</span>
-                    <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.64rem' }}>
-                      {device.location || 'Sede Central'}
-                    </span>
-                  </div>
-                </div>
+                {/* Grid de Datos 2x2 Inteligente para Móvil (adaptado según categoría del bien) */}
+                {(() => {
+                  const smart = getAssetSmartFields(device);
+                  const isComp = supportsComputeSpecs(device.deviceType);
+                  const hasRealNet = supportsNetworkAddress(device.deviceType) && isValidIpAddress(device.ipAddress);
+                  const hasRealMac = supportsNetworkAddress(device.deviceType) && isValidMacAddress(device.macAddress);
+
+                  return (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '4px 8px',
+                      fontSize: '0.68rem',
+                      backgroundColor: 'var(--bg-canvas-subtle)',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-acrylic)'
+                    }}>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>{smart.box1Label}</span>
+                        <span style={{ fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-primary)', fontSize: '0.64rem' }}>
+                          {smart.box1Value}
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>{smart.box2Label}</span>
+                        <span style={{ fontWeight: 700, fontSize: '0.64rem', color: isComp ? 'var(--text-primary)' : 'var(--accent-secondary)' }} title={smart.box2Value}>
+                          {isComp ? `${device.ram || '8 GB'} • ${formatDiskString(device.storage)}` : smart.box2Value}
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>{smart.box3Label}</span>
+                        {isComp ? (
+                          <>
+                            <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-cyan)', fontSize: '0.64rem', display: 'block' }}>
+                              {device.ipAddress || '127.0.0.1'}
+                            </span>
+                            {hasRealMac && (
+                              <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-primary)', fontSize: '0.58rem', display: 'block' }}>
+                                {device.macAddress}
+                              </span>
+                            )}
+                          </>
+                        ) : hasRealNet ? (
+                          <>
+                            <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-cyan)', fontSize: '0.64rem', display: 'block' }}>
+                              {device.ipAddress}
+                            </span>
+                            {hasRealMac && (
+                              <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-primary)', fontSize: '0.58rem', display: 'block' }}>
+                                {device.macAddress}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.64rem', display: 'block' }}>
+                            {smart.box3Value}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.58rem', display: 'block' }}>{smart.box4Label}</span>
+                        <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.64rem' }}>
+                          {smart.box4Value}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Despliegue Ficha Técnica en Móvil con Transición Fluida */}
                 <div className={`card-drawer-accordion ${isExpanded ? 'is-expanded' : ''}`}>

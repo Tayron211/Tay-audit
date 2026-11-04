@@ -1012,9 +1012,15 @@ exit /b 0
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           id, hostname, deviceType, status,
-          body.os || 'Desconocido', body.ram || 'No especificado', body.cpu || 'No especificado', body.storage || 'No especificado',
-          body.ipAddress || '0.0.0.0', body.macAddress || '00:00:00:00:00:00', body.serialNumber || 'S/N',
-          body.motherboard || 'Genérica', body.compatibility || 'Compatible', body.brand || 'Genérico', body.model || 'Genérico',
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server') ? (body.os || 'Desconocido') : (body.os || (deviceType === 'speaker' ? 'Dispositivo de Audio' : deviceType === 'ecran' ? 'Pantalla de Proyección' : deviceType === 'monitor' ? 'Monitor / Display' : '')),
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server') ? (body.ram || 'No especificado') : (body.ram || ''),
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server') ? (body.cpu || 'No especificado') : (body.cpu || ''),
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server') ? (body.storage || 'No especificado') : (body.storage || ''),
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server' || deviceType === 'network' || deviceType === 'printer') ? (body.ipAddress && body.ipAddress !== '0.0.0.0' ? body.ipAddress : '') : '',
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server' || deviceType === 'network' || deviceType === 'printer') ? (body.macAddress && body.macAddress !== '00:00:00:00:00:00' ? body.macAddress : '') : '',
+          body.serialNumber || 'S/N',
+          (deviceType === 'pc' || deviceType === 'laptop' || deviceType === 'server') ? (body.motherboard || 'Genérica') : (body.motherboard || ''),
+          body.compatibility || 'Compatible', body.brand || 'Genérico', body.model || 'Genérico',
           body.assignedUser || 'Sin Asignar', body.department || 'General', body.location || 'Oficina Principal',
           now, body.notes || 'Auditoría manual registrada.', body.supplies || null, body.specs || null,
           qrCodeData, now, now,
@@ -1052,6 +1058,23 @@ exit /b 0
         const nextStatus = body.status !== undefined ? body.status : existing.status;
         const nextHostname = body.hostname !== undefined ? String(body.hostname).trim() : existing.hostname;
 
+        const dType = body.deviceType !== undefined ? body.deviceType : existing.deviceType;
+        const isComp = dType === 'pc' || dType === 'laptop' || dType === 'server';
+        const isNet = dType === 'network';
+        const isPrint = dType === 'printer';
+
+        const rawIp = body.ipAddress !== undefined ? body.ipAddress : existing.ipAddress;
+        const cleanIp = (isComp || isNet || isPrint) ? (rawIp && rawIp !== '0.0.0.0' ? rawIp : (isComp ? '127.0.0.1' : '')) : '';
+
+        const rawMac = body.macAddress !== undefined ? body.macAddress : existing.macAddress;
+        const cleanMac = (isComp || isNet || isPrint) ? (rawMac && rawMac !== '00:00:00:00:00:00' ? rawMac : '') : '';
+
+        const cleanMb = isComp ? (body.motherboard !== undefined ? body.motherboard : existing.motherboard) : '';
+        const cleanCpu = isComp ? (body.cpu !== undefined ? body.cpu : existing.cpu) : '';
+        const cleanRam = isComp ? (body.ram !== undefined ? body.ram : existing.ram) : '';
+        const cleanStorage = isComp ? (body.storage !== undefined ? body.storage : existing.storage) : (dType === 'component' ? (body.storage || existing.storage || '') : '');
+        const cleanOs = isComp ? (body.os !== undefined ? body.os : existing.os) : (dType === 'component' ? (body.os || existing.os || '') : '');
+
         await db.batch([
           db.prepare(`
             UPDATE devices SET
@@ -1064,16 +1087,16 @@ exit /b 0
             WHERE id = ?
           `).bind(
             nextHostname,
-            body.deviceType !== undefined ? body.deviceType : existing.deviceType,
+            dType,
             nextStatus,
-            body.os !== undefined ? body.os : existing.os,
-            body.ram !== undefined ? body.ram : existing.ram,
-            body.cpu !== undefined ? body.cpu : existing.cpu,
-            body.storage !== undefined ? body.storage : existing.storage,
-            body.ipAddress !== undefined ? body.ipAddress : existing.ipAddress,
-            body.macAddress !== undefined ? body.macAddress : existing.macAddress,
+            cleanOs,
+            cleanRam,
+            cleanCpu,
+            cleanStorage,
+            cleanIp,
+            cleanMac,
             body.serialNumber !== undefined ? body.serialNumber : existing.serialNumber,
-            body.motherboard !== undefined ? body.motherboard : existing.motherboard,
+            cleanMb,
             body.compatibility !== undefined ? body.compatibility : existing.compatibility,
             body.brand !== undefined ? body.brand : existing.brand,
             body.model !== undefined ? body.model : existing.model,

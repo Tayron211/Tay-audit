@@ -24,6 +24,27 @@ import type { Device, DeviceStatus, DeviceType, UserRole } from '../types';
 import { api } from '../services/api';
 import { getCategoryIcon } from './DeviceCard';
 import { CustomSelect, type SelectOption } from './CustomSelect';
+import { 
+  Volume2, 
+  Projector, 
+  PackageCheck, 
+  Printer as PrinterIcon
+} from 'lucide-react';
+import {
+  isComputerType,
+  isSpeakerType,
+  isMonitorType,
+  isEcranType,
+  isPrinterType,
+  isComponentType,
+  isNetworkType,
+  supportsComputeSpecs,
+  supportsNetworkAddress,
+  isValidIpAddress,
+  isValidMacAddress,
+  isValidRam,
+  isValidStorage
+} from '../utils/assetCategories';
 
 const DEVICE_TYPE_OPTIONS: SelectOption<DeviceType>[] = [
   { value: 'pc', label: 'Computadora Ensamblada / Escritorio' },
@@ -284,11 +305,25 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     setIsSaving(true);
     setActionMessage(null);
 
+    const isComp = isComputerType(editForm.deviceType);
+    const isNet = isNetworkType(editForm.deviceType);
+    const isPrint = isPrinterType(editForm.deviceType);
+
+    // Sanitización inteligente: periféricos pasivos y de audio no almacenan IP/MAC/CPU/RAM ficticias
+    const sanitizedForm = {
+      ...editForm,
+      hostname: editForm.hostname.toUpperCase().trim(),
+      ipAddress: (isComp || isNet || isPrint) ? (isValidIpAddress(editForm.ipAddress) ? editForm.ipAddress.trim() : (isComp ? '127.0.0.1' : '')) : '',
+      macAddress: (isComp || isNet || isPrint) ? (isValidMacAddress(editForm.macAddress) ? editForm.macAddress.trim() : '') : '',
+      motherboard: isComp ? (editForm.motherboard || '') : '',
+      cpu: isComp ? (editForm.cpu || '') : '',
+      ram: isComp ? (editForm.ram || '') : '',
+      storage: isComp ? (editForm.storage || '') : (editForm.deviceType === 'component' ? editForm.storage : ''),
+      os: isComp ? (editForm.os || '') : (editForm.deviceType === 'component' ? (editForm.os || '') : '')
+    };
+
     try {
-      const updated = await api.updateDevice(device.id, {
-        ...editForm,
-        hostname: editForm.hostname.toUpperCase().trim()
-      });
+      const updated = await api.updateDevice(device.id, sanitizedForm);
       setDevice(updated);
       setActionMessage({ type: 'success', text: '¡Datos del equipo y ubicación actualizados exitosamente en inventario!' });
       setIsEditing(false);
@@ -465,7 +500,10 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                 <div class="info-row"><span class="info-label">S/N:</span><span class="info-val">${device.serialNumber || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Tipo:</span><span class="info-val">${(device.deviceType || 'pc').toUpperCase()}</span></div>
                 <div class="info-row"><span class="info-label">Ubicación:</span><span class="info-val">${device.location || 'Sede Central'}</span></div>
-                <div class="info-row"><span class="info-label">IP:</span><span class="info-val">${device.ipAddress || 'N/A'}</span></div>
+                ${isValidIpAddress(device.ipAddress) 
+  ? `<div class="info-row"><span class="info-label">IP:</span><span class="info-val">${device.ipAddress}</span></div>`
+  : (device.specs ? `<div class="info-row"><span class="info-label">Detalle:</span><span class="info-val">${device.specs}</span></div>` : '')
+}
                 <div class="info-row"><span class="info-label">Usuario:</span><span class="info-val">${device.assignedUser || 'General'}</span></div>
               </div>
             </div>
@@ -880,7 +918,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               </div>
             )}
 
-            {/* BLOQUE 3: ESPECIFICACIONES DE HARDWARE & RED */}
+            {/* BLOQUE 3: ESPECIFICACIONES TÉCNICAS ADAPTADAS POR TIPO */}
             <div className="device-modal-section">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                 <div style={{
@@ -894,10 +932,14 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                   justifyContent: 'center',
                   flexShrink: 0
                 }}>
-                  <Cpu size={15} />
+                  {supportsComputeSpecs(editForm.deviceType) ? <Cpu size={15} /> : <PackageCheck size={15} />}
                 </div>
                 <h4 style={{ fontSize: '0.84rem', color: 'var(--text-primary)', margin: 0, fontWeight: 800 }}>
-                  3. HARDWARE Y ESPECIFICACIONES TÉCNICAS
+                  {supportsComputeSpecs(editForm.deviceType) 
+                    ? '3. HARDWARE Y ESPECIFICACIONES TÉCNICAS' 
+                    : supportsNetworkAddress(editForm.deviceType)
+                      ? '3. IDENTIFICACIÓN Y CONFIGURACIÓN DE RED'
+                      : '3. IDENTIFICACIÓN FÍSICA Y CONTROL'}
                 </h4>
               </div>
 
@@ -914,88 +956,99 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="device-modal-label">Placa Madre (Motherboard)</label>
-                  <input
-                    type="text"
-                    value={editForm.motherboard}
-                    onChange={(e) => setEditForm({ ...editForm, motherboard: e.target.value })}
-                    placeholder="ej. HP 832A, ASUS B550M"
-                    className="device-modal-input"
-                  />
-                </div>
+                {/* Especificaciones de cómputo solo para PC / Laptop / Servidor */}
+                {supportsComputeSpecs(editForm.deviceType) && (
+                  <>
+                    <div>
+                      <label className="device-modal-label">Placa Madre (Motherboard)</label>
+                      <input
+                        type="text"
+                        value={editForm.motherboard}
+                        onChange={(e) => setEditForm({ ...editForm, motherboard: e.target.value })}
+                        placeholder="ej. HP 832A, ASUS B550M"
+                        className="device-modal-input"
+                      />
+                    </div>
 
-                <div>
-                  <label className="device-modal-label">Procesador (CPU)</label>
-                  <input
-                    type="text"
-                    value={editForm.cpu}
-                    onChange={(e) => setEditForm({ ...editForm, cpu: e.target.value })}
-                    placeholder="ej. Intel Core i5-8250U @ 1.60GHz"
-                    className="device-modal-input"
-                  />
-                </div>
+                    <div>
+                      <label className="device-modal-label">Procesador (CPU)</label>
+                      <input
+                        type="text"
+                        value={editForm.cpu}
+                        onChange={(e) => setEditForm({ ...editForm, cpu: e.target.value })}
+                        placeholder="ej. Intel Core i5-8250U @ 1.60GHz"
+                        className="device-modal-input"
+                      />
+                    </div>
 
-                <div>
-                  <label className="device-modal-label">Memoria RAM</label>
-                  <input
-                    type="text"
-                    value={editForm.ram}
-                    onChange={(e) => setEditForm({ ...editForm, ram: e.target.value })}
-                    placeholder="ej. 8 GB DDR4, 16 GB"
-                    className="device-modal-input"
-                  />
-                </div>
+                    <div>
+                      <label className="device-modal-label">Memoria RAM</label>
+                      <input
+                        type="text"
+                        value={editForm.ram}
+                        onChange={(e) => setEditForm({ ...editForm, ram: e.target.value })}
+                        placeholder="ej. 8 GB DDR4, 16 GB"
+                        className="device-modal-input"
+                      />
+                    </div>
 
-                <div>
-                  <label className="device-modal-label">Almacenamiento / Disco</label>
-                  <input
-                    type="text"
-                    value={editForm.storage}
-                    onChange={(e) => setEditForm({ ...editForm, storage: e.target.value })}
-                    placeholder="ej. C: 931 GB (688 GB libre)"
-                    className="device-modal-input"
-                  />
-                </div>
+                    <div>
+                      <label className="device-modal-label">Almacenamiento / Disco</label>
+                      <input
+                        type="text"
+                        value={editForm.storage}
+                        onChange={(e) => setEditForm({ ...editForm, storage: e.target.value })}
+                        placeholder="ej. C: 931 GB (688 GB libre)"
+                        className="device-modal-input"
+                      />
+                    </div>
 
-                <div>
-                  <label className="device-modal-label">Sistema Operativo</label>
-                  <input
-                    type="text"
-                    value={editForm.os}
-                    onChange={(e) => setEditForm({ ...editForm, os: e.target.value })}
-                    placeholder="ej. Windows 11 Pro 64-bit"
-                    className="device-modal-input"
-                  />
-                </div>
+                    <div>
+                      <label className="device-modal-label">Sistema Operativo</label>
+                      <input
+                        type="text"
+                        value={editForm.os}
+                        onChange={(e) => setEditForm({ ...editForm, os: e.target.value })}
+                        placeholder="ej. Windows 11 Pro 64-bit"
+                        className="device-modal-input"
+                      />
+                    </div>
+                  </>
+                )}
 
-                <div>
-                  <label className="device-modal-label">Dirección IP</label>
-                  <input
-                    type="text"
-                    value={editForm.ipAddress}
-                    onChange={(e) => setEditForm({ ...editForm, ipAddress: e.target.value })}
-                    placeholder="ej. 192.168.18.187"
-                    className="device-modal-input"
-                    style={{ fontFamily: 'monospace' }}
-                  />
-                </div>
+                {/* Red solo para Cómputo, Switch/Router o Impresoras de red */}
+                {supportsNetworkAddress(editForm.deviceType) && (
+                  <>
+                    <div>
+                      <label className="device-modal-label">Dirección IP {editForm.deviceType === 'printer' ? '(Opcional de red)' : ''}</label>
+                      <input
+                        type="text"
+                        value={editForm.ipAddress}
+                        onChange={(e) => setEditForm({ ...editForm, ipAddress: e.target.value })}
+                        placeholder={editForm.deviceType === 'printer' ? 'ej. 192.168.1.50 (dejar vacío si es USB)' : 'ej. 192.168.18.187'}
+                        className="device-modal-input"
+                        style={{ fontFamily: 'monospace' }}
+                      />
+                    </div>
 
-                <div>
-                  <label className="device-modal-label">Dirección MAC</label>
-                  <input
-                    type="text"
-                    value={editForm.macAddress}
-                    onChange={(e) => setEditForm({ ...editForm, macAddress: e.target.value })}
-                    placeholder="ej. 00:1A:2B:3C:4D:5E"
-                    className="device-modal-input"
-                    style={{ fontFamily: 'monospace' }}
-                  />
-                </div>
+                    <div>
+                      <label className="device-modal-label">Dirección MAC</label>
+                      <input
+                        type="text"
+                        value={editForm.macAddress}
+                        onChange={(e) => setEditForm({ ...editForm, macAddress: e.target.value })}
+                        placeholder="ej. 00:1A:2B:3C:4D:5E"
+                        className="device-modal-input"
+                        style={{ fontFamily: 'monospace' }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* BLOQUE DE MONITOR CONECTADO */}
+            {/* BLOQUE DE MONITOR CONECTADO (Solo aplicable a equipos de cómputo) */}
+            {(isComputerType(editForm.deviceType) || editForm.monitorBrand || editForm.monitorModel || editForm.monitorSerial) && (
             <div className="device-modal-section" style={{ borderLeft: '3px solid #06b6d4' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                 <div style={{
@@ -1063,6 +1116,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                 </div>
               </div>
             </div>
+            )}
 
             {/* BLOQUE 4: NOTAS DE INVENTARIO */}
             <div className="device-modal-section">
@@ -1105,89 +1159,452 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
               gap: '14px',
               marginBottom: '20px'
             }}>
-              {/* Hardware column */}
-              <div className="device-modal-section">
-                <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
-                  <Cpu size={15} /> CARACTERÍSTICAS DE HARDWARE
-                </h4>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Modelo de Placa Madre</span>
-                    <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>{device.motherboard || 'Placa Base Estándar'}</span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Equipo</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {device.deviceType === 'pc' ? 'Computadora Ensamblada' : (device.brand || 'Equipo Corporativo')}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Memoria RAM</span>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{device.ram || 'No detectada'}</span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Procesador (CPU)</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{device.cpu || 'No detectado'}</span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Sistema Operativo</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{device.os || 'No especificado'}</span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Almacenamiento (Disco)</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{device.storage || 'No especificado'}</span>
-                  </div>
+              {/* Columnas 1 y 2 con diferenciación inteligente según categoría de bien */}
+              {(() => {
+                const isPrint = isPrinterType(device.deviceType);
+                const isSpeaker = isSpeakerType(device.deviceType);
+                const isEcran = isEcranType(device.deviceType);
+                const isMon = isMonitorType(device.deviceType);
+                const isComponent = isComponentType(device.deviceType);
 
-                  {device.supplies && (
-                    <div style={{ marginTop: '4px', padding: '6px 10px', borderRadius: '8px', backgroundColor: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      <span className="form-label" style={{ margin: 0, fontSize: '0.66rem', color: '#10b981', fontWeight: 800 }}>Tinta / Tóner Compatible</span>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.78rem', display: 'block' }}>{device.supplies}</span>
+                const hasValidIp = isValidIpAddress(device.ipAddress);
+                const hasValidMac = isValidMacAddress(device.macAddress);
+
+                if (isSpeaker) {
+                  return (
+                    <>
+                      {/* Columna 1: Características de Audio */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: '#f59e0b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <Volume2 size={15} /> SISTEMA DE AUDIO & ESPECIFICACIONES
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Bien</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Sistema de Audio / Parlantes</span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                              {device.brand || ''} {device.model || 'Parlantes de Audio'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Conexión & Audio</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                              {device.specs || 'Conexión Estándar (Bluetooth / Jack 3.5mm / USB)'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Clasificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>Periférico Pasivo de Sonido</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Columna 2: Identificación Patrimonial */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <PackageCheck size={15} /> IDENTIFICACIÓN & CONTROL
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                            <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                              {device.serialNumber || 'Sin S/N'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Código Patrimonial / QR</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace', fontWeight: 700 }}>
+                              {device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Estado Operativo</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {getStatusBadge(device.status).label}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(device.lastAuditDate).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                if (isEcran) {
+                  return (
+                    <>
+                      {/* Columna 1: Pantalla de Proyección */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: '#06b6d4', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <Projector size={15} /> PANTALLA DE PROYECCIÓN / ECRAN
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Bien</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Ecran / Pantalla de Proyección</span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                              {device.brand || ''} {device.model || 'Ecran'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Medidas & Formato</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                              {device.specs || 'Dimensiones de proyección estándar'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Clasificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>Activo Audiovisual Fijo</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Columna 2: Identificación */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <PackageCheck size={15} /> IDENTIFICACIÓN & CONTROL
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                            <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                              {device.serialNumber || 'Sin S/N'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Código Patrimonial / QR</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace', fontWeight: 700 }}>
+                              {device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Estado Operativo</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {getStatusBadge(device.status).label}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(device.lastAuditDate).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                if (isMon) {
+                  return (
+                    <>
+                      {/* Columna 1: Monitor / Pantalla */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: '#38bdf8', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <Tv size={15} /> MONITOR / PANTALLA INDEPENDIENTE
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Bien</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Monitor / Display</span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                              {device.brand || ''} {device.model || 'Monitor'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Pulgadas & Entradas</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                              {device.specs || device.monitorSpecs || 'Entradas HDMI / DisplayPort / VGA'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Clasificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>Periférico de Visualización</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Columna 2: Identificación */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <PackageCheck size={15} /> IDENTIFICACIÓN & CONTROL
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                            <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                              {device.serialNumber || 'Sin S/N'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Código de Activo / QR</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace', fontWeight: 700 }}>
+                              {device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Estado Operativo</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {getStatusBadge(device.status).label}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(device.lastAuditDate).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                if (isPrint) {
+                  return (
+                    <>
+                      {/* Columna 1: Impresora */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: '#10b981', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <PrinterIcon size={15} /> ESPECIFICACIONES DE IMPRESIÓN
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Bien</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>Impresora / Multifuncional</span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                              {device.brand || ''} {device.model || 'Impresora'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tinta / Tóner Compatible</span>
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>
+                              {device.supplies || 'Cartuchos / Tóner estándar'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Modo de Conexión</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {hasValidIp ? 'Red Cableada / WiFi (LAN)' : 'Conexión Local USB'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Columna 2: Identificación & Red */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <Wifi size={15} /> CONECTIVIDAD & IDENTIFICACIÓN
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                            <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                              {device.serialNumber || 'Sin S/N'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección IP</span>
+                            <span style={{ color: hasValidIp ? 'var(--accent-cyan)' : 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 700 }}>
+                              {hasValidIp ? device.ipAddress : 'Puerto USB Local (Sin IP)'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección MAC</span>
+                            <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                              {hasValidMac ? device.macAddress : '—'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(device.lastAuditDate).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                if (isComponent) {
+                  return (
+                    <>
+                      {/* Columna 1: Componente */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: '#a855f7', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <Cpu size={15} /> DETALLES DEL COMPONENTE DE CÓMPUTO
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Categoría de Hardware</span>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{device.os || 'Componente de Cómputo'}</span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Marca & Modelo</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                              {device.brand || ''} {device.model || 'Componente'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Capacidad / Rendimiento</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                              {device.storage || device.specs || 'Especificación de fábrica'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Clasificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>Pieza / Repuesto de Cómputo</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Columna 2: Identificación */}
+                      <div className="device-modal-section">
+                        <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                          <PackageCheck size={15} /> IDENTIFICACIÓN & CONTROL
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                            <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                              {device.serialNumber || 'Sin S/N'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Código de Activo / QR</span>
+                            <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace', fontWeight: 700 }}>
+                              {device.qrCodeData || `TAY-${(device.hostname || 'ACT').toUpperCase()}-${device.id.replace('dev-', '').toUpperCase()}`}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Estado Operativo</span>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {getStatusBadge(device.status).label}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(device.lastAuditDate).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+
+                // Fallback: Equipos de Cómputo (PC, Laptop, Servidor) o Red
+                return (
+                  <>
+                    {/* Columna 1: Hardware Cómputo */}
+                    <div className="device-modal-section">
+                      <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                        <Cpu size={15} /> CARACTERÍSTICAS DE HARDWARE
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Modelo de Placa Madre</span>
+                          <span style={{ color: 'var(--accent-cyan)', fontWeight: 800 }}>
+                            {device.motherboard && device.motherboard !== 'Genérica' && device.motherboard !== 'Placa Base Estándar' ? device.motherboard : (device.deviceType === 'laptop' ? 'Motherboard Integrada' : 'Placa Base Estándar')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Tipo de Equipo</span>
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {device.deviceType === 'pc' ? 'Computadora Ensamblada' : (device.brand ? `${device.brand} ${device.model || ''}` : 'Equipo Corporativo')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Memoria RAM</span>
+                          <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+                            {isValidRam(device.ram) ? device.ram : 'No detectada'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Procesador (CPU)</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{device.cpu || 'No detectado'}</span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Sistema Operativo</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{device.os || 'No especificado'}</span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Almacenamiento (Disco)</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            {isValidStorage(device.storage) ? device.storage : 'No especificado'}
+                          </span>
+                        </div>
+
+                        {device.supplies && (
+                          <div style={{ marginTop: '4px', padding: '6px 10px', borderRadius: '8px', backgroundColor: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.66rem', color: '#10b981', fontWeight: 800 }}>Tinta / Tóner Compatible</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.78rem', display: 'block' }}>{device.supplies}</span>
+                          </div>
+                        )}
+
+                        {device.specs && (
+                          <div style={{ marginTop: '2px' }}>
+                            <span className="form-label" style={{ margin: 0, fontSize: '0.66rem' }}>Especificaciones / Medidas</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.78rem' }}>{device.specs}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
 
-                  {device.specs && (
-                    <div style={{ marginTop: '2px' }}>
-                      <span className="form-label" style={{ margin: 0, fontSize: '0.66rem' }}>Especificaciones / Medidas</span>
-                      <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.78rem' }}>{device.specs}</span>
+                    {/* Columna 2: Conectividad & Identificación */}
+                    <div className="device-modal-section">
+                      <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
+                        <Wifi size={15} /> CONECTIVIDAD & IDENTIFICACIÓN
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
+                          <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
+                            {device.serialNumber || 'Sin S/N'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección IP</span>
+                          <span style={{ color: hasValidIp ? 'var(--accent-cyan)' : 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 700 }}>
+                            {hasValidIp ? device.ipAddress : (device.ipAddress === '127.0.0.1' ? '127.0.0.1 (Local)' : 'Sin IP Asignada')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección MAC</span>
+                          <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                            {hasValidMac ? device.macAddress : '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            {new Date(device.lastAuditDate).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Network & Identification column */}
-              <div className="device-modal-section">
-                <h4 style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
-                  <Wifi size={15} /> CONECTIVIDAD & IDENTIFICACIÓN
-                </h4>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem' }}>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Número de Serie (S/N)</span>
-                    <span style={{ color: 'var(--accent-secondary, var(--accent-primary))', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '0.88rem' }}>
-                      {device.serialNumber || 'Sin S/N'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección IP</span>
-                    <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace', fontWeight: 700 }}>
-                      {device.ipAddress}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Dirección MAC</span>
-                    <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {device.macAddress}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="form-label" style={{ margin: 0, fontSize: '0.68rem' }}>Última Verificación</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>
-                      {new Date(device.lastAuditDate).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                  </>
+                );
+              })()}
 
               {/* Assignment & Location column */}
               <div className="device-modal-section" style={{
@@ -1286,7 +1703,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
             </div>
 
             {/* Monitor / Pantalla Conectada Card */}
-            {(device.monitorBrand || device.monitorModel || device.monitorSerial || device.monitorSpecs) && (
+            {isComputerType(device.deviceType) && (device.monitorBrand || device.monitorModel || device.monitorSerial || device.monitorSpecs) && (
               <div className="device-modal-section" style={{ borderLeft: '3px solid #06b6d4', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <h4 style={{ fontSize: '0.78rem', color: '#06b6d4', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
