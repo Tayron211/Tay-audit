@@ -319,7 +319,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BellRing size={14} color="#FFB800" />
+                <BellRing size={14} color="#FDBA30" />
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-primary)', fontWeight: 600 }}>
                   Activar alertas Windows y Móvil
                 </span>

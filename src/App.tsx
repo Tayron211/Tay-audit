@@ -152,7 +152,7 @@ const MainApp: React.FC = () => {
   });
 
   const [customColor, setCustomColor] = useState<string>(() => {
-    return localStorage.getItem('tay_audit_custom_color') || '#ffb800';
+    return localStorage.getItem('tay_audit_custom_color') || '#FDBA30';
   });
 
   const [colorMode, setColorMode] = useState<'dark' | 'light'>(() => {
@@ -167,7 +167,7 @@ const MainApp: React.FC = () => {
     localStorage.setItem('tay_audit_colormode', colorMode);
 
     // Sincronización armónica con la barra y navegación de TODOS los navegadores móviles (Chrome Android, Samsung Internet, iOS Safari, Edge Mobile, Firefox)
-    const mobileThemeColor = colorMode === 'light' ? '#f8fafc' : '#070c1e';
+    const mobileThemeColor = colorMode === 'light' ? '#edf0f5' : '#000000';
     const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
     if (themeMetas.length > 0) {
       themeMetas.forEach(meta => meta.setAttribute('content', mobileThemeColor));

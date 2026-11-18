@@ -689,7 +689,7 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                       borderRadius: '8px',
                       backgroundColor: 'rgba(255, 184, 0, 0.14)',
                       border: '1px solid rgba(255, 184, 0, 0.38)',
-                      color: 'var(--accent-primary, #FFB800)',
+                      color: 'var(--accent-primary, #FDBA30)',
                       fontSize: '0.72rem',
                       fontWeight: 800,
                       letterSpacing: '0.02em',

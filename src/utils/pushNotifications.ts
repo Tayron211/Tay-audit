@@ -52,7 +52,7 @@ export const setupNativeNotificationChannel = async () => {
       sound: 'notification.wav',
       vibration: true,
       lights: true,
-      lightColor: '#FFB800'
+      lightColor: '#FDBA30'
     });
     isChannelCreated = true;
 
@@ -258,7 +258,7 @@ export const sendNativePushNotification = async (notif: AppNotification): Promis
             channelId: 'tay_audit_tickets_channel',
             sound: 'notification.wav',
             smallIcon: 'ic_stat_notification',
-            iconColor: '#FFB800',
+            iconColor: '#FDBA30',
             autoCancel: true,
             foreground: true,
             isExactNotification: false,

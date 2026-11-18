@@ -163,8 +163,8 @@ export const PwaInstallPrompt: React.FC = () => {
                 href="/TayAudit.apk"
                 download="TayAudit.apk"
                 style={{
-                  background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
-                  color: '#070C1E',
+                  background: 'linear-gradient(135deg, #FDBA30 0%, #E29B12 100%)',
+                  color: '#000000',
                   textDecoration: 'none',
                   padding: '6px 13px',
                   borderRadius: '20px',
@@ -185,8 +185,8 @@ export const PwaInstallPrompt: React.FC = () => {
                 type="button"
                 onClick={handleInstallClick}
                 style={{
-                  background: 'linear-gradient(135deg, #FFB800 0%, #F59E0B 100%)',
-                  color: '#070C1E',
+                  background: 'linear-gradient(135deg, #FDBA30 0%, #E29B12 100%)',
+                  color: '#000000',
                   border: 'none',
                   padding: '6px 13px',
                   borderRadius: '20px',
@@ -328,8 +328,8 @@ export const PwaInstallPrompt: React.FC = () => {
                     width: '28px',
                     height: '28px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 184, 0, 0.15)',
-                    color: '#FFB800',
+                    backgroundColor: 'rgba(253, 186, 48, 0.15)',
+                    color: '#FDBA30',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -341,7 +341,7 @@ export const PwaInstallPrompt: React.FC = () => {
                   2
                 </div>
                 <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#FFB800' }} />.
+                  Desliza hacia abajo y selecciona <strong>Añadir a la pantalla de inicio</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px', color: '#FDBA30' }} />.
                 </div>
               </div>
 

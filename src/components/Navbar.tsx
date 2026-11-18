@@ -21,12 +21,13 @@ import type { AppNotification, AuthUser } from '../types';
 
 // Logotipo Corporativo Oficial UPN (Universidad Privada del Norte - TI)
 // Emblema Vectorial Institucional con Corte Superior Horizontal y Alas Bipilares Hacia el Norte
-export const UpnBrandLogo: React.FC<{ size?: number; color?: string }> = ({ size = 22, color = '#0B132B' }) => (
+export const UpnBrandLogo: React.FC<{ size?: number; color?: string; className?: string }> = ({ size = 22, color = '#FDBA30', className = '' }) => (
   <svg 
     width={size} 
     height={size} 
     viewBox="0 0 24 24" 
     fill={color} 
+    className={className}
     xmlns="http://www.w3.org/2000/svg"
     style={{ display: 'block', flexShrink: 0 }}
   >
@@ -161,7 +162,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="nav-brand-logo-box"
             title="Ir al Inicio"
           >
-            <UpnBrandLogo size={18} color="#0B132B" />
+            <img 
+              src="/icon.svg" 
+              alt="UPN" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} 
+            />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -303,12 +308,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 alignItems: 'center',
                 gap: '6px',
                 backgroundColor: isUserMenuOpen 
-                  ? (currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.22)' : 'rgba(56, 189, 248, 0.22)')
-                  : (currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.12)' : 'rgba(56, 189, 248, 0.12)'),
+                  ? (currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.22)' : 'rgba(56, 189, 248, 0.22)')
+                  : (currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.12)' : 'rgba(56, 189, 248, 0.12)'),
                 border: isUserMenuOpen 
-                  ? (currentUser.role === 'admin' ? '1px solid #FFB800' : '1px solid #38bdf8')
-                  : (currentUser.role === 'admin' ? '1px solid rgba(255, 184, 0, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)'),
-                color: currentUser.role === 'admin' ? 'var(--accent-primary, #FFB800)' : '#38bdf8',
+                  ? (currentUser.role === 'admin' ? '1px solid #FDBA30' : '1px solid #38bdf8')
+                  : (currentUser.role === 'admin' ? '1px solid rgba(253, 186, 48, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)'),
+                color: currentUser.role === 'admin' ? 'var(--accent-primary, #FDBA30)' : '#38bdf8',
                 fontSize: '0.76rem',
                 fontWeight: 800,
                 cursor: 'pointer',
@@ -357,8 +362,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: currentUser.role === 'admin' ? 'rgba(255, 184, 0, 0.16)' : 'rgba(56, 189, 248, 0.16)',
-                        color: currentUser.role === 'admin' ? '#FFB800' : '#38bdf8'
+                        backgroundColor: currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.16)' : 'rgba(56, 189, 248, 0.16)',
+                        color: currentUser.role === 'admin' ? '#FDBA30' : '#38bdf8'
                       }}
                     >
                       {currentUser.role === 'admin' ? <ShieldCheck size={16} /> : <User size={16} />}
@@ -482,15 +487,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             flexDirection: 'column',
             gap: '16px',
             background: 'var(--bg-popover, #0B132B)',
-            border: '1px solid var(--border-acrylic-active, rgba(255, 184, 0, 0.3))',
-            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 184, 0, 0.15)',
+            border: '1px solid var(--border-acrylic-active, rgba(253, 186, 48, 0.3))',
+            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(253, 186, 48, 0.15)',
             margin: 'auto'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 184, 0, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Smartphone size={18} color="var(--accent-primary, #FFB800)" />
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(253, 186, 48, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Smartphone size={18} color="var(--accent-primary, #FDBA30)" />
               </div>
               <span>Instalar como App en tu Móvil</span>
             </div>

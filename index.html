@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#070c1e" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Tay-Audit" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="msapplication-navbutton-color" content="#070c1e" />
-    <meta name="msapplication-TileColor" content="#070c1e" />
+    <meta name="msapplication-navbutton-color" content="#000000" />
+    <meta name="msapplication-TileColor" content="#000000" />
     <title>Tay-Audit | Auditoría & Inventario TI Inteligente</title>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- Fonts Institucionales UPN (Neo-Grotesque & Monospace) -->
+    <!-- Fonts Institucionales UPN Oficiales (Plus Jakarta Sans, Space Grotesk, JetBrains Mono) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
       (function() {
         try {
@@ -36,7 +36,7 @@
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.style.colorScheme = mode;
 
-          var themeColor = mode === 'light' ? '#f8fafc' : '#070c1e';
+          var themeColor = mode === 'light' ? '#edf0f5' : '#000000';
           var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
           for (var i = 0; i < themeMetas.length; i++) {
             themeMetas[i].setAttribute('content', themeColor);

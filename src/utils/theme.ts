@@ -3,7 +3,7 @@
 // while dark themes (violet, azure, indigo, rose, slate) dynamically use pure white (#ffffff).
 
 export const PRESET_THEME_HEX: Record<string, string> = {
-  upn: '#ffb800',     // Amarillo Lúcuma UPN Oficial (perceived brightness 184 -> #000000)
+  upn: '#FDBA30',     // Amarillo Lúcuma UPN Oficial (de steel-pro1)
   amber: '#fbbf24',   // Titanium Amber / Oro (perceived brightness 191 -> #000000)
   emerald: '#10b981', // Cyber Emerald (AAA contrast with black 8.9:1 vs white 2.3:1 -> #000000)
   violet: '#8b5cf6',  // Electric Violet (perceived brightness 123 -> #ffffff)
@@ -16,7 +16,7 @@ export const PRESET_THEME_HEX: Record<string, string> = {
 
 export function computeIntelligentContrast(themeOrColor: string, customColorHex?: string): '#000000' | '#ffffff' {
   const target = themeOrColor === 'custom' 
-    ? (customColorHex || '#ffb800') 
+    ? (customColorHex || '#FDBA30') 
     : (PRESET_THEME_HEX[themeOrColor] || themeOrColor);
 
   if (!target) return '#000000';

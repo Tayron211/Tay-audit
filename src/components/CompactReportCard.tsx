@@ -540,7 +540,7 @@ export const CompactReportCard: React.FC<CompactReportCardProps> = ({
                   className={`btn-flat btn-stivie-note ${showResolveForm ? 'btn-stivie-note--active' : ''}`}
                   title={showResolveForm ? 'Cerrar nota para STIVIE' : 'Agregar o editar nota interna para STIVIE'}
                 >
-                  <Bot size={15} color="var(--accent-primary, #FFB800)" />
+                  <Bot size={15} color="var(--accent-primary, #FDBA30)" />
                 </button>
               </div>
             </div>

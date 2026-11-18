@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { UpnBrandLogo } from './Navbar';
 
 interface SplashScreenProps {
   isLoading: boolean;
@@ -85,10 +84,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '26px'
+            marginBottom: '26px',
+            overflow: 'hidden'
           }}
         >
-          <UpnBrandLogo size={42} color="#070C1E" />
+          <img 
+            src="/icon.svg" 
+            alt="UPN" 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+          />
         </div>
 
         {/* Tipografía Oficial del Brand (Space Grotesk) */}

@@ -87,17 +87,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           {/* Fondo artístico con sutil malla de circuitos tecnológicos */}
           <div className="login-visual-mesh-bg">
             <svg width="100%" height="100%" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.12, pointerEvents: 'none' }}>
-              <circle cx="200" cy="220" r="160" stroke="#FFB800" strokeWidth="1" strokeDasharray="4 8" />
-              <circle cx="200" cy="220" r="110" stroke="#FFB800" strokeWidth="1.5" strokeOpacity="0.4" />
-              <circle cx="200" cy="220" r="60" stroke="#FFB800" strokeWidth="1" strokeDasharray="3 6" />
-              <path d="M40 220 H360 M200 60 V380" stroke="rgba(255,184,0,0.18)" strokeWidth="1" />
+              <circle cx="200" cy="220" r="160" stroke="#FDBA30" strokeWidth="1" strokeDasharray="4 8" />
+              <circle cx="200" cy="220" r="110" stroke="#FDBA30" strokeWidth="1.5" strokeOpacity="0.4" />
+              <circle cx="200" cy="220" r="60" stroke="#FDBA30" strokeWidth="1" strokeDasharray="3 6" />
+              <path d="M40 220 H360 M200 60 V380" stroke="rgba(253,186,48,0.18)" strokeWidth="1" />
             </svg>
           </div>
 
           <div className="login-visual-content">
             {/* Tag superior de branding */}
             <div className="login-badge-tag">
-              <UpnBrandLogo size={16} color="#FFB800" />
+              <UpnBrandLogo size={16} color="#FDBA30" />
               <span>UNIVERSIDAD PRIVADA DEL NORTE</span>
             </div>
 
@@ -105,7 +105,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <div className="login-brand-monogram-box">
               <div className="login-brand-halo" />
               <div className="login-brand-icon-wrapper">
-                <UpnBrandLogo size={82} color="#FFB800" />
+                <UpnBrandLogo size={82} color="#FDBA30" />
               </div>
             </div>
 
@@ -127,7 +127,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           {/* Encabezado con Logotipo UPN */}
           <div className="login-form-header">
             <div className="login-brand-emblem">
-              <UpnBrandLogo size={34} color="#FFB800" />
+              <UpnBrandLogo size={34} color="#FDBA30" />
             </div>
             <h2 className="login-form-title">Iniciar Sesión</h2>
             <p className="login-form-subtitle">
@@ -162,7 +162,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               <div className="login-input-wrapper">
                 <div className="login-input-icon">
                   {detectedRole === 'admin' ? (
-                    <ShieldCheck size={18} color="#FFB800" />
+                    <ShieldCheck size={18} color="#FDBA30" />
                   ) : (
                     <User size={18} color="#94a3b8" />
                   )}

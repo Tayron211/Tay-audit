@@ -50,28 +50,28 @@ export const StivieAnimatedMascot: React.FC<{ size?: number }> = ({ size = 32 })
     >
       <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Antenna */}
-        <line x1="24" y1="4" x2="24" y2="10" stroke="#ffb800" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="24" cy="4" r="3" fill="#ffb800">
+        <line x1="24" y1="4" x2="24" y2="10" stroke="#FDBA30" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="24" cy="4" r="3" fill="#FDBA30">
           <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite" />
         </circle>
         {/* Robot Head Outer Box */}
-        <rect x="7" y="10" width="34" height="26" rx="8" fill="url(#headGrad)" stroke="#ffb800" strokeWidth="1.8" />
+        <rect x="7" y="10" width="34" height="26" rx="8" fill="url(#headGrad)" stroke="#FDBA30" strokeWidth="1.8" />
         {/* Cyber Visor Screen */}
-        <rect x="11" y="15" width="26" height="15" rx="5" fill="#070c1e" stroke="#ffb800" strokeWidth="1.2" />
+        <rect x="11" y="15" width="26" height="15" rx="5" fill="#000000" stroke="#FDBA30" strokeWidth="1.2" />
         {/* Animated Glowing Cyber Eyes (Blinking) */}
-        <rect x="15" y="19" width="6" height="7" rx="3" fill="#ffb800">
+        <rect x="15" y="19" width="6" height="7" rx="3" fill="#FDBA30">
           <animate attributeName="height" values="7;7;0.8;7;7" keyTimes="0;0.45;0.5;0.55;1" dur="3.2s" repeatCount="indefinite" />
           <animate attributeName="y" values="19;19;22;19;19" keyTimes="0;0.45;0.5;0.55;1" dur="3.2s" repeatCount="indefinite" />
         </rect>
-        <rect x="27" y="19" width="6" height="7" rx="3" fill="#ffb800">
+        <rect x="27" y="19" width="6" height="7" rx="3" fill="#FDBA30">
           <animate attributeName="height" values="7;7;0.8;7;7" keyTimes="0;0.45;0.5;0.55;1" dur="3.2s" repeatCount="indefinite" />
           <animate attributeName="y" values="19;19;22;19;19" keyTimes="0;0.45;0.5;0.55;1" dur="3.2s" repeatCount="indefinite" />
         </rect>
         {/* Friendly Cyber Smile */}
-        <path d="M20 28 Q24 30.5 28 28" stroke="#ffb800" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        <path d="M20 28 Q24 30.5 28 28" stroke="#FDBA30" strokeWidth="1.5" strokeLinecap="round" fill="none" />
         {/* Audio Ears */}
-        <rect x="4" y="18" width="3" height="10" rx="1.5" fill="#ffb800" />
-        <rect x="41" y="18" width="3" height="10" rx="1.5" fill="#ffb800" />
+        <rect x="4" y="18" width="3" height="10" rx="1.5" fill="#FDBA30" />
+        <rect x="41" y="18" width="3" height="10" rx="1.5" fill="#FDBA30" />
         {/* Gradients */}
         <defs>
           <linearGradient id="headGrad" x1="7" y1="10" x2="41" y2="36" gradientUnits="userSpaceOnUse">
@@ -441,11 +441,11 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
         }}
         title="Hacer clic para desplegar STIVIE"
       >
-        <div className="stivie-edge-tab" style={{ background: '#FFB800', border: '1.5px solid #ffffff', color: '#0B132B' }}>
-          <div className="stivie-edge-tab-icon" style={{ background: '#0B132B', padding: '3px', borderRadius: '5px' }}>
-            <UpnBrandLogo size={16} color="#FFB800" />
+        <div className="stivie-edge-tab" style={{ background: '#FDBA30', border: '1.5px solid #ffffff', color: '#000000' }}>
+          <div className="stivie-edge-tab-icon" style={{ background: '#000000', padding: '3px', borderRadius: '5px' }}>
+            <UpnBrandLogo size={16} color="#FDBA30" />
           </div>
-          <div className="stivie-edge-tab-label" style={{ color: '#0B132B', fontWeight: 800 }}>
+          <div className="stivie-edge-tab-label" style={{ color: '#000000', fontWeight: 800 }}>
             STIVIE • Operaciones
           </div>
         </div>
@@ -472,16 +472,21 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
               width: '34px',
               height: '34px',
               borderRadius: '8px',
-              background: '#FFB800',
+              background: '#FDBA30',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(255, 184, 0, 0.3)',
+              boxShadow: '0 2px 8px rgba(253, 186, 48, 0.3)',
               flexShrink: 0,
               cursor: 'pointer',
-              transition: 'transform 0.15s ease'
+              transition: 'transform 0.15s ease',
+              overflow: 'hidden'
             }}>
-              <UpnBrandLogo size={20} color="#0B132B" />
+              <img 
+                src="/icon.svg" 
+                alt="UPN" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -493,8 +498,8 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
                   fontWeight: 800,
                   padding: '1px 6px',
                   borderRadius: '4px',
-                  background: '#FFB800',
-                  color: '#0B132B',
+                  background: '#FDBA30',
+                  color: '#000000',
                   letterSpacing: '0.04em',
                   textTransform: 'uppercase'
                 }}>
