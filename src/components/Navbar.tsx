@@ -8,7 +8,6 @@ import {
   Sun, 
   Moon, 
   Bot, 
-  ShieldCheck,
   LogOut,
   ChevronDown,
   X,
@@ -301,40 +300,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Controls: Grouped cleanly into Notifications, Theme Switch, and Unified User Capsule */}
         <div className="nav-controls-container">
-          {/* Botón Directo Modo Claro / Oscuro */}
-          <button
-            type="button"
-            onClick={onToggleColorMode}
-            className="btn-flat hide-on-mobile"
-            style={{
-              padding: '6px 11px',
-              borderRadius: '9999px',
-              border: '1px solid var(--border-acrylic)',
-              backgroundColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
-              color: 'var(--text-primary)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '0.74rem',
-              fontWeight: 700,
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-              cursor: 'pointer'
-            }}
-            title={colorMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
-          >
-            {colorMode === 'dark' ? (
-              <>
-                <Sun size={14} color="#FDBA30" />
-                <span>Modo Claro</span>
-              </>
-            ) : (
-              <>
-                <Moon size={14} color="#64748b" />
-                <span>Modo Oscuro</span>
-              </>
-            )}
-          </button>
-
           {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK */}
           <NotificationDropdown
             notifications={notifications}
@@ -393,21 +358,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {currentUser.role === 'admin' ? 'Modo Administrador' : 'Modo Asistente TI'} • Comas
                     </div>
                   </div>
-
-                  {/* Botón Destacado Panel Admin si es Administrador */}
-                  {currentUser.role === 'admin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        onOpenAuditModal();
-                      }}
-                      className="user-dropdown-admin-btn"
-                    >
-                      <ShieldCheck size={16} strokeWidth={2.4} />
-                      <span>Panel de Control Admin</span>
-                    </button>
-                  )}
 
                   {/* Fila de Iconos de Acciones (3 columnas) */}
                   <div className="user-dropdown-actions-grid">
