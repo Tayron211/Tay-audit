@@ -505,27 +505,29 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     return interactiveDevices[0] || null;
   }, [interactiveDevices, selectedRemoteDeviceId]);
 
-  // Ticker en vivo cada 2 segundos para evaluar expiración de latidos en tiempo real
+  // Ticker en vivo para evaluar expiración de latidos en tiempo real (solo en consola remota activa)
   const [clockTick, setClockTick] = useState<number>(Date.now());
   useEffect(() => {
-    const timer = setInterval(() => setClockTick(Date.now()), 2000);
+    if (supportSubTab !== 'remote') return;
+    const timer = setInterval(() => setClockTick(Date.now()), 10000);
     return () => clearInterval(timer);
-  }, []);
+  }, [supportSubTab]);
 
-  // Auto-refresco en vivo cada 6 segundos en la Consola Remota para mantener los latidos de STIVIE en tiempo real
+  // Auto-refresco en vivo periódico en la Consola Remota solo si la pestaña remota está visible
   const onRefreshRef = useRef(onRefresh);
   useEffect(() => {
     onRefreshRef.current = onRefresh;
   }, [onRefresh]);
 
   useEffect(() => {
+    if (supportSubTab !== 'remote') return;
     const pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         onRefreshRef.current?.();
       }
-    }, 6000);
+    }, 30000);
     return () => clearInterval(pollTimer);
-  }, []);
+  }, [supportSubTab]);
 
   // Detección REAL de presencia en línea mediante heartbeat de STIVIE (latidos activos en los últimos 60s)
   const isDeviceOnline = (d: Device | null | undefined) => {

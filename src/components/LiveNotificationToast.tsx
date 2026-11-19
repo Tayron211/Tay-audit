@@ -13,7 +13,6 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
   onClose,
   onAtender
 }) => {
-  const [progress, setProgress] = useState(100);
   const [isClosing, setIsClosing] = useState(false);
 
   const requestClose = () => {
@@ -27,25 +26,11 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
 
   useEffect(() => {
     if (!notification) return;
-    setProgress(100);
-
-    const interval = 50;
-    const duration = 7000; // 7 seconds auto-dismiss
-    const decrement = (interval / duration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          requestClose();
-          return 0;
-        }
-        return prev - decrement;
-      });
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [notification, isClosing]);
+    const timer = setTimeout(() => {
+      requestClose();
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [notification]);
 
   if (!notification) return null;
 
@@ -119,12 +104,7 @@ export const LiveNotificationToast: React.FC<LiveNotificationToastProps> = ({
 
       {/* Progress countdown bar */}
       <div className="live-toast-progress-track">
-        <div
-          className="live-toast-progress-bar"
-          style={{
-            width: `${progress}%`
-          }}
-        />
+        <div className="live-toast-progress-bar live-toast-progress-animated" />
       </div>
     </div>
   );

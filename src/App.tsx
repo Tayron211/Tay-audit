@@ -469,7 +469,7 @@ const MainApp: React.FC = () => {
         setIsLiveConnected(true);
         const now = Date.now();
         const versionChanged = lastSyncVersionRef.current !== null && sync.version !== lastSyncVersionRef.current;
-        const ticketCheckIntervalPassed = (now - lastFastTicketCheckTsRef.current) > 2500;
+        const ticketCheckIntervalPassed = (now - lastFastTicketCheckTsRef.current) > 5000;
 
         if (lastSyncVersionRef.current === null) {
           lastSyncVersionRef.current = sync.version;
@@ -479,7 +479,7 @@ const MainApp: React.FC = () => {
           await checkFastTicketsSync();
         }
 
-        if (versionChanged || (now - lastFullLoadTsRef.current > 10000)) {
+        if (versionChanged || (now - lastFullLoadTsRef.current > 60000)) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
           loadData();

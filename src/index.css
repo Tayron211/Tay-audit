@@ -177,21 +177,21 @@
 /* ==================================================================== */
 [data-mode="light"] {
   color-scheme: light;
-  --bg-canvas: #f8fafc;            /* Clean radiant slate (steel-pro1 Light) */
-  --bg-canvas-subtle: #f1f5f9;
-  --bg-acrylic: rgba(255, 255, 255, 0.92);
-  --bg-acrylic-hover: #ffffff;
+  --bg-canvas: #ffffff;            /* Pure Radiant Crisp White (Sin tonos grisáceos ni oscuros) */
+  --bg-canvas-subtle: #f8fafc;
+  --bg-acrylic: #ffffff;
+  --bg-acrylic-hover: #f8fafc;
   --bg-acrylic-elevated: #ffffff;
   --bg-acrylic-card: #ffffff;
 
   --modal-backdrop-bg: rgba(15, 23, 42, 0.45);
-  --modal-glass-bg: rgba(255, 255, 255, 0.92);
-  --modal-glass-border: rgba(255, 255, 255, 0.85);
-  --bg-modal-window: rgba(255, 255, 255, 0.92);
-  --border-modal-window: rgba(255, 255, 255, 0.85);
+  --modal-glass-bg: #ffffff;
+  --modal-glass-border: rgba(226, 232, 240, 0.95);
+  --bg-modal-window: #ffffff;
+  --border-modal-window: rgba(226, 232, 240, 0.95);
   --bg-modal-header: transparent;
   --bg-modal-footer: transparent;
-  --bg-modal-card: rgba(248, 250, 252, 0.90);
+  --bg-modal-card: #f8fafc;
   --border-modal-card: rgba(226, 232, 240, 0.90);
   --border-modal-subtle: rgba(0, 0, 0, 0.07);
   
@@ -199,8 +199,8 @@
   --border-acrylic-hover: rgba(203, 213, 225, 0.95);
   --border-acrylic-active: var(--accent-primary);
   
-  --glass-sheen: inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(15, 23, 42, 0.04);
-  --glass-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  --glass-sheen: none;
+  --glass-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
 
   --bg-popover: #ffffff;
   --bg-acrylic-popover: #ffffff;
@@ -229,10 +229,7 @@
   --table-border: rgba(226, 232, 240, 0.95);
   --table-hover: #f1f5f9;
 
-  --gradient-canvas: 
-    radial-gradient(circle 900px at 0% 0%, rgba(253, 186, 48, 0.04), transparent 60%),
-    radial-gradient(circle 800px at 100% 15%, rgba(14, 165, 233, 0.03), transparent 60%),
-    radial-gradient(circle 700px at 50% 100%, rgba(16, 185, 129, 0.03), transparent 60%);
+  --gradient-canvas: none;
 }
 
 /* ==================================================================== */
@@ -290,7 +287,8 @@ html {
 [data-mode="light"],
 [data-mode="light"] body,
 [data-mode="light"] #root {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
   color: #0f172a;
 }
 
@@ -1353,7 +1351,16 @@ select,
   height: 100%;
   background-color: var(--accent-primary, #FDBA30);
   box-shadow: 0 0 8px rgba(253, 186, 48, 0.6);
-  transition: width 0.05s linear;
+}
+
+.live-toast-progress-bar.live-toast-progress-animated {
+  width: 100%;
+  animation: liveToastProgressCountdown 7s linear forwards;
+}
+
+@keyframes liveToastProgressCountdown {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 /* Modo Claro: Alto Contraste, fondo blanco puro nítido y texto oscuro legible */
@@ -2032,13 +2039,13 @@ code, pre {
 
 /* ==================================================================== */
 /* ==================================================================== */
-/* TOP NAVBAR: ESTÁTICO / FIJO CON VERDADERO FROSTED GLASS BLUR DESENFOCADO */
+/* TOP NAVBAR: 100% ESTÁTICO (NORMAL FLOW - NO PEGAJOSO NI TRASLÚCIDO)  */
 /* ==================================================================== */
 .acrylic-nav {
-  position: sticky !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
@@ -2048,27 +2055,26 @@ code, pre {
   border-top: none !important;
   border-left: none !important;
   border-right: none !important;
-  z-index: 1000 !important; /* Siempre fijo arriba en la cima de la pantalla */
+  z-index: 100 !important;
   display: block !important;
-  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Modo Claro: Frosted Glass Esmerilado Denso (Denso, desenfoque nítido, sin transparencias vacías) */
+/* Modo Claro: Sólido, Nítido, 100% Blanco Puro y Estático */
 [data-mode="light"] .acrylic-nav,
 html:not(.dark) .acrylic-nav {
-  background-color: rgba(255, 255, 255, 0.85) !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.95) !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04) !important;
 }
 
-/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado (Control Docente steel-pro1) */
+/* Modo Oscuro: Sólido AMOLED Oscuro Profundo y Estático */
 [data-mode="dark"] .acrylic-nav,
 html.dark .acrylic-nav {
-  background-color: rgba(14, 14, 18, 0.85) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+  background-color: #0b0c10 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Contenedor Interior del Navbar */
@@ -4233,7 +4239,7 @@ body.splash-active::-webkit-scrollbar,
 
 /* MODO CLARO (LIGHT MODE): 100% NÍTIDO, ALTO CONTRASTE Y LEGIBILIDAD CRISTALINA */
 [data-mode="light"] .tay-splash-screen {
-  background-color: #edf0f5 !important;
+  background-color: #ffffff !important;
 }
 
 [data-mode="light"] .tay-splash-screen .splash-ambient-glow {
@@ -4733,7 +4739,7 @@ html.dark .login-screen-wrapper {
 
 [data-mode="light"] .login-screen-wrapper,
 html:not(.dark) .login-screen-wrapper {
-  background-color: #edf0f5;
+  background-color: #ffffff;
   background-image:
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.25) 0%, rgba(226, 232, 240, 0.75) 100%),
     url('/login-bg-3d.jpg');
