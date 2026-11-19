@@ -512,14 +512,19 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   }, []);
 
   // Auto-refresco en vivo cada 6 segundos en la Consola Remota para mantener los latidos de STIVIE en tiempo real
+  const onRefreshRef = useRef(onRefresh);
+  useEffect(() => {
+    onRefreshRef.current = onRefresh;
+  }, [onRefresh]);
+
   useEffect(() => {
     const pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        onRefresh();
+        onRefreshRef.current?.();
       }
     }, 6000);
     return () => clearInterval(pollTimer);
-  }, [onRefresh]);
+  }, []);
 
   // Detección REAL de presencia en línea mediante heartbeat de STIVIE (latidos activos en los últimos 60s)
   const isDeviceOnline = (d: Device | null | undefined) => {
