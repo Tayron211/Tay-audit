@@ -2332,6 +2332,7 @@ app.post('/api/tickets', (req, res) => {
     );
 
     const savedTicket = db.prepare('SELECT * FROM support_tickets WHERE id = ?').get(ticketId);
+    localSyncVersion = String(Date.now());
     broadcastEvent('TICKET_CREATED', savedTicket);
 
     // Despacho Web Push a todos los celulares y navegadores registrados

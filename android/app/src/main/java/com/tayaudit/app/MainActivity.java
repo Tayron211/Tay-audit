@@ -4,12 +4,28 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(AppInstallerPlugin.class);
         super.onCreate(savedInstanceState);
+
+        // Aceleración de Hardware GPU a 120 FPS y configuración de viewport fluido
+        try {
+            WebView webView = getBridge().getWebView();
+            if (webView != null) {
+                webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                WebSettings settings = webView.getSettings();
+                settings.setUseWideViewPort(true);
+                settings.setLoadWithOverviewMode(true);
+                settings.setTextZoom(100);
+            }
+        } catch (Exception ignored) {}
 
         // Solicitar permisos de notificación en Android 13+ (API 33+) para que las notificaciones no sean bloqueadas
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

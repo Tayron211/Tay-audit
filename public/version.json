@@ -1,0 +1,26 @@
+{
+  "version": "1.0.1",
+  "versionCode": 2,
+  "releaseDate": "2026-11-19",
+  "notes": "Actualización Tay-Audit: Actualizaciones OTA directas, rendimiento 120 FPS y control de notificaciones push.",
+  "features": [
+    {
+      "title": "Actualizaciones OTA directas desde el APK",
+      "desc": "Descarga e instalación transparente de nuevas versiones sin salir de la app ni configuraciones externas."
+    },
+    {
+      "title": "Rendimiento y fluidez a 120 FPS",
+      "desc": "Aceleración de hardware GPU completa, animación de modales y transiciones táctiles ultra-suaves sin parones."
+    },
+    {
+      "title": "Notificaciones exclusivas al llegar ticket",
+      "desc": "Sincronización en tiempo real y timbre sonoro exclusivamente cuando un nuevo ticket es reportado desde STIVIE o web."
+    },
+    {
+      "title": "Diseño y navegación móvil perfeccionada",
+      "desc": "Adaptación completa a dispositivos móviles con gestos, fichas táctiles fluidas y barra inferior optimizada."
+    }
+  ],
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
+  "forceUpdate": false
+}

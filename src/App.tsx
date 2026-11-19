@@ -24,6 +24,8 @@ import { DeveloperFooter } from './components/DeveloperFooter';
 import { LiveNotificationToast } from './components/LiveNotificationToast';
 import { MobileNotificationBanner } from './components/MobileNotificationBanner';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { AppUpdateModal } from './components/AppUpdateModal';
+import { initAppUpdateChecker, type AppUpdateInfo } from './utils/appUpdateChecker';
 import { LoginScreen } from './components/LoginScreen';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
@@ -74,6 +76,33 @@ const MainApp: React.FC = () => {
   });
   const [activeToastNotification, setActiveToastNotification] = useState<AppNotification | null>(null);
   const knownTicketIdsRef = useRef<Set<string> | null>(null);
+  const notifiedTicketIdsRef = useRef<Set<string>>(new Set<string>());
+  const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('tayaudit_notified_ticket_ids');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((id: string) => notifiedTicketIdsRef.current.add(id));
+        }
+      }
+    } catch {}
+
+    const handleUpdateAvailable = (e: any) => {
+      if (e?.detail) {
+        setUpdateInfo(e.detail);
+      }
+    };
+    window.addEventListener('tayaudit:app-update-available' as any, handleUpdateAvailable);
+    const cleanupChecker = initAppUpdateChecker();
+
+    return () => {
+      window.removeEventListener('tayaudit:app-update-available' as any, handleUpdateAvailable);
+      cleanupChecker();
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -298,8 +327,13 @@ const MainApp: React.FC = () => {
       const activeTicketIds = new Set(openTickets.map(t => t.id));
 
       if (knownTicketIdsRef.current === null) {
-        // Carga inicial: registrar IDs conocidos
+        // Carga inicial: registrar IDs conocidos y marcarlos para no alertar retroactivamente
         knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
+        fetchedTickets.forEach(t => notifiedTicketIdsRef.current.add(t.id));
+        try {
+          localStorage.setItem('tayaudit_notified_ticket_ids', JSON.stringify(Array.from(notifiedTicketIdsRef.current)));
+        } catch {}
+
         setNotifications(prev => {
           if (prev.length > 0) {
             return prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5);
@@ -319,45 +353,8 @@ const MainApp: React.FC = () => {
           }));
         });
       } else {
-        // Detección de nuevos tickets enviados en tiempo real (por STIVIE o web)
-        const brandNewTickets = fetchedTickets.filter(
-          t => !knownTicketIdsRef.current!.has(t.id) && t.status !== 'resuelto'
-        );
-
-        if (brandNewTickets.length > 0) {
-          // Sonido de campana en tiempo real
-          playNotificationChime();
-
-          const newNotifs: AppNotification[] = brandNewTickets.map(t => ({
-            id: `notif-${t.id}-${Date.now()}`,
-            ticketId: t.id,
-            title: `Nuevo Ticket TI: ${t.category}`,
-            userName: t.userName || 'Usuario / Docente',
-            hostname: t.hostname,
-            category: t.category,
-            description: t.description,
-            urgency: t.urgency,
-            timestamp: t.createdAt || new Date().toISOString(),
-            read: false,
-            attended: false
-          }));
-
-          // Alerta toast flotante para el ticket más reciente
-          setActiveToastNotification(newNotifs[0]);
-
-          // Notificación Push Nativa del Sistema Operativo (Windows Action Center y Bandeja Móvil con vibración)
-          sendNativePushNotification(newNotifs[0]);
-
-          // Añadir al inicio y conservar un máximo de 5 (estilo Facebook)
-          setNotifications(prev => {
-            const combined = [...newNotifs, ...prev.filter(p => !brandNewTickets.some(b => b.id === p.ticketId))];
-            return combined.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5);
-          });
-        } else {
-          // Si cambian a resuelto o se les da atención, se limpian automáticamente
-          setNotifications(prev => prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5));
-        }
-
+        // En recargas de datos generales sincronizamos la lista sin duplicar alertas push
+        setNotifications(prev => prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5));
         knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
       }
     } catch (err) {
@@ -393,10 +390,17 @@ const MainApp: React.FC = () => {
 
         if (knownTicketIdsRef.current !== null) {
           const brandNewTickets = freshTickets.filter(
-            t => !knownTicketIdsRef.current!.has(t.id) && t.status !== 'resuelto'
+            t => !knownTicketIdsRef.current!.has(t.id) &&
+                 !notifiedTicketIdsRef.current.has(t.id) &&
+                 t.status !== 'resuelto'
           );
 
           if (brandNewTickets.length > 0) {
+            brandNewTickets.forEach(t => notifiedTicketIdsRef.current.add(t.id));
+            try {
+              localStorage.setItem('tayaudit_notified_ticket_ids', JSON.stringify(Array.from(notifiedTicketIdsRef.current)));
+            } catch {}
+
             playNotificationChime();
 
             const newNotifs: AppNotification[] = brandNewTickets.map(t => ({
@@ -939,6 +943,12 @@ exit
 
         {/* Banner de Activación Rápida de Notificaciones para Móviles */}
         <MobileNotificationBanner />
+
+        {/* Modal de Actualizaciones OTA Directas desde el APK Nativo */}
+        <AppUpdateModal
+          updateInfo={updateInfo}
+          onClose={() => setUpdateInfo(null)}
+        />
 
         {/* Top Acrylic Navbar */}
         <Navbar

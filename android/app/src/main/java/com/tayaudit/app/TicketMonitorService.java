@@ -39,6 +39,7 @@ public class TicketMonitorService extends Service {
     private Thread workerThread;
     private volatile boolean isRunning = false;
     private String lastSyncVersion = null;
+    private long lastFullCheckTime = 0;
 
     @Override
     public void onCreate() {
@@ -203,10 +204,14 @@ public class TicketMonitorService extends Service {
             JSONObject syncJson = new JSONObject(sb.toString());
             String currentVersion = syncJson.optString("version", "");
 
-            if (!isFirstRun && currentVersion.equals(lastSyncVersion)) {
+            long now = System.currentTimeMillis();
+            boolean forceTicketsQuery = (now - lastFullCheckTime) >= 12000;
+
+            if (!isFirstRun && !forceTicketsQuery && currentVersion != null && !currentVersion.isEmpty() && currentVersion.equals(lastSyncVersion)) {
                 return;
             }
             lastSyncVersion = currentVersion;
+            lastFullCheckTime = now;
 
             // 2. Si es la primera ejecución o la versión cambió, consultar los tickets
             URL ticketsUrl = new URL(CLOUD_URL + "/api/tickets?t=" + System.currentTimeMillis());
