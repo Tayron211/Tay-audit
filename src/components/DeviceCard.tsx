@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { Device, DeviceType } from '../types';
 import {
+  detectSmartCategory,
   supportsComputeSpecs,
   isValidIpAddress,
   isValidMacAddress,
@@ -27,23 +28,35 @@ interface DeviceCardProps {
   onSelect: (device: Device) => void;
 }
 
-export const getCategoryIcon = (type: DeviceType) => {
-  switch (type) {
-    case 'pc': return { icon: Monitor, color: 'var(--accent-primary)', label: 'PC' };
-    case 'laptop': return { icon: Laptop, color: 'var(--accent-cyan)', label: 'Laptop' };
-    case 'server': return { icon: Server, color: 'var(--accent-amber)', label: 'Servidor' };
-    case 'printer': return { icon: Printer, color: 'var(--accent-secondary)', label: 'Impresora' };
-    case 'network': return { icon: Network, color: 'var(--accent-rose)', label: 'Red' };
-    case 'speaker': return { icon: Volume2, color: '#f97316', label: 'Parlante' };
-    case 'ecran': return { icon: Projector, color: '#a855f7', label: 'Ecran' };
-    case 'monitor': return { icon: Tv, color: '#06b6d4', label: 'Monitor' };
-    case 'component': return { icon: HardDrive, color: '#f59e0b', label: 'Hardware' };
+export const getCategoryIcon = (type: DeviceType | string) => {
+  const t = (type || '').toLowerCase().trim();
+  switch (t) {
+    case 'pc': return { icon: Monitor, color: 'var(--accent-primary, #FDBA30)', label: 'PC' };
+    case 'laptop': return { icon: Laptop, color: 'var(--accent-cyan, #06b6d4)', label: 'Laptop' };
+    case 'server': return { icon: Server, color: 'var(--accent-amber, #f59e0b)', label: 'Servidor' };
+    case 'printer': return { icon: Printer, color: 'var(--accent-secondary, #E29B12)', label: 'Impresora' };
+    case 'network': return { icon: Network, color: 'var(--accent-rose, #f43f5e)', label: 'Red' };
+    case 'speaker':
+    case 'parlante':
+    case 'audio':
+      return { icon: Volume2, color: '#f97316', label: 'Parlante' };
+    case 'ecran':
+    case 'proyector':
+      return { icon: Projector, color: '#a855f7', label: 'Ecran' };
+    case 'monitor':
+    case 'pantalla':
+    case 'display':
+      return { icon: Tv, color: '#06b6d4', label: 'Monitor' };
+    case 'component':
+    case 'hardware':
+      return { icon: HardDrive, color: '#f59e0b', label: 'Hardware' };
     default: return { icon: Monitor, color: '#94a3b8', label: 'Equipo' };
   }
 };
 
 export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
-  const { icon: CategoryIcon, color: categoryColor } = getCategoryIcon(device.deviceType);
+  const smartCategory = detectSmartCategory(device);
+  const { icon: CategoryIcon, color: categoryColor } = getCategoryIcon(smartCategory);
   const [copiedHost, setCopiedHost] = useState(false);
 
   const getStatusInfo = () => {
@@ -73,8 +86,8 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
   return (
     <div
       onClick={() => onSelect(device)}
-      data-category={device.deviceType}
-      className="acrylic-card"
+      data-category={smartCategory}
+      className="acrylic-card inventory-card"
       style={{
         padding: '18px 20px',
         display: 'flex',
@@ -82,7 +95,7 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
         justifyContent: 'space-between',
         cursor: 'pointer',
         position: 'relative',
-        borderLeft: `4.5px solid ${categoryColor}`,
+        borderLeft: `5px solid ${categoryColor || '#f97316'}`,
         minHeight: '225px'
       }}
     >

@@ -15,7 +15,14 @@ export const isNativeCapacitor = (): boolean => {
   if (typeof window === 'undefined') return false;
   const w = window as any;
   if (w.Capacitor && typeof w.Capacitor.isNativePlatform === 'function') {
-    return w.Capacitor.isNativePlatform();
+    if (w.Capacitor.isNativePlatform()) return true;
+  }
+  if (w.Capacitor?.platform === 'android' || w.Capacitor?.platform === 'ios') return true;
+  const protocol = window.location.protocol;
+  if (protocol === 'capacitor:' || protocol === 'ionic:') return true;
+  const href = window.location.href || '';
+  if ((href.startsWith('http://localhost') || href.startsWith('https://localhost')) && /Android|wv|WebView/i.test(navigator.userAgent)) {
+    return true;
   }
   return false;
 };

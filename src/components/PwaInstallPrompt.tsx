@@ -28,7 +28,10 @@ export const PwaInstallPrompt: React.FC = () => {
       const isNative = isNativeCapacitor()
         || Boolean((window as any).Capacitor?.isNativePlatform?.())
         || (window as any).Capacitor?.platform === 'android'
-        || window.location.protocol === 'capacitor:';
+        || (window as any).Capacitor?.platform === 'ios'
+        || window.location.protocol === 'capacitor:'
+        || window.location.protocol === 'ionic:'
+        || ((window.location.href || '').startsWith('http://localhost') && /Android|wv|WebView/i.test(navigator.userAgent));
 
       const standalone = isNative 
         || window.matchMedia('(display-mode: standalone)').matches 
@@ -91,21 +94,21 @@ export const PwaInstallPrompt: React.FC = () => {
         aria-label="Instalar aplicación móvil"
         style={{
           position: 'sticky',
-          top: '6px',
+          top: '12px',
           zIndex: 9998,
-          margin: '6px 10px',
-          background: 'linear-gradient(135deg, rgba(7, 12, 30, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
+          margin: '10px 14px',
+          background: 'rgba(18, 18, 22, 0.95)',
           color: '#ffffff',
-          padding: '8px 12px',
-          borderRadius: '16px',
-          border: '1px solid rgba(255, 184, 0, 0.35)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(255, 184, 0, 0.12)',
+          padding: '10px 14px',
+          borderRadius: '20px',
+          border: '1.5px solid rgba(253, 186, 48, 0.35)',
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.65), 0 2px 10px rgba(253, 186, 48, 0.18)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '8px',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)'
+          gap: '10px',
+          backdropFilter: 'blur(28px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(180%)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>

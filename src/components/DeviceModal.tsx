@@ -31,6 +31,7 @@ import {
   Printer as PrinterIcon
 } from 'lucide-react';
 import {
+  detectSmartCategory,
   isComputerType,
   isSpeakerType,
   isMonitorType,
@@ -266,7 +267,9 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
 
   if (!device) return null;
 
-  const { icon: CategoryIcon, color: categoryColor } = getCategoryIcon(isEditing ? editForm.deviceType : device.deviceType);
+  const currentDevice = isEditing ? editForm : device;
+  const currentSmartType = detectSmartCategory(currentDevice);
+  const { icon: CategoryIcon, color: categoryColor } = getCategoryIcon(currentSmartType);
 
   const getStatusBadge = (s: string) => {
     switch (s) {
@@ -1161,11 +1164,12 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
             }}>
               {/* Columnas 1 y 2 con diferenciación inteligente según categoría de bien */}
               {(() => {
-                const isPrint = isPrinterType(device.deviceType);
-                const isSpeaker = isSpeakerType(device.deviceType);
-                const isEcran = isEcranType(device.deviceType);
-                const isMon = isMonitorType(device.deviceType);
-                const isComponent = isComponentType(device.deviceType);
+                const smartCat = detectSmartCategory(device);
+                const isPrint = isPrinterType(smartCat);
+                const isSpeaker = isSpeakerType(smartCat);
+                const isEcran = isEcranType(smartCat);
+                const isMon = isMonitorType(smartCat);
+                const isComponent = isComponentType(smartCat);
 
                 const hasValidIp = isValidIpAddress(device.ipAddress);
                 const hasValidMac = isValidMacAddress(device.macAddress);

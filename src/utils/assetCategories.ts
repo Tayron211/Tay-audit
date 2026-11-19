@@ -20,33 +20,115 @@ export const isPrinterType = (type?: DeviceType | string): boolean => {
 };
 
 export const isSpeakerType = (type?: DeviceType | string): boolean => {
-  return type === 'speaker';
+  if (!type) return false;
+  const t = type.toLowerCase().trim();
+  return t === 'speaker' || t === 'parlante' || t === 'audio' || t === 'altavoz';
 };
 
 export const isEcranType = (type?: DeviceType | string): boolean => {
-  return type === 'ecran';
+  if (!type) return false;
+  const t = type.toLowerCase().trim();
+  return t === 'ecran' || t === 'proyector' || t === 'projector' || t === 'pantalla de proyeccion';
 };
 
 export const isMonitorType = (type?: DeviceType | string): boolean => {
-  return type === 'monitor';
+  if (!type) return false;
+  const t = type.toLowerCase().trim();
+  return t === 'monitor' || t === 'pantalla' || t === 'display';
 };
 
 export const isComponentType = (type?: DeviceType | string): boolean => {
-  return type === 'component';
+  if (!type) return false;
+  const t = type.toLowerCase().trim();
+  return t === 'component' || t === 'hardware' || t === 'disco' || t === 'ram';
+};
+
+/**
+ * Detecta inteligentemente la categoría real de un bien a partir de sus metadatos
+ * (hostname, marca, modelo, especificaciones, etc.) incluso si fue registrado con
+ * un deviceType genérico ('pc', 'other' o no especificado).
+ */
+export const detectSmartCategory = (device?: Partial<Device> | null): DeviceType => {
+  if (!device) return 'pc';
+  const rawType = (device.deviceType || '').toLowerCase().trim();
+
+  // Si ya tiene un tipo específico y distinto a 'pc'/'other', respetarlo
+  if (
+    rawType === 'laptop' ||
+    rawType === 'server' ||
+    rawType === 'printer' ||
+    rawType === 'network' ||
+    rawType === 'speaker' ||
+    rawType === 'ecran' ||
+    rawType === 'monitor' ||
+    rawType === 'component'
+  ) {
+    return rawType as DeviceType;
+  }
+
+  // Texto consolidado para análisis semántico inteligente
+  const text = `${device.hostname || ''} ${device.brand || ''} ${device.model || ''} ${device.specs || ''} ${device.os || ''}`.toLowerCase();
+
+  // 1. Parlantes y Periféricos de Audio
+  if (/speaker|parlante|altavoz|soundbar|z207|audio stereo|bluetooth stereo|logitech z/i.test(text)) {
+    return 'speaker';
+  }
+
+  // 2. Ecrans y Pantallas de Proyección
+  if (/ecran|proyector|projector|telon|pantalla de proyecci|kps-310/i.test(text)) {
+    return 'ecran';
+  }
+
+  // 3. Monitores pasivos (que no son laptop)
+  if (/monitor|pantalla|display|viewsonic|led 2|curved|ips 2|fhd 2|p2419h/i.test(text) && !/laptop|notebook/i.test(text)) {
+    return 'monitor';
+  }
+
+  // 4. Impresoras y Multifuncionales
+  if (/impresora|printer|epson|laserjet|deskjet|ecotank|brother|canon pixma/i.test(text)) {
+    return 'printer';
+  }
+
+  // 5. Redes y Telecomunicaciones
+  if (/switch|router|access point|mikrotik|cisco|patch panel|firewall|fortinet/i.test(text)) {
+    return 'network';
+  }
+
+  // 6. Componentes de Hardware Sueltos
+  if (/disco duro|ssd nvme|ddr[345]|memoria ram|tarjeta de video|fuente de poder|motherboard/i.test(text) && !/desktop|pc|laptop/i.test(text)) {
+    return 'component';
+  }
+
+  // 7. Laptops
+  if (/laptop|notebook|thinkpad|macbook|latitude|elitebook|probook/i.test(text)) {
+    return 'laptop';
+  }
+
+  // 8. Servidores
+  if (/servidor|server|poweredge|proliant|blade/i.test(text)) {
+    return 'server';
+  }
+
+  return (device.deviceType as DeviceType) || 'pc';
 };
 
 /**
  * Determina si el bien cuenta con especificaciones de cómputo (CPU, RAM, Disco, Placa Madre).
  */
-export const supportsComputeSpecs = (type?: DeviceType | string): boolean => {
+export const supportsComputeSpecs = (type?: DeviceType | string, device?: Partial<Device>): boolean => {
+  if (device) {
+    const smartType = detectSmartCategory(device);
+    return isComputerType(smartType);
+  }
   return isComputerType(type);
 };
 
 /**
  * Determina si el bien maneja dirección de red IP / MAC.
  */
-export const supportsNetworkAddress = (type?: DeviceType | string): boolean => {
-  return isComputerType(type) || isNetworkType(type) || isPrinterType(type);
+export const supportsNetworkAddress = (type?: DeviceType | string, device?: Partial<Device>): boolean => {
+  const targetType = device ? detectSmartCategory(device) : type;
+  return isComputerType(targetType) || isNetworkType(targetType) || isPrinterType(targetType);
 };
 
 /**
@@ -144,7 +226,7 @@ export interface AssetSmartFields {
 }
 
 export const getAssetSmartFields = (device: Device): AssetSmartFields => {
-  const type = device.deviceType;
+  const type = detectSmartCategory(device);
   const sn = device.serialNumber || device.barcode || 'Sin S/N';
   const location = device.location || 'Sede Central';
 

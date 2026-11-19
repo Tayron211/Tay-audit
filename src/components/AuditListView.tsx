@@ -18,6 +18,7 @@ import {
 import type { Device } from '../types';
 import { getCategoryIcon } from './DeviceCard';
 import {
+  detectSmartCategory,
   isComputerType,
   isSpeakerType,
   isMonitorType,
@@ -833,19 +834,20 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
           ) : (
             paginatedList.map((device) => {
               const isExpanded = expandedIds.has(device.id);
-              const { icon: CatIcon, color: catColor } = getCategoryIcon(device.deviceType);
+              const smartCategory = detectSmartCategory(device);
+              const { icon: CatIcon, color: catColor } = getCategoryIcon(smartCategory);
               const sb = getDeviceStatusBadge(device.status);
 
               return (
                 <div
                   key={device.id}
                   id={`inventory-card-${device.id}`}
-                  data-category={device.deviceType}
+                  data-category={smartCategory}
                   className="inventory-card"
                   style={{
                     borderRadius: '6px',
                     border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
-                    borderLeft: `5px solid ${catColor || 'var(--border-acrylic)'}`,
+                    borderLeft: `5px solid ${catColor || '#FDBA30'}`,
                     background: isExpanded ? 'var(--bg-canvas-subtle)' : 'var(--bg-acrylic-card)',
                     boxShadow: isExpanded 
                       ? '0 3px 10px -2px rgba(15, 23, 42, 0.16), 0 0 0 1px var(--accent-primary)' 
@@ -1264,19 +1266,20 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
         ) : (
           paginatedList.map((device) => {
             const isExpanded = expandedIds.has(device.id);
-            const { icon: CatIcon, color: catColor } = getCategoryIcon(device.deviceType);
+            const smartCategory = detectSmartCategory(device);
+            const { icon: CatIcon, color: catColor } = getCategoryIcon(smartCategory);
             const sb = getDeviceStatusBadge(device.status);
 
             return (
               <div
                 key={`mob-${device.id}`}
                 id={`inventory-card-mob-${device.id}`}
-                data-category={device.deviceType}
+                data-category={smartCategory}
                 className="inventory-card"
                 style={{
                   borderRadius: '8px',
                   border: isExpanded ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
-                  borderLeft: `5px solid ${catColor || 'var(--border-acrylic)'}`,
+                  borderLeft: `5px solid ${catColor || '#FDBA30'}`,
                   background: isExpanded ? 'var(--bg-canvas-subtle)' : 'var(--bg-acrylic-card)',
                   padding: '8px 10px',
                   display: 'flex',

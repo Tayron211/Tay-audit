@@ -2169,11 +2169,29 @@ code, pre {
   color: var(--accent-contrast, #000000) !important;
 }
 
-/* Small Icon Button for Agent (as requested in the prompt) */
+/* Small Icon Button for Agent (con contorno ergonómico nítido) */
 .nav-tab-icon-only {
   padding: 7px 10px !important;
   min-width: 36px !important;
   justify-content: center !important;
+  border-radius: 9px !important;
+  border: 1.5px solid rgba(253, 186, 48, 0.45) !important;
+  background: rgba(253, 186, 48, 0.08) !important;
+  color: var(--accent-primary, #FDBA30) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.18s ease !important;
+}
+
+.nav-tab-icon-only:hover {
+  border-color: var(--accent-primary, #FDBA30) !important;
+  background: rgba(253, 186, 48, 0.22) !important;
+  box-shadow: 0 0 8px rgba(253, 186, 48, 0.35) !important;
+}
+
+.nav-tab-icon-only.nav-tab-active {
+  background: var(--accent-primary, #FDBA30) !important;
+  border-color: var(--accent-primary, #FDBA30) !important;
+  color: var(--accent-contrast, #000000) !important;
 }
 
 /* ==================================================================== */
@@ -2503,15 +2521,21 @@ select option {
   box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.45), 0 0 20px var(--accent-glow) !important;
 }
 
-.inventory-card[data-category="pc"] { border-left-color: var(--accent-primary) !important; }
-.inventory-card[data-category="laptop"] { border-left-color: var(--accent-cyan) !important; }
-.inventory-card[data-category="server"] { border-left-color: var(--accent-amber) !important; }
-.inventory-card[data-category="printer"] { border-left-color: var(--accent-secondary) !important; }
-.inventory-card[data-category="network"] { border-left-color: var(--accent-rose) !important; }
-.inventory-card[data-category="speaker"] { border-left-color: #f97316 !important; }
-.inventory-card[data-category="ecran"] { border-left-color: #a855f7 !important; }
-.inventory-card[data-category="monitor"] { border-left-color: #06b6d4 !important; }
-.inventory-card[data-category="component"] { border-left-color: #f59e0b !important; }
+.inventory-card[data-category="pc"] { border-left-color: var(--accent-primary, #FDBA30) !important; }
+.inventory-card[data-category="laptop"] { border-left-color: var(--accent-cyan, #06b6d4) !important; }
+.inventory-card[data-category="server"] { border-left-color: var(--accent-amber, #f59e0b) !important; }
+.inventory-card[data-category="printer"] { border-left-color: var(--accent-secondary, #E29B12) !important; }
+.inventory-card[data-category="network"] { border-left-color: var(--accent-rose, #f43f5e) !important; }
+.inventory-card[data-category="speaker"],
+.inventory-card[data-category="parlante"],
+.inventory-card[data-category="audio"] { border-left-color: #f97316 !important; }
+.inventory-card[data-category="ecran"],
+.inventory-card[data-category="proyector"] { border-left-color: #a855f7 !important; }
+.inventory-card[data-category="monitor"],
+.inventory-card[data-category="pantalla"],
+.inventory-card[data-category="display"] { border-left-color: #06b6d4 !important; }
+.inventory-card[data-category="component"],
+.inventory-card[data-category="hardware"] { border-left-color: #f59e0b !important; }
 .inventory-card[data-category="other"] { border-left-color: #94a3b8 !important; }
 
 /* Light Mode Card Division and Crisp Separation */
@@ -3738,10 +3762,12 @@ div.desktop-inventory-table.force-visible {
   background: color-mix(in srgb, var(--rc) 12%, #ffffff) !important;
 }
 
-/* Botón de Nota a STIVIE con contorno visible nítido y ergonómico */
-.btn-stivie-note {
-  border: 1.5px solid rgba(253, 186, 48, 0.55) !important;
-  background: rgba(253, 186, 48, 0.08) !important;
+/* Botón de Nota a STIVIE con contorno visible nítido y ergonómico en todo modo */
+.btn-stivie-note,
+[data-mode="dark"] .btn-stivie-note,
+[data-mode="light"] .btn-stivie-note {
+  border: 1.5px solid var(--accent-primary, #FDBA30) !important;
+  background: rgba(253, 186, 48, 0.12) !important;
   color: var(--accent-primary, #FDBA30) !important;
   border-radius: 8px !important;
   height: 28px !important;
@@ -3755,16 +3781,20 @@ div.desktop-inventory-table.force-visible {
   cursor: pointer !important;
 }
 
-.btn-stivie-note:hover {
-  border-color: var(--accent-primary, #FDBA30) !important;
-  background: rgba(253, 186, 48, 0.22) !important;
-  box-shadow: 0 0 8px rgba(253, 186, 48, 0.35) !important;
-}
-
-.btn-stivie-note--active {
+.btn-stivie-note:hover,
+[data-mode="dark"] .btn-stivie-note:hover,
+[data-mode="light"] .btn-stivie-note:hover {
   border-color: var(--accent-primary, #FDBA30) !important;
   background: rgba(253, 186, 48, 0.26) !important;
-  box-shadow: 0 0 10px rgba(253, 186, 48, 0.4) !important;
+  box-shadow: 0 0 10px rgba(253, 186, 48, 0.45) !important;
+}
+
+.btn-stivie-note--active,
+[data-mode="dark"] .btn-stivie-note--active,
+[data-mode="light"] .btn-stivie-note--active {
+  border-color: var(--accent-primary, #FDBA30) !important;
+  background: rgba(253, 186, 48, 0.35) !important;
+  box-shadow: 0 0 12px rgba(253, 186, 48, 0.55) !important;
 }
 
 /* ==================================================================== */

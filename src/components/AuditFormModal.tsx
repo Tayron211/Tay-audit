@@ -22,6 +22,7 @@ import {
   Layers
 } from 'lucide-react';
 import type { Device, DeviceType, DeviceStatus } from '../types';
+import { detectSmartCategory } from '../utils/assetCategories';
 import { api } from '../services/api';
 import { PRINTER_CATALOG, SPEAKER_PRESETS, ECRAN_PRESETS, searchPrinterCatalog } from '../data/printerCatalog';
 import {
@@ -259,6 +260,19 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
       }
       return updated;
     });
+  };
+
+  const handleSmartBrandOrModelChange = (field: 'brand' | 'model' | 'hostname', val: string) => {
+    const updated = { ...formData, [field]: val };
+    if (!formData.deviceType || formData.deviceType === 'pc' || formData.deviceType === 'other') {
+      const detected = detectSmartCategory(updated);
+      if (detected !== 'pc' && detected !== 'other') {
+        handleTypeChange(detected);
+        setFormData(prev => ({ ...prev, [field]: val }));
+        return;
+      }
+    }
+    setFormData(updated);
   };
 
   const handleSelectPrinterCatalogItem = (item: typeof PRINTER_CATALOG[0]) => {
@@ -1713,7 +1727,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                         className="form-input"
                         placeholder="Marca (Dell, Lenovo, HP)"
                         value={formData.brand}
-                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                        onChange={(e) => handleSmartBrandOrModelChange('brand', e.target.value)}
                         style={{ height: '38px', flex: 1 }}
                       />
                       <input
@@ -1721,7 +1735,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                         className="form-input"
                         placeholder="Modelo (OptiPlex, ThinkPad)"
                         value={formData.model}
-                        onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                        onChange={(e) => handleSmartBrandOrModelChange('model', e.target.value)}
                         style={{ height: '38px', flex: 1 }}
                       />
                     </div>
