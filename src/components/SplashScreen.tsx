@@ -1,194 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-interface SplashScreenProps {
-  isLoading: boolean;
+export interface SplashScreenProps {
+  isLoading?: boolean;
   minDisplayTime?: number;
+  minDuration?: number;
   onFinish?: () => void;
+  onFinished?: () => void;
 }
 
+/**
+ * SplashScreen Controller Institucional (Exact Control Docente steel-pro1)
+ * Controla la transición de salida suave del Splash Screen institucional
+ * y la aparición cinematográfica tipo fade suave de la interfaz (sin bloqueos ni scrollbars).
+ */
 export const SplashScreen: React.FC<SplashScreenProps> = ({
-  isLoading,
-  minDisplayTime = 1200,
-  onFinish
+  minDisplayTime,
+  minDuration,
+  onFinish,
+  onFinished
 }) => {
-  const [isFadingOut, setIsFadingOut] = useState(false);
-  const [isMounted, setIsMounted] = useState(true);
+  const duration = minDuration || minDisplayTime || 1200;
+  const finishCallback = onFinished || onFinish;
 
   useEffect(() => {
-    // Si estamos en entorno nativo Capacitor (Android APK), ocultar el splash nativo del sistema
+    // Si estamos en entorno nativo Capacitor (Android APK), desvanecer el splash nativo suavemente
     try {
       if (typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.SplashScreen) {
-        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 400 }).catch(() => {});
+        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => {});
       }
     } catch (_) {}
 
-    // Bloquear todo tipo de scrollbars globalmente en html y body mientras el SplashScreen esté presente
-    document.documentElement.classList.add('splash-active');
-    document.body.classList.add('splash-active');
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
+    const splash = document.getElementById('upn-boot-splash');
+    const root = document.getElementById('root');
 
-    // Seguro absoluto contra cuelgues: después de 1.8 segundos, comenzar a desvanecer automáticamente
-    const hardLimitTimer = setTimeout(() => {
-      setIsFadingOut(true);
-      setTimeout(() => {
-        setIsMounted(false);
-        document.documentElement.classList.remove('splash-active');
-        document.body.classList.remove('splash-active');
-        document.body.style.overflow = originalBodyOverflow;
-        document.documentElement.style.overflow = originalHtmlOverflow;
-        window.scrollTo(0, 0);
-        if (onFinish) onFinish();
-      }, 500);
-    }, 1800);
-
-    return () => {
-      clearTimeout(hardLimitTimer);
+    const makeInterfaceVisible = () => {
+      if (root) {
+        root.classList.add('app-ready');
+      }
       document.documentElement.classList.remove('splash-active');
       document.body.classList.remove('splash-active');
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, [onFinish]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      const fadeTimer = setTimeout(() => {
-        setIsFadingOut(true);
-      }, Math.max(300, minDisplayTime - 500));
-
-      const unmountTimer = setTimeout(() => {
-        setIsMounted(false);
-        document.documentElement.classList.remove('splash-active');
-        document.body.classList.remove('splash-active');
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-        window.scrollTo(0, 0);
-        if (onFinish) onFinish();
-      }, Math.max(800, minDisplayTime));
-
-      return () => {
-        clearTimeout(fadeTimer);
-        clearTimeout(unmountTimer);
-      };
+    if (!splash) {
+      makeInterfaceVisible();
+      if (finishCallback) finishCallback();
+      return;
     }
-  }, [isLoading, minDisplayTime, onFinish]);
 
-  if (!isMounted) return null;
+    const timer = setTimeout(() => {
+      // 1. Iniciar aparición fluida con transición fade suave de la interfaz
+      makeInterfaceVisible();
 
-  return (
-    <div
-      className={`tay-splash-screen ${isFadingOut ? 'splash-fade-out' : ''}`}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 99999,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        userSelect: 'none',
-        pointerEvents: isFadingOut ? 'none' : 'auto'
-      }}
-    >
-      {/* Luz ambiental cinematográfica tipo halo (estilo Netflix) */}
-      <div
-        className="splash-ambient-glow"
-        style={{
-          position: 'absolute',
-          width: '750px',
-          height: '750px',
-          borderRadius: '50%',
-          animation: 'splashCinematicGlow 3s ease-in-out infinite alternate',
-          pointerEvents: 'none'
-        }}
-      />
+      // 2. Iniciar desvanecimiento cinematográfico ultra suave 120fps del splash
+      splash.style.transition = 'opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
 
-      {/* Contenedor Central Sobrio, Limpio y Minimalista */}
-      <div
-        style={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          animation: 'splashCinematicEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-        }}
-      >
-        {/* Emblema Institucional UPN */}
-        <div
-          className="splash-logo-card"
-          style={{
-            width: '74px',
-            height: '74px',
-            borderRadius: '18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '26px',
-            overflow: 'hidden'
-          }}
-        >
-          <img 
-            src="/icon.svg" 
-            alt="UPN" 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-          />
-        </div>
+      // 3. Una vez completado el fade cruzado, remover el nodo
+      const removeTimer = setTimeout(() => {
+        try {
+          if (splash && splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        } catch (_) {}
+        if (finishCallback) finishCallback();
+      }, 700);
 
-        {/* Tipografía Oficial del Brand (Space Grotesk) */}
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <h1
-            className="splash-brand-title"
-            style={{
-              fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', sans-serif",
-              fontSize: '2.8rem',
-              fontWeight: 800,
-              letterSpacing: '-0.035em',
-              margin: '0 0 6px 0',
-              lineHeight: 1,
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <span className="splash-title-tay">TAY</span>
-            <span className="splash-title-audit">-AUDIT</span>
-          </h1>
+      return () => clearTimeout(removeTimer);
+    }, duration);
 
-          {/* Subtítulo Institucional Sobrio con tracking elegante */}
-          <div
-            className="splash-sub-upn"
-            style={{
-              fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', sans-serif",
-              fontSize: '0.76rem',
-              fontWeight: 700,
-              letterSpacing: '0.24em',
-              textTransform: 'uppercase',
-              marginTop: '6px'
-            }}
-          >
-            UNIVERSIDAD PRIVADA DEL NORTE
-          </div>
+    return () => clearTimeout(timer);
+  }, [duration, finishCallback]);
 
-          <div
-            className="splash-sub-dept"
-            style={{
-              fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', sans-serif",
-              fontSize: '0.66rem',
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              marginTop: '8px'
-            }}
-          >
-            Operaciones & Asistencia TI
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 };
 
 export default SplashScreen;

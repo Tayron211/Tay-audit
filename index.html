@@ -20,6 +20,57 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      @keyframes splashProgress {
+        0% { left: 0%; width: 0%; opacity: 0.5; }
+        50% { left: 25%; width: 60%; opacity: 1; }
+        100% { left: 100%; width: 15%; opacity: 0.3; }
+      }
+      /* Contenedor principal de la app con transición fade suave 120fps (sin transform para preservar navbar fija/sticky) */
+      #root {
+        opacity: 0;
+        transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #root.app-ready {
+        opacity: 1 !important;
+      }
+      /* Splash Screen adaptativo Institucional UPN (Control Docente steel-pro1) */
+      #upn-boot-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 999999;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden !important;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+      }
+      html.dark #upn-boot-splash, [data-mode="dark"] #upn-boot-splash {
+        background-color: #000000 !important;
+        color-scheme: dark;
+      }
+      html:not(.dark) #upn-boot-splash, [data-mode="light"] #upn-boot-splash {
+        background-color: #edf0f5 !important;
+        color-scheme: light;
+      }
+      html.dark .splash-text-title, [data-mode="dark"] .splash-text-title { color: #ffffff !important; }
+      html:not(.dark) .splash-text-title, [data-mode="light"] .splash-text-title { color: #0f172a !important; }
+      html.dark .splash-text-muted, [data-mode="dark"] .splash-text-muted { color: #a1a1aa !important; }
+      html:not(.dark) .splash-text-muted, [data-mode="light"] .splash-text-muted { color: #64748b !important; }
+      html.dark .splash-loader-track, [data-mode="dark"] .splash-loader-track { background-color: rgba(63, 63, 70, 0.7) !important; }
+      html:not(.dark) .splash-loader-track, [data-mode="light"] .splash-loader-track { background-color: rgba(226, 232, 240, 0.95) !important; }
+      html.dark .splash-glow, [data-mode="dark"] .splash-glow { background: radial-gradient(circle, rgba(253,186,48,0.22) 0%, rgba(0,0,0,0) 70%) !important; }
+      html:not(.dark) .splash-glow, [data-mode="light"] .splash-glow { background: radial-gradient(circle, rgba(253,186,48,0.20) 0%, rgba(255,255,255,0) 70%) !important; }
+      .splash-logo-card {
+        background-color: #FDBA30;
+        box-shadow: 0 8px 30px rgba(253, 186, 48, 0.35);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
+    </style>
     <script>
       (function() {
         try {
@@ -83,7 +134,59 @@
       })();
     </script>
   </head>
-  <body>
+  <body class="overscroll-none touch-manipulation">
+    <!-- Sovereign Splash Screen: adaptativo automáticamente a Modo Claro y Oscuro (Control Docente steel-pro1) -->
+    <div id="upn-boot-splash">
+      <!-- Ambient Glow Adaptable -->
+      <div class="splash-glow" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22rem;height:22rem;border-radius:9999px;pointer-events:none;filter:blur(40px);"></div>
+      
+      <!-- Top Institutional Label -->
+      <div class="splash-text-muted" style="padding-top:calc(env(safe-area-inset-top, 0px) + 3.75rem);font-size:10.5px;text-transform:uppercase;font-family:monospace;letter-spacing:0.3em;font-weight:600;position:relative;z-index:2;text-align:center;">
+        Universidad Privada del Norte
+      </div>
+      
+      <!-- Center Identity Core -->
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 1.5rem;margin-top:-1.5rem;position:relative;z-index:2;">
+        <div class="splash-logo-card" style="width:5rem;height:5rem;border-radius:1.1rem;display:flex;align-items:center;justify-content:center;padding:0.75rem;margin-bottom:1.5rem;">
+          <img src="/icon.svg" alt="UPN" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <h1 class="splash-text-title" style="font-size:1.35rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif;margin:0;line-height:1.2;">
+          TAY<span style="color:#FDBA30;">-AUDIT</span>
+        </h1>
+        <div class="splash-text-muted" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:11px;font-family:monospace;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;">
+          <span>Campus Comas</span>
+          <span style="display:inline-block;width:4px;height:4px;border-radius:9999px;background-color:#52525b;"></span>
+          <span style="color:#FDBA30;font-weight:700;">Operaciones TI</span>
+        </div>
+        <!-- Hairline Loader -->
+        <div class="splash-loader-track" style="width:9rem;height:2.5px;border-radius:9999px;margin-top:2rem;overflow:hidden;position:relative;">
+          <div style="position:absolute;top:0;bottom:0;left:0;background-color:#FDBA30;border-radius:9999px;box-shadow:0 0 10px rgba(253,186,48,0.7);animation:splashProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="splash-text-muted" style="padding-bottom:2.25rem;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:0.15em;position:relative;z-index:2;">
+        <span>Sistema Integrado 2026 • v2.6</span>
+      </div>
+    </div>
+
+    <!-- Safety Fallback: jamás dejar la pantalla bloqueada bajo ninguna circunstancia -->
+    <script>
+      setTimeout(function() {
+        var splash = document.getElementById('upn-boot-splash');
+        var root = document.getElementById('root');
+        if (root) root.classList.add('app-ready');
+        if (splash) {
+          splash.style.transition = 'opacity 0.5s ease';
+          splash.style.opacity = '0';
+          splash.style.pointerEvents = 'none';
+          setTimeout(function() {
+            if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+          }, 550);
+        }
+      }, 2500);
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

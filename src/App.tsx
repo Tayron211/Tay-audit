@@ -953,15 +953,16 @@ exit
   if (!currentUser) {
     return (
       <>
+        <SplashScreen minDuration={1200} />
         <LoginScreen onLogin={handleLogin} />
-        <SplashScreen isLoading={isAppLoading} />
       </>
     );
   }
 
   return (
-    <div
-      className="main-app-outer-wrapper"
+    <ErrorBoundary>
+      <div
+        className="main-app-outer-wrapper"
       style={{
         minHeight: '100dvh',
         width: '100%',
@@ -1472,10 +1473,11 @@ exit
         onAtender={handleSelectNotification}
       />
 
-      {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen) */}
-      <SplashScreen isLoading={isAppLoading} />
+      {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen - Control Docente steel-pro1) */}
+      <SplashScreen minDuration={1200} />
     </div>
-  );
+  </ErrorBoundary>
+);
 };
 
 export const App: React.FC = () => {
