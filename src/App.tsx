@@ -927,7 +927,6 @@ exit
         className="main-app-inner-wrapper"
         style={{
           width: '100%',
-          maxWidth: '1280px',
           minWidth: 0,
           minHeight: '100dvh',
           display: 'flex',

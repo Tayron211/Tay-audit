@@ -49,6 +49,7 @@ namespace StivieDesktop {
         private readonly string hostname;
         private readonly string username;
         private DispatcherTimer remotePollTimer;
+        private DispatcherTimer autoDockTimer;
 
         // Panel dinámico de opciones (predeterminadas / sub-menú por incidencia)
         private StackPanel actionsPanel;
@@ -114,6 +115,32 @@ namespace StivieDesktop {
             Height = DockHeight;
             Left = workArea.Right - TuckedWidth; // Tucked en el borde
             Top = currentDockY;
+
+            // Auto-guardado al lateral de la pantalla al perder el foco (usuario trabajando en otra ventana)
+            this.Deactivated += (s, e) => {
+                if (isExpanded && !isDragging) {
+                    DockToSide();
+                }
+            };
+
+            // Temporizador de inactividad: si STIVIE queda abierto sin interacción por 25s, se guarda al lateral
+            autoDockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(25) };
+            autoDockTimer.Tick += (s, e) => {
+                if (isExpanded && !isDragging) {
+                    DockToSide();
+                }
+            };
+
+            this.PreviewMouseMove += (s, e) => ResetAutoDockTimer();
+            this.PreviewKeyDown += (s, e) => ResetAutoDockTimer();
+            this.PreviewMouseDown += (s, e) => ResetAutoDockTimer();
+        }
+
+        private void ResetAutoDockTimer() {
+            if (isExpanded && autoDockTimer != null) {
+                autoDockTimer.Stop();
+                autoDockTimer.Start();
+            }
         }
 
         private static Canvas CreateStylizedMascotCanvas(double size) {
@@ -651,6 +678,7 @@ namespace StivieDesktop {
         public void DockToSide() {
             if (isAnimating || !isExpanded) return;
             isAnimating = true;
+            if (autoDockTimer != null) autoDockTimer.Stop();
 
             Rect wa = SystemParameters.WorkArea;
             currentDockY = Math.Max(wa.Top + 20, Math.Min(wa.Bottom - DockHeight - 20, Top + 40));
@@ -731,6 +759,10 @@ namespace StivieDesktop {
                 this.Left = targetLeft;
                 isExpanded = true;
                 isAnimating = false;
+                if (autoDockTimer != null) {
+                    autoDockTimer.Stop();
+                    autoDockTimer.Start();
+                }
             };
 
             this.BeginAnimation(Window.LeftProperty, slide);

@@ -1348,7 +1348,7 @@ exit /b 0
             status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
             stivieInstalled = CASE WHEN ? = 1 THEN 1 ELSE stivieInstalled END,
             lastAgentPing = CASE WHEN ? = 1 THEN ? ELSE lastAgentPing END,
-            lastAuditDate = ?,
+            lastAuditDate = COALESCE(lastAuditDate, ?),
             updatedAt = ?
           WHERE id = ?
         `).bind(
@@ -1422,7 +1422,7 @@ exit /b 0
               status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
               stivieInstalled = 1,
               lastAgentPing = ?,
-              lastAuditDate = ?,
+              lastAuditDate = COALESCE(lastAuditDate, ?),
               updatedAt = ?
             WHERE id = ?
           `).bind(now, now, now, existing.id).run();

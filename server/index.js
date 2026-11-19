@@ -475,7 +475,7 @@ app.post('/api/agent/report', (req, res) => {
           status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
           stivieInstalled = CASE WHEN ? = 1 THEN 1 ELSE stivieInstalled END,
           lastAgentPing = CASE WHEN ? = 1 THEN ? ELSE lastAgentPing END,
-          lastAuditDate = ?,
+          lastAuditDate = COALESCE(lastAuditDate, ?),
           updatedAt = ?
         WHERE id = ?
       `).run(
@@ -608,18 +608,24 @@ app.post('/api/agent/ping', (req, res) => {
     if (!hostname) return res.status(400).json({ error: 'hostname requerido' });
     const cleanHostname = hostname.trim();
     const now = new Date().toISOString();
-    const existing = db.prepare('SELECT id FROM devices WHERE UPPER(hostname) = UPPER(?)').get(cleanHostname);
+    const existing = db.prepare('SELECT id, lastAuditDate FROM devices WHERE UPPER(hostname) = UPPER(?)').get(cleanHostname);
     if (existing) {
       db.prepare(`
         UPDATE devices SET 
           status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END, 
           stivieInstalled = 1,
           lastAgentPing = ?, 
-          lastAuditDate = ?, 
+          lastAuditDate = COALESCE(lastAuditDate, ?), 
           updatedAt = ? 
         WHERE id = ?
       `).run(now, now, now, existing.id);
-      broadcastEvent('DEVICE_STATUS_CHANGED', { id: existing.id, status: 'instalado', stivieInstalled: 1, lastAgentPing: now, lastAuditDate: now });
+      broadcastEvent('DEVICE_STATUS_CHANGED', { 
+        id: existing.id, 
+        status: 'instalado', 
+        stivieInstalled: 1, 
+        lastAgentPing: now, 
+        lastAuditDate: existing.lastAuditDate || now 
+      });
     }
     const commands = getAndClearAgentCommands(cleanHostname);
     res.json({ ok: true, timestamp: now, commands });

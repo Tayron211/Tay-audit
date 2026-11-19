@@ -130,6 +130,38 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
     }
   }, [handleExpand]);
 
+  // Auto-guardado al lateral por inactividad (25s) o al perder el foco de la ventana
+  useEffect(() => {
+    if (isDocked) return;
+
+    let timeoutId: any;
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleDock();
+      }, 25000);
+    };
+
+    resetTimer();
+
+    const handleBlur = () => {
+      handleDock();
+    };
+
+    window.addEventListener('mousemove', resetTimer, { passive: true });
+    window.addEventListener('keydown', resetTimer, { passive: true });
+    window.addEventListener('touchstart', resetTimer, { passive: true });
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [isDocked, handleDock]);
+
   // Local PC hostname
   const [hostname] = useState<string>(() => {
     const params = new URLSearchParams(window.location.search);

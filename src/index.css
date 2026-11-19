@@ -354,7 +354,7 @@ button:active {
 
 .main-app-inner-wrapper {
   width: 100%;
-  max-width: 1280px;
+  max-width: min(1840px, 98vw);
   min-width: 0;
   min-height: 100vh;
   min-height: 100dvh;
@@ -362,6 +362,18 @@ button:active {
   flex-direction: column;
   flex: 1;
   box-sizing: border-box;
+}
+
+@media (min-width: 1920px) {
+  .main-app-inner-wrapper {
+    max-width: min(2400px, 98vw);
+  }
+}
+
+@media (min-width: 2560px) {
+  .main-app-inner-wrapper {
+    max-width: 98vw;
+  }
 }
 
 h1, h2, h3, h4, h5, h6, .brand-title, .font-heading {
@@ -3591,6 +3603,15 @@ div.desktop-inventory-table.force-visible {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mobile-inventory-cards.force-visible {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
   }
 }
 
