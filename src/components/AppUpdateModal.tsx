@@ -78,7 +78,7 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({ updateInfo, onCl
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[999999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none ${fade.backdropClass}`}
+      className={`modal-backdrop-acrylic ${fade.isClosing ? 'closing' : ''} fixed inset-0 z-[999999] select-none ${fade.backdropClass}`}
       style={{
         position: 'fixed',
         inset: 0,

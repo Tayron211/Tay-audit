@@ -118,16 +118,16 @@
   --bg-acrylic-elevated: #121214;
   --bg-acrylic-card: rgba(18, 18, 22, 0.96);
   
-  --modal-backdrop-bg: rgba(0, 0, 0, 0.68);
-  --modal-glass-bg: rgba(12, 12, 16, 0.88);
-  --modal-glass-border: rgba(255, 255, 255, 0.12);
-  --bg-modal-window: rgba(12, 12, 16, 0.88);
-  --border-modal-window: rgba(255, 255, 255, 0.12);
-  --bg-modal-header: transparent;
-  --bg-modal-footer: transparent;
-  --bg-modal-card: rgba(255, 255, 255, 0.035);
-  --border-modal-card: rgba(255, 255, 255, 0.08);
-  --border-modal-subtle: rgba(255, 255, 255, 0.08);
+  --modal-backdrop-bg: rgba(0, 0, 0, 0.65);
+  --modal-glass-bg: rgba(18, 19, 26, 0.94);
+  --modal-glass-border: rgba(255, 255, 255, 0.16);
+  --bg-modal-window: rgba(18, 19, 26, 0.94);
+  --border-modal-window: rgba(255, 255, 255, 0.16);
+  --bg-modal-header: rgba(255, 255, 255, 0.04);
+  --bg-modal-footer: rgba(255, 255, 255, 0.04);
+  --bg-modal-card: rgba(255, 255, 255, 0.06);
+  --border-modal-card: rgba(255, 255, 255, 0.10);
+  --border-modal-subtle: rgba(255, 255, 255, 0.10);
 
   --border-acrylic: rgba(255, 255, 255, 0.12);
   --border-acrylic-hover: rgba(253, 186, 48, 0.40);
@@ -148,11 +148,11 @@
   --input-border: rgba(255, 255, 255, 0.14);
   --input-color: #f8fafc;
 
-  --bg-modal-section: rgba(255, 255, 255, 0.035);
-  --border-modal-section: rgba(255, 255, 255, 0.08);
-  --shadow-modal-section: 0 4px 18px rgba(0, 0, 0, 0.25);
-  --input-modal-bg: rgba(255, 255, 255, 0.05);
-  --input-modal-border: rgba(255, 255, 255, 0.12);
+  --bg-modal-section: rgba(255, 255, 255, 0.06);
+  --border-modal-section: rgba(255, 255, 255, 0.10);
+  --shadow-modal-section: 0 4px 18px rgba(0, 0, 0, 0.35);
+  --input-modal-bg: rgba(255, 255, 255, 0.07);
+  --input-modal-border: rgba(255, 255, 255, 0.14);
   --input-modal-text: #f4f4f5;
 
   --table-border: rgba(255, 255, 255, 0.08);
@@ -311,7 +311,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
@@ -344,7 +344,7 @@ button:active {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
 }
 
@@ -356,6 +356,7 @@ button:active {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-x: clip;
   flex: 1;
   box-sizing: border-box;
 }
@@ -553,8 +554,22 @@ code, pre, .font-mono {
 }
 
 /* ==================================================================== */
-/* MODAL BACKDROP BLUR (ELIMINADOS FILTROS EN ROOT PARA EVITAR OSCURECIMIENTO Y BLOQUEOS) */
+/* GLOBAL APP DEFOCUS (BLUR) WHEN ANY MODAL IS OPEN (CONTROL DOCENTE)   */
 /* ==================================================================== */
+#root {
+  transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), -webkit-filter 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: filter;
+}
+
+html[data-modal-open="true"] #root,
+body.modal-backdrop-blur-active #root,
+body.has-active-modal #root,
+html:has([data-modal-open="true"]) #root {
+  filter: blur(12px) brightness(0.85) !important;
+  -webkit-filter: blur(12px) brightness(0.85) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
 
 /* ==================================================================== */
 /* MODAL ACRYLIC FROSTED GLASS & FLUID OPEN/CLOSE TRANSITIONS            */
@@ -563,8 +578,8 @@ code, pre, .font-mono {
   position: fixed !important;
   inset: 0 !important;
   background: var(--modal-backdrop-bg) !important;
-  backdrop-filter: blur(28px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -592,12 +607,12 @@ code, pre, .font-mono {
 }
 
 .modal-window-acrylic {
-  background: var(--bg-modal-window, rgba(12, 12, 16, 0.88)) !important;
-  backdrop-filter: blur(36px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(190%) !important;
-  border: 1.5px solid var(--border-modal-window, rgba(255, 255, 255, 0.12)) !important;
+  background: rgba(18, 19, 26, 0.94) !important;
+  backdrop-filter: blur(48px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(190%) contrast(105%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 24px !important;
-  box-shadow: 0 32px 90px -10px rgba(0, 0, 0, 0.90), 0 0 45px rgba(253, 186, 48, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 32px 100px -10px rgba(0, 0, 0, 0.95), 0 0 45px rgba(253, 186, 48, 0.12), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.20) !important;
   animation: appleModalFadeEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: center center;
   box-sizing: border-box !important;
@@ -611,17 +626,26 @@ code, pre, .font-mono {
 
 [data-mode="light"] .modal-window-acrylic,
 html:not(.dark) .modal-window-acrylic {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 24px 75px -12px rgba(15, 23, 42, 0.16), 0 8px 24px -4px rgba(15, 23, 42, 0.06), 0 0 35px rgba(253, 186, 48, 0.10), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(48px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(190%) contrast(105%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.90) !important;
+  box-shadow: 0 24px 75px -12px rgba(15, 23, 42, 0.18), 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 0 35px rgba(253, 186, 48, 0.10), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.95) !important;
 }
 
-/* Encabezado Fijo Acrylic de Ventanas Modales (Sin cuadros negros, translúcido continuo) */
+/* Encabezado Fijo Acrylic de Ventanas Modales */
 .modal-header-acrylic {
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   border-bottom: 1px solid var(--border-modal-subtle) !important;
   flex-shrink: 0 !important;
   box-sizing: border-box !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+[data-mode="light"] .modal-header-acrylic {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.95) !important;
 }
 
 /* Cuerpo Scrollable con Inercia Táctil y Aislamiento de Overflow */
@@ -636,10 +660,17 @@ html:not(.dark) .modal-window-acrylic {
 
 /* Pie Fijo Acrylic de Ventanas Modales */
 .modal-footer-acrylic {
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   border-top: 1px solid var(--border-modal-subtle) !important;
   flex-shrink: 0 !important;
   box-sizing: border-box !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+[data-mode="light"] .modal-footer-acrylic {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.95) !important;
 }
 
 /* Eliminación total de cuadros negros en modo oscuro dentro de ventanas modales */
@@ -2057,8 +2088,11 @@ code, pre {
   border-right: none !important;
   z-index: 1000 !important;
   display: block !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  background-color: rgba(14, 15, 20, 0.86);
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2080,20 +2114,20 @@ code, pre {
   }
 }
 
-/* Modo Claro: Frosted Glass Esmerilado de Alta Densidad (96% opaco, desenfoque nítido, sin transparencias vacías) */
+/* Modo Claro: Frosted Glass Esmerilado de Alta Densidad (Denso, desenfoque nítido, sin transparencias vacías) */
 [data-mode="light"] .acrylic-nav,
 html:not(.dark) .acrylic-nav {
-  background-color: rgba(255, 255, 255, 0.96) !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
   border-bottom: 1px solid rgba(226, 232, 240, 0.95) !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
-/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado de Alta Densidad (96% opaco) */
+/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado de Alta Densidad */
 [data-mode="dark"] .acrylic-nav,
 html.dark .acrylic-nav {
-  background-color: rgba(11, 12, 16, 0.96) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(14, 15, 20, 0.86) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.80), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Contenedor Interior del Navbar */
@@ -3613,11 +3647,11 @@ select option {
 /* DEVICE MODAL ENTERPRISE STYLING (FLAWLESS IN DARK & LIGHT MODES)     */
 /* ==================================================================== */
 :root, [data-mode="dark"] {
-  --bg-modal-section: rgba(255, 255, 255, 0.035);
-  --border-modal-section: rgba(255, 255, 255, 0.08);
-  --shadow-modal-section: 0 4px 14px rgba(0, 0, 0, 0.25);
-  --input-modal-bg: rgba(255, 255, 255, 0.05);
-  --input-modal-border: rgba(255, 255, 255, 0.12);
+  --bg-modal-section: rgba(255, 255, 255, 0.06);
+  --border-modal-section: rgba(255, 255, 255, 0.10);
+  --shadow-modal-section: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --input-modal-bg: rgba(255, 255, 255, 0.07);
+  --input-modal-border: rgba(255, 255, 255, 0.14);
   --input-modal-text: #f4f4f5;
 }
 

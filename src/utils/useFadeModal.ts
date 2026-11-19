@@ -1,10 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+let activeModalCount = 0;
+
 export function syncGlobalModalBlur(shouldBeActive: boolean) {
   if (typeof document === 'undefined') return;
-  if (!shouldBeActive) {
-    document.body.classList.remove('modal-backdrop-blur-active');
-    document.documentElement.removeAttribute('data-modal-open');
+  if (shouldBeActive) {
+    activeModalCount++;
+    document.body.classList.add('modal-backdrop-blur-active');
+    document.documentElement.setAttribute('data-modal-open', 'true');
+  } else {
+    activeModalCount = Math.max(0, activeModalCount - 1);
+    if (activeModalCount === 0) {
+      document.body.classList.remove('modal-backdrop-blur-active');
+      document.documentElement.removeAttribute('data-modal-open');
+    }
   }
 }
 

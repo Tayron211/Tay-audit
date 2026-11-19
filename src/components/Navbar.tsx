@@ -101,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateStatusModal, setUpdateStatusModal] = useState<{ type: string; version: string; build: number; isNative: boolean } | null>(null);
-  const updateModalFade = useFadeModal(Boolean(updateStatusModal), () => setUpdateStatusModal(null), 200);
+  const updateModalFade = useFadeModal(Boolean(updateStatusModal), () => setUpdateStatusModal(null), 200, { isModal: true });
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showIosModal, setShowIosModal] = useState(false);
@@ -464,7 +464,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Modal estilizado UPN para estado de actualización (Aplicación al Día) */}
       {updateModalFade.shouldRender && typeof document !== 'undefined' && createPortal(
         <div
-          className={`upn-update-status-backdrop ${updateModalFade.backdropClass}`}
+          className={`upn-update-status-backdrop modal-backdrop-acrylic ${updateModalFade.backdropClass}`}
           onClick={() => updateModalFade.requestClose()}
         >
           <div

@@ -174,6 +174,25 @@ const MainApp: React.FC = () => {
     isAuditModalOpenRef.current = isAuditModalOpen;
   }, [isAuditModalOpen]);
 
+  // Sincronización proactiva cuando cambian los estados de modales principales en App.tsx
+  useEffect(() => {
+    const isAnyModalActive = Boolean(selectedDevice || isAuditModalOpen || isScannerOpen || updateInfo);
+    if (typeof document !== 'undefined') {
+      if (isAnyModalActive) {
+        document.body.classList.add('modal-backdrop-blur-active');
+        document.body.classList.add('has-active-modal');
+        document.documentElement.setAttribute('data-modal-open', 'true');
+      } else {
+        const remaining = document.querySelector('.modal-backdrop-acrylic:not(.closing), .upn-update-status-backdrop');
+        if (!remaining) {
+          document.body.classList.remove('modal-backdrop-blur-active');
+          document.body.classList.remove('has-active-modal');
+          document.documentElement.removeAttribute('data-modal-open');
+        }
+      }
+    }
+  }, [selectedDevice, isAuditModalOpen, isScannerOpen, updateInfo]);
+
   useEffect(() => {
     isScannerOpenRef.current = isScannerOpen;
   }, [isScannerOpen]);
@@ -198,11 +217,35 @@ const MainApp: React.FC = () => {
     return 'light';
   });
 
+  // Sincronización universal del desenfoque de fondo (#root) cuando CUALQUIER ventana modal se abra
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.removeAttribute('data-modal-open');
+    if (typeof document === 'undefined') return;
+
+    const syncModalPresence = () => {
+      const activeModal = document.querySelector(
+        '.modal-backdrop-acrylic:not(.closing), .upn-update-status-backdrop, [data-modal-backdrop="true"]'
+      );
+      if (activeModal) {
+        document.body.classList.add('modal-backdrop-blur-active');
+        document.body.classList.add('has-active-modal');
+        document.documentElement.setAttribute('data-modal-open', 'true');
+      } else {
+        document.body.classList.remove('modal-backdrop-blur-active');
+        document.body.classList.remove('has-active-modal');
+        document.documentElement.removeAttribute('data-modal-open');
+      }
+    };
+
+    syncModalPresence();
+    const observer = new MutationObserver(syncModalPresence);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
       document.body.classList.remove('modal-backdrop-blur-active');
-    }
+      document.body.classList.remove('has-active-modal');
+      document.documentElement.removeAttribute('data-modal-open');
+    };
   }, []);
 
   useEffect(() => {
