@@ -1050,7 +1050,7 @@ exit
           flexDirection: 'column', 
           boxSizing: 'border-box', 
           padding: '16px 16px 120px 16px',
-          overflowX: 'hidden'
+          overflowX: 'clip'
         }}>
         <ErrorBoundary>
           {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}

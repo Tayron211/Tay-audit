@@ -2091,9 +2091,19 @@ code, pre {
   border-right: none !important;
   z-index: 1000 !important;
   display: block !important;
-  backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
-  background-color: rgba(14, 15, 20, 0.86);
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+}
+
+/* Capa aislada para garantizar el renderizado del blur en Chromium sin interferencias de hijos */
+.acrylic-nav::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2115,20 +2125,30 @@ code, pre {
   }
 }
 
-/* Modo Claro: Frosted Glass Esmerilado de Alta Densidad (Denso, desenfoque nítido, sin transparencias vacías) */
+/* Modo Claro: Frosted Glass Esmerilado (75% opaco, desenfoque nítido y visible al scrolear) */
 [data-mode="light"] .acrylic-nav,
 html:not(.dark) .acrylic-nav {
-  background-color: rgba(255, 255, 255, 0.88) !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85) !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
-/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado de Alta Densidad */
+[data-mode="light"] .acrylic-nav::before,
+html:not(.dark) .acrylic-nav::before {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado (72% opaco, desenfoque nítido y visible al scrolear) */
 [data-mode="dark"] .acrylic-nav,
 html.dark .acrylic-nav {
-  background-color: rgba(14, 15, 20, 0.86) !important;
+  background-color: rgba(11, 12, 16, 0.72) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.80), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-mode="dark"] .acrylic-nav::before,
+html.dark .acrylic-nav::before {
+  background-color: rgba(11, 12, 16, 0.72) !important;
 }
 
 /* Contenedor Interior del Navbar */
@@ -2272,8 +2292,6 @@ html.dark .acrylic-nav {
 .nav-user-btn,
 .nav-user-capsule {
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Tablet & Compact Screen Refinements (<= 1200px) */
@@ -3287,7 +3305,7 @@ select option {
 
   main {
     padding-bottom: calc(108px + env(safe-area-inset-bottom, 24px)) !important;
-    overflow-x: hidden !important;
+    overflow-x: clip !important;
     max-width: 100% !important;
     min-width: 0 !important;
   }
