@@ -555,20 +555,23 @@ code, pre, .font-mono {
 
 /* ==================================================================== */
 /* GLOBAL APP DEFOCUS (BLUR) WHEN ANY MODAL IS OPEN (CONTROL DOCENTE)   */
+/* Aplica exclusivamente sobre los contenidos sin alterar el containing */
+/* block de #root para que .acrylic-nav NUNCA se mueva de su posición fija */
 /* ==================================================================== */
-#root {
-  transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), -webkit-filter 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: filter;
-}
-
-html[data-modal-open="true"] #root,
-body.modal-backdrop-blur-active #root,
-body.has-active-modal #root,
-html:has([data-modal-open="true"]) #root {
+html[data-modal-open="true"] main,
+body.modal-backdrop-blur-active main,
+body.has-active-modal main,
+html[data-modal-open="true"] .acrylic-nav,
+body.modal-backdrop-blur-active .acrylic-nav,
+body.has-active-modal .acrylic-nav {
   filter: blur(12px) brightness(0.85) !important;
   -webkit-filter: blur(12px) brightness(0.85) !important;
   pointer-events: none !important;
   user-select: none !important;
+}
+
+main, .acrylic-nav {
+  transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), -webkit-filter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==================================================================== */
@@ -2090,8 +2093,6 @@ code, pre {
   display: block !important;
   backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
   -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
-  transform: translate3d(0, 0, 0) !important;
-  -webkit-transform: translate3d(0, 0, 0) !important;
   background-color: rgba(14, 15, 20, 0.86);
 }
 
