@@ -193,18 +193,32 @@ const MainApp: React.FC = () => {
   });
 
   const [colorMode, setColorMode] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('tay_audit_colormode') as 'dark' | 'light') || 'dark';
+    const saved = localStorage.getItem('tay_audit_colormode');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return 'light';
   });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.removeAttribute('data-modal-open');
+      document.body.classList.remove('modal-backdrop-blur-active');
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
     document.documentElement.setAttribute('data-mode', colorMode);
     document.documentElement.style.colorScheme = colorMode;
+    if (colorMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('tay_audit_theme', currentTheme);
     localStorage.setItem('tay_audit_colormode', colorMode);
 
     // Sincronización armónica con la barra y navegación de TODOS los navegadores móviles (Chrome Android, Samsung Internet, iOS Safari, Edge Mobile, Firefox)
-    const mobileThemeColor = colorMode === 'light' ? '#edf0f5' : '#000000';
+    const mobileThemeColor = colorMode === 'light' ? '#f8fafc' : '#000000';
     const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
     if (themeMetas.length > 0) {
       themeMetas.forEach(meta => meta.setAttribute('content', mobileThemeColor));

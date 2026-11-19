@@ -94,7 +94,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onLogout
 }) => {
-  const [time, setTime] = useState(new Date());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuFade = useFadeModal(userMenuOpen, () => setUserMenuOpen(false), 200, { isModal: false });
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -107,11 +106,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showIosModal, setShowIosModal] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     const handleBeforeInstall = (e: any) => {
@@ -160,9 +154,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
   }, [userMenuOpen]);
 
-  const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const currentDayName = daysOfWeek[time.getDay()];
-  const formattedTime = time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 
   const handleInstallPwa = async () => {
     const w = window as any;
@@ -215,7 +206,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="acrylic-nav">
+      <header 
+        className="acrylic-nav"
+        style={{
+          backdropFilter: 'blur(28px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(180%)'
+        }}
+      >
         <div className="acrylic-nav-inner">
         {/* Brand Logo Oficial UPN / Tay-Audit (Botón para Ir al Inicio sin modificar el diseño) */}
         <div 
@@ -308,17 +305,40 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Right Controls: Grouped cleanly into Action Tools, Appearance, Notifications, and Unified User Capsule */}
+        {/* Right Controls: Grouped cleanly into Notifications, Theme Switch, and Unified User Capsule */}
         <div className="nav-controls-container">
-          {/* Audit Device Button (Primary Action - First on desktop, hidden on mobile) */}
+          {/* Botón Directo Modo Claro / Oscuro */}
           <button
             type="button"
-            onClick={onOpenAuditModal}
-            className="btn-flat btn-primary hide-on-mobile nav-register-btn"
-            title="Registrar nuevo equipo en inventario"
+            onClick={onToggleColorMode}
+            className="btn-flat hide-on-mobile"
+            style={{
+              padding: '6px 11px',
+              borderRadius: '9999px',
+              border: '1px solid var(--border-acrylic)',
+              backgroundColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+              color: 'var(--text-primary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.74rem',
+              fontWeight: 700,
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+              cursor: 'pointer'
+            }}
+            title={colorMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
           >
-            <Plus size={14} />
-            <span>Registrar</span>
+            {colorMode === 'dark' ? (
+              <>
+                <Sun size={14} color="#FDBA30" />
+                <span>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon size={14} color="#64748b" />
+                <span>Modo Oscuro</span>
+              </>
+            )}
           </button>
 
           {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK */}
@@ -338,14 +358,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             onGoToTickets={onGoToTickets}
             openTicketsCount={openTicketsCount}
           />
-
-          {/* Live Clock Pill (Reloj Minimalista con Punto Verde Pulsante: "Mié 08:29 p. m.") */}
-          <div className="live-clock-pill hide-on-mobile" title="Hora actual del sistema">
-            <span className="live-clock-dot" />
-            <span className="live-clock-text">
-              {currentDayName} {formattedTime}
-            </span>
-          </div>
 
           {/* UN SOLO BOTÓN DE USUARIO: CÁPSULA CON MENÚ DESPLEGABLE (ESTILO EXACTO STEEL-PRO1) */}
           {currentUser && (

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   ClipboardCheck, 
   Clock,
-  BarChart3
+  BarChart3,
+  Plus
 } from 'lucide-react';
 import type { Device, SystemStats, AuditLog } from '../types';
 import { AuditListView } from './AuditListView';
@@ -102,43 +103,67 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
           </span>
         </div>
 
-        <div className="audit-tabs-pill-container">
-          {/* Sub-pestaña 1: Dashboard de Inventario */}
-          <button
-            type="button"
-            onClick={() => setActiveView('dashboard')}
-            className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-          >
-            <BarChart3 size={13} style={{ flexShrink: 0 }} />
-            <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
-            <span className="audit-tab-mobile-only">Dashboard</span>
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="audit-tabs-pill-container">
+            {/* Sub-pestaña 1: Dashboard de Inventario */}
+            <button
+              type="button"
+              onClick={() => setActiveView('dashboard')}
+              className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
+              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+            >
+              <BarChart3 size={13} style={{ flexShrink: 0 }} />
+              <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
+              <span className="audit-tab-mobile-only">Dashboard</span>
+            </button>
 
-          {/* Sub-pestaña 2: Lista de Equipos */}
+            {/* Sub-pestaña 2: Lista de Equipos */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategoryFilter('all');
+                setActiveView('list');
+              }}
+              className={`nav-tab-btn ${activeView === 'list' ? 'nav-tab-active' : ''}`}
+              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+            >
+              <ClipboardCheck size={13} style={{ flexShrink: 0 }} />
+              <span className="audit-tab-desktop-only">Lista de Equipos</span>
+              <span className="audit-tab-mobile-only">Equipos</span>
+            </button>
+
+            {/* Sub-pestaña 3: Bitácora */}
+            <button
+              type="button"
+              onClick={() => setActiveView('logs')}
+              className={`nav-tab-btn ${activeView === 'logs' ? 'nav-tab-active' : ''}`}
+              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+            >
+              <Clock size={13} style={{ flexShrink: 0 }} />
+              <span>Bitácora ({logs.length})</span>
+            </button>
+          </div>
+
+          {/* Botón Registrar: Ubicado abajo fuera del encabezado y alineado a la derecha */}
           <button
             type="button"
-            onClick={() => {
-              setSelectedCategoryFilter('all');
-              setActiveView('list');
+            onClick={onOpenAuditModal}
+            className="btn-flat btn-primary"
+            style={{
+              padding: '5px 12px',
+              fontSize: '0.76rem',
+              fontWeight: 800,
+              gap: '6px',
+              borderRadius: '8px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              boxShadow: '0 2px 8px var(--accent-glow)',
+              flexShrink: 0
             }}
-            className={`nav-tab-btn ${activeView === 'list' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+            title="Registrar nuevo equipo en inventario"
           >
-            <ClipboardCheck size={13} style={{ flexShrink: 0 }} />
-            <span className="audit-tab-desktop-only">Lista de Equipos</span>
-            <span className="audit-tab-mobile-only">Equipos</span>
-          </button>
-
-          {/* Sub-pestaña 3: Bitácora */}
-          <button
-            type="button"
-            onClick={() => setActiveView('logs')}
-            className={`nav-tab-btn ${activeView === 'logs' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-          >
-            <Clock size={13} style={{ flexShrink: 0 }} />
-            <span>Bitácora ({logs.length})</span>
+            <Plus size={14} />
+            <span>Registrar</span>
           </button>
         </div>
       </div>

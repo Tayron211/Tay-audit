@@ -177,8 +177,8 @@
 /* ==================================================================== */
 [data-mode="light"] {
   color-scheme: light;
-  --bg-canvas: #edf0f5;            /* Soft slate from steel-pro1 */
-  --bg-canvas-subtle: #e2e8f0;
+  --bg-canvas: #f8fafc;            /* Clean radiant slate (steel-pro1 Light) */
+  --bg-canvas-subtle: #f1f5f9;
   --bg-acrylic: rgba(255, 255, 255, 0.92);
   --bg-acrylic-hover: #ffffff;
   --bg-acrylic-elevated: #ffffff;
@@ -290,7 +290,7 @@ html {
 [data-mode="light"],
 [data-mode="light"] body,
 [data-mode="light"] #root {
-  background-color: #edf0f5 !important;
+  background-color: #f8fafc !important;
   color: #0f172a;
 }
 
@@ -313,7 +313,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  overflow-x: clip;
+  overflow-x: hidden;
   box-sizing: border-box;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
@@ -346,7 +346,7 @@ button:active {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: clip;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -555,22 +555,8 @@ code, pre, .font-mono {
 }
 
 /* ==================================================================== */
-/* GLOBAL APP DEFOCUS (BLUR) WHEN ANY MODAL IS OPEN (CONTROL DOCENTE)   */
+/* MODAL BACKDROP BLUR (ELIMINADOS FILTROS EN ROOT PARA EVITAR OSCURECIMIENTO Y BLOQUEOS) */
 /* ==================================================================== */
-#root {
-  transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: filter, transform;
-}
-
-html[data-modal-open="true"] #root,
-body.modal-backdrop-blur-active #root,
-html:has([data-modal-open="true"]) #root {
-  filter: blur(14px) saturate(130%) brightness(0.92) !important;
-  -webkit-filter: blur(14px) saturate(130%) brightness(0.92) !important;
-  transform: scale(0.995) !important;
-  pointer-events: none !important;
-  user-select: none !important;
-}
 
 /* ==================================================================== */
 /* MODAL ACRYLIC FROSTED GLASS & FLUID OPEN/CLOSE TRANSITIONS            */
@@ -2046,7 +2032,7 @@ code, pre {
 
 /* ==================================================================== */
 /* ==================================================================== */
-/* TOP NAVBAR: ESTÁTICO / FIJO CON EFECTO GLASS BLUR CON DESENFOQUE     */
+/* TOP NAVBAR: ESTÁTICO / FIJO CON VERDADERO FROSTED GLASS BLUR DESENFOCADO */
 /* ==================================================================== */
 .acrylic-nav {
   position: sticky !important;
@@ -2054,7 +2040,7 @@ code, pre {
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
-  max-width: 100vw !important;
+  max-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
   padding-top: max(0px, env(safe-area-inset-top, 0px)) !important;
@@ -2065,23 +2051,22 @@ code, pre {
   z-index: 1000 !important; /* Siempre fijo arriba en la cima de la pantalla */
   display: block !important;
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
-  backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
 }
 
 /* Modo Claro: Frosted Glass Esmerilado Denso (Denso, desenfoque nítido, sin transparencias vacías) */
-:root .acrylic-nav,
 [data-mode="light"] .acrylic-nav,
 html:not(.dark) .acrylic-nav {
-  background-color: rgba(248, 250, 252, 0.85) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.95) !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Modo Oscuro: True AMOLED Frosted Glass Esmerilado (Control Docente steel-pro1) */
 [data-mode="dark"] .acrylic-nav,
 html.dark .acrylic-nav {
-  background-color: rgba(12, 12, 16, 0.88) !important;
+  background-color: rgba(14, 14, 18, 0.85) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
   box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
 }

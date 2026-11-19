@@ -50,7 +50,7 @@
         color-scheme: dark;
       }
       html:not(.dark) #upn-boot-splash, [data-mode="light"] #upn-boot-splash {
-        background-color: #edf0f5 !important;
+        background-color: #f8fafc !important;
         color-scheme: light;
       }
       html.dark .splash-text-title, [data-mode="dark"] .splash-text-title { color: #ffffff !important; }
@@ -77,13 +77,18 @@
           window.addEventListener('beforeunload', function() {
             window.scrollTo(0, 0);
           });
-          var mode = localStorage.getItem('tay_audit_colormode') || 'dark';
+          var mode = localStorage.getItem('tay_audit_colormode') || 'light';
           var theme = localStorage.getItem('tay_audit_theme') || 'upn';
           document.documentElement.setAttribute('data-mode', mode);
           document.documentElement.setAttribute('data-theme', theme);
           document.documentElement.style.colorScheme = mode;
+          if (mode === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
 
-          var themeColor = mode === 'light' ? '#edf0f5' : '#000000';
+          var themeColor = mode === 'light' ? '#f8fafc' : '#000000';
           var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
           for (var i = 0; i < themeMetas.length; i++) {
             themeMetas[i].setAttribute('content', themeColor);
