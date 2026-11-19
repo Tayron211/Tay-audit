@@ -1,16 +1,16 @@
 {
-  "version": "1.0.2",
-  "versionCode": 3,
+  "version": "1.0.3",
+  "versionCode": 4,
   "releaseDate": "2026-11-19",
-  "notes": "Corrección de Status Bar: Eliminación completa de la barra superior nativa e inmersión total.",
+  "notes": "Espacio blur para Status Bar y ajuste del margen de contenido scroleable.",
   "features": [
     {
-      "title": "Status Bar Inmersiva 100%",
-      "desc": "Se eliminó la barra nativa superior 'TayAudit' para dejar la cabecera esmerilada directamente integrada al notch y status bar del sistema operativo."
+      "title": "Espacio Blur Status Bar",
+      "desc": "Espacio superior esmerilado seguro para que el reloj y los iconos del móvil floten sin superponerse a los controles del encabezado."
     },
     {
-      "title": "Actualización OTA Directa",
-      "desc": "Actualización transparente en 1-clic sin necesidad de descargas manuales en navegador ni desinstalar la app."
+      "title": "Alineación de Contenido",
+      "desc": "Reducción del espacio inferior para que el inventario y las tarjetas comiencen exactamente debajo del encabezado."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",

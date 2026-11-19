@@ -1040,7 +1040,7 @@ exit
           onLogout={handleLogout}
         />
 
-        <main style={{ 
+        <main className="main-app-container" style={{ 
           width: '100%', 
           maxWidth: '1880px', 
           minWidth: 0, 
