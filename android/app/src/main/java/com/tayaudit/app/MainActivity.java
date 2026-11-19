@@ -25,6 +25,16 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
+        // Eliminar ActionBar nativa bajo cualquier circunstancia
+        try {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+            if (getActionBar() != null) {
+                getActionBar().hide();
+            }
+        } catch (Exception ignored) {}
+
         // Aceleración de Hardware GPU a 120 FPS, eliminación de scrollbars nativos y viewport fluido
         try {
             WebView webView = getBridge().getWebView();

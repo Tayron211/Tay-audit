@@ -1,8 +1,8 @@
 import { registerPlugin } from '@capacitor/core';
 import { isNativeCapacitor } from '../services/api';
 
-export const APP_CURRENT_VERSION = '1.0.1';
-export const APP_CURRENT_BUILD = 2;
+export const APP_CURRENT_VERSION = '1.0.2';
+export const APP_CURRENT_BUILD = 3;
 
 export interface AppInstallerPluginInterface {
   getAppVersion(): Promise<{ version: string; build: number }>;
