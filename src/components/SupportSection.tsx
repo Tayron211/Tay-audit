@@ -393,8 +393,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     });
 
     const hostRanking = Object.values(hostMap).map(h => {
-      // Find device if exists
-      const dev = devices.find(d => d.hostname.toLowerCase() === h.hostname.toLowerCase());
+      // Find device if exists (safe null-check)
+      const dev = devices.find(d => Boolean(d?.hostname && h?.hostname && d.hostname.toLowerCase() === h.hostname.toLowerCase()));
       // Top category
       const topCat = Object.entries(h.categories).sort((a, b) => b[1] - a[1])[0]?.[0] || 'General';
       return {
@@ -1936,9 +1936,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 {interactiveDevices
                   .filter(d => 
                     !remoteSearch.trim() || 
-                    d.hostname.toLowerCase().includes(remoteSearch.toLowerCase()) ||
-                    (d.assignedUser && d.assignedUser.toLowerCase().includes(remoteSearch.toLowerCase())) ||
-                    (d.ipAddress && d.ipAddress.includes(remoteSearch))
+                    (d?.hostname && d.hostname.toLowerCase().includes(remoteSearch.toLowerCase())) ||
+                    (d?.assignedUser && d.assignedUser.toLowerCase().includes(remoteSearch.toLowerCase())) ||
+                    (d?.ipAddress && d.ipAddress.includes(remoteSearch))
                   )
                   .map(d => {
                     const isSelected = activeRemoteDevice?.id === d.id;

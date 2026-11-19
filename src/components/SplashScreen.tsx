@@ -35,6 +35,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       setIsFadingOut(true);
       setTimeout(() => {
         setIsMounted(false);
+        document.documentElement.classList.remove('splash-active');
+        document.body.classList.remove('splash-active');
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
         window.scrollTo(0, 0);
         if (onFinish) onFinish();
       }, 500);
@@ -57,6 +61,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
 
       const unmountTimer = setTimeout(() => {
         setIsMounted(false);
+        document.documentElement.classList.remove('splash-active');
+        document.body.classList.remove('splash-active');
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
         window.scrollTo(0, 0);
         if (onFinish) onFinish();
       }, Math.max(800, minDisplayTime));

@@ -27,6 +27,7 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { AppUpdateModal } from './components/AppUpdateModal';
 import { initAppUpdateChecker, type AppUpdateInfo } from './utils/appUpdateChecker';
 import { LoginScreen } from './components/LoginScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { playNotificationChime, unlockNotificationAudio } from './utils/notificationSound';
 import { computeIntelligentContrast } from './utils/theme';
 import { registerNotificationServiceWorker, sendNativePushNotification, subscribeDeviceToPush, setupNativeNotificationChannel, requestPushNotificationPermission } from './utils/pushNotifications';
@@ -1048,42 +1049,44 @@ exit
           boxSizing: 'border-box', 
           padding: '16px 16px 120px 16px' 
         }}>
-        {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}
-        {(activeTab === 'audit' || activeTab === 'dashboard' || activeTab === 'inventory') && (
-          <AuditSection
-            devices={devices}
-            stats={stats}
-            logs={logs}
-            onSelectDevice={(d) => {
-              handleOpenDeviceModal(d, false);
-            }}
-            onOpenAuditModal={() => {
-              handleOpenAuditModal();
-            }}
-            onOpenScanner={handleOpenGeneralScanner}
-            onExportExcel={handleExportExcel}
-            onDeviceUpdated={loadData}
-            resetViewTrigger={resetViewTrigger}
-          />
-        )}
+        <ErrorBoundary>
+          {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}
+          {(activeTab === 'audit' || activeTab === 'dashboard' || activeTab === 'inventory') && (
+            <AuditSection
+              devices={devices}
+              stats={stats}
+              logs={logs}
+              onSelectDevice={(d) => {
+                handleOpenDeviceModal(d, false);
+              }}
+              onOpenAuditModal={() => {
+                handleOpenAuditModal();
+              }}
+              onOpenScanner={handleOpenGeneralScanner}
+              onExportExcel={handleExportExcel}
+              onDeviceUpdated={loadData}
+              resetViewTrigger={resetViewTrigger}
+            />
+          )}
 
-        {/* DIVISION INDEPENDIENTE 2: SOPORTE TI */}
-        {activeTab === 'support' && (
-          <SupportSection
-            tickets={tickets}
-            knowledgeList={knowledgeList}
-            devices={devices}
-            onRefresh={loadData}
-            onSelectDevice={(d) => handleOpenDeviceModal(d)}
-            onSwitchToAudit={() => setActiveTab('audit')}
-            serverInfo={serverInfo}
-            effectiveServerUrl={effectiveServerUrl}
-            initialSubTab={supportInitialSubTab}
-            targetTicketId={targetTicketId}
-            onClearTargetTicket={() => setTargetTicketId(null)}
-            ticketsNavTrigger={ticketsNavTrigger}
-          />
-        )}
+          {/* DIVISION INDEPENDIENTE 2: SOPORTE TI */}
+          {activeTab === 'support' && (
+            <SupportSection
+              tickets={tickets}
+              knowledgeList={knowledgeList}
+              devices={devices}
+              onRefresh={loadData}
+              onSelectDevice={(d) => handleOpenDeviceModal(d)}
+              onSwitchToAudit={() => setActiveTab('audit')}
+              serverInfo={serverInfo}
+              effectiveServerUrl={effectiveServerUrl}
+              initialSubTab={supportInitialSubTab}
+              targetTicketId={targetTicketId}
+              onClearTargetTicket={() => setTargetTicketId(null)}
+              ticketsNavTrigger={ticketsNavTrigger}
+            />
+          )}
+        </ErrorBoundary>
 
         {/* TAB 5: AUTOMATED SCRIPT DEPLOYMENT & STIVIE AGENT */}
         {activeTab === 'agent' && (
