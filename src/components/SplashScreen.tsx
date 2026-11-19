@@ -15,6 +15,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
+    // Si estamos en entorno nativo Capacitor (Android APK), ocultar el splash nativo del sistema
+    try {
+      if (typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.SplashScreen) {
+        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 400 }).catch(() => {});
+      }
+    } catch (_) {}
+
     // Bloquear todo tipo de scrollbars globalmente en html y body mientras el SplashScreen esté presente
     document.documentElement.classList.add('splash-active');
     document.body.classList.add('splash-active');
@@ -23,13 +30,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
 
+    // Seguro absoluto contra cuelgues: después de 1.8 segundos, comenzar a desvanecer automáticamente
+    const hardLimitTimer = setTimeout(() => {
+      setIsFadingOut(true);
+      setTimeout(() => {
+        setIsMounted(false);
+        window.scrollTo(0, 0);
+        if (onFinish) onFinish();
+      }, 500);
+    }, 1800);
+
     return () => {
+      clearTimeout(hardLimitTimer);
       document.documentElement.classList.remove('splash-active');
       document.body.classList.remove('splash-active');
       document.body.style.overflow = originalBodyOverflow;
       document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, []);
+  }, [onFinish]);
 
   useEffect(() => {
     if (!isLoading) {

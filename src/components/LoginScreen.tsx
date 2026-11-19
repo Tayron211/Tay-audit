@@ -16,7 +16,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [usernameInput, setUsernameInput] = useState('Admin');
+  const [usernameInput, setUsernameInput] = useState('Tayron Salinas');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     trimmedUser === 'root' || 
     trimmedUser === 'adm' || 
     trimmedUser === 'super' ||
-    trimmedUser === 'tayron'
+    trimmedUser.includes('tayron')
   ) ? 'admin' : 'user';
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,19 +47,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
     if (cleanPass === '210391') {
       authenticatedUser = {
-        username: cleanUser || 'Admin',
+        username: cleanUser || 'Tayron Salinas',
         role: 'admin',
         displayName: cleanUser && cleanUser.toLowerCase() !== 'admin' 
-          ? `${cleanUser} (Admin)` 
-          : 'Administrador del Sistema',
+          ? cleanUser 
+          : 'Tayron Salinas',
         loginAt: new Date().toISOString()
       };
     } else if (cleanPass === '1991') {
       authenticatedUser = {
-        username: cleanUser || 'User',
+        username: cleanUser || 'Operador TI',
         role: 'user',
         displayName: cleanUser && cleanUser.toLowerCase() !== 'user' 
-          ? `${cleanUser} (Operador TI)` 
+          ? cleanUser 
           : 'Operador de Soporte TI',
         loginAt: new Date().toISOString()
       };

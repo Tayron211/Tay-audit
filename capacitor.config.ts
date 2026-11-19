@@ -15,6 +15,18 @@ const config: CapacitorConfig = {
     ]
   },
   plugins: {
+    SplashScreen: {
+      launchShowDuration: 1000,
+      launchAutoHide: true,
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false
+    },
+    StatusBar: {
+      overlaysWebView: true,
+      style: "DARK",
+      backgroundColor: "#00000000"
+    },
     LocalNotifications: {
       smallIcon: "ic_launcher",
       iconColor: "#FFB800",

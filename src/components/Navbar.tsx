@@ -205,9 +205,18 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  const displayedUserName = (
+    currentUser?.username && currentUser.username.toLowerCase() !== 'admin' && currentUser.username.toLowerCase() !== 'user'
+      ? currentUser.username
+      : (currentUser?.displayName && !currentUser.displayName.toLowerCase().includes('administrador del sistema'))
+        ? currentUser.displayName.replace(/\s*\((Admin|Operador TI)\)/i, '')
+        : 'Tayron Salinas'
+  ).toUpperCase();
+
   return (
     <>
       <header className="acrylic-nav">
+        <div className="acrylic-nav-inner">
         {/* Brand Logo Oficial UPN / Tay-Audit (Botón para Ir al Inicio sin modificar el diseño) */}
         <div 
           className="nav-brand-container"
@@ -351,7 +360,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span className={`user-capsule-dot ${currentUser.role === 'admin' ? 'admin' : 'operator'}`} />
                 <span className="user-capsule-name">
-                  {currentUser.displayName || currentUser.username || 'Asistente'}
+                  {displayedUserName}
                 </span>
                 <ChevronDown className={`user-capsule-chevron ${userMenuOpen ? 'rotated' : ''}`} size={14} />
               </button>
@@ -372,10 +381,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {/* Cabecera del Usuario */}
                   <div className="user-dropdown-header">
                     <div className="user-dropdown-title">
-                      {currentUser.displayName || currentUser.username}
+                      {displayedUserName}
                     </div>
                     <div className={`user-dropdown-subtitle ${currentUser.role === 'admin' ? 'admin' : 'operator'}`}>
-                      {currentUser.role === 'admin' ? 'Modo Administrador' : 'Modo Operador TI'} • Comas
+                      {currentUser.role === 'admin' ? 'Modo Administrador' : 'Modo Asistente TI'} • Comas
                     </div>
                   </div>
 
@@ -489,6 +498,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
           )}
+        </div>
         </div>
       </header>
 

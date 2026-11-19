@@ -118,7 +118,14 @@ const MainApp: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('tay_audit_auth_user');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u && (u.username === 'Admin' || !u.username || u.displayName?.includes('Administrador del Sistema'))) {
+          u.username = 'Tayron Salinas';
+          u.displayName = 'Tayron Salinas';
+        }
+        return u;
+      }
     } catch {}
     return null;
   });
@@ -294,6 +301,14 @@ const MainApp: React.FC = () => {
       window.scrollTo(0, 0);
     }
   }, [isAppLoading]);
+
+  // Límite de seguridad: liberar splash screen después de 1.5s sin importar latencia de red
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1500);
+    return () => clearTimeout(safetyTimer);
+  }, []);
 
   // Load all data
   const loadData = async () => {
@@ -950,11 +965,12 @@ exit
         minHeight: '100dvh',
         width: '100%',
         maxWidth: '100vw',
-        overflowX: 'hidden',
-        padding: '0 16px',
+        overflowX: 'clip',
+        padding: 0,
+        margin: 0,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'stretch',
         touchAction: 'pan-y',
         boxSizing: 'border-box',
         flex: 1
@@ -971,7 +987,10 @@ exit
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          padding: 0,
+          margin: 0,
+          overflowX: 'clip'
         }}>
         {/* Banner de Instalación como App Nativa en Móviles (PWA Standalone) */}
         <PwaInstallPrompt />
@@ -985,7 +1004,7 @@ exit
           onClose={() => setUpdateInfo(null)}
         />
 
-        {/* Top Acrylic Navbar */}
+        {/* Top Acrylic Navbar (Sticky & Liquid Glass Defocus Effect) */}
         <Navbar
           currentTab={activeTab}
           onChangeTab={(tab: NavTab) => {
@@ -1018,7 +1037,17 @@ exit
           onLogout={handleLogout}
         />
 
-        <main style={{ width: '100%', maxWidth: '100%', minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', paddingBottom: '120px' }}>
+        <main style={{ 
+          width: '100%', 
+          maxWidth: '1880px', 
+          minWidth: 0, 
+          margin: '0 auto',
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          boxSizing: 'border-box', 
+          padding: '16px 16px 120px 16px' 
+        }}>
         {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}
         {(activeTab === 'audit' || activeTab === 'dashboard' || activeTab === 'inventory') && (
           <AuditSection
