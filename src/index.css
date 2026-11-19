@@ -2091,19 +2091,9 @@ code, pre {
   border-right: none !important;
   z-index: 1000 !important;
   display: block !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-}
-
-/* Capa aislada para garantizar el renderizado del blur en Chromium sin interferencias de hijos */
-.acrylic-nav::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: -1 !important;
-  pointer-events: none !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2125,30 +2115,20 @@ code, pre {
   }
 }
 
-/* Modo Claro: Frosted Glass Esmerilado (75% opaco, desenfoque nítido y visible al scrolear) */
+/* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */
 [data-mode="light"] .acrylic-nav,
 html:not(.dark) .acrylic-nav {
-  background-color: rgba(255, 255, 255, 0.75) !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.85) !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
-[data-mode="light"] .acrylic-nav::before,
-html:not(.dark) .acrylic-nav::before {
-  background-color: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* Modo Oscuro: True AMOLED Frosted Glass Esmerilado (72% opaco, desenfoque nítido y visible al scrolear) */
+/* Modo Oscuro: Exacto steel-pro1 (dark:bg-black/30 - AMOLED Ultra Traslúcido Frosted Glass Blur 32px) */
 [data-mode="dark"] .acrylic-nav,
 html.dark .acrylic-nav {
-  background-color: rgba(11, 12, 16, 0.72) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.80), inset 0 1px 0 0 rgba(255, 255, 255, 0.12) !important;
-}
-
-[data-mode="dark"] .acrylic-nav::before,
-html.dark .acrylic-nav::before {
-  background-color: rgba(11, 12, 16, 0.72) !important;
+  background-color: rgba(0, 0, 0, 0.30) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.40) !important;
 }
 
 /* Contenedor Interior del Navbar */

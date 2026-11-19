@@ -205,7 +205,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="acrylic-nav">
+      <header
+        className="acrylic-nav"
+        style={{
+          backdropFilter: 'blur(32px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(32px) saturate(200%)'
+        }}
+      >
         <div className="acrylic-nav-inner">
         {/* Brand Logo Oficial UPN / Tay-Audit (Botón para Ir al Inicio sin modificar el diseño) */}
         <div 
