@@ -458,6 +458,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
+      {/* Espaciador para reservar el alto exacto del encabezado fijo */}
+      <div className="acrylic-nav-spacer" aria-hidden="true" />
+
       {/* Modal estilizado UPN para estado de actualización (Aplicación al Día) */}
       {updateModalFade.shouldRender && typeof document !== 'undefined' && createPortal(
         <div
