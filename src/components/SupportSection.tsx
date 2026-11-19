@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   LayoutDashboard, 
   Ticket, 
@@ -1409,7 +1410,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           </div>
 
           {/* MODAL WINDOW: CREAR NUEVO TICKET DE ATENCION AL USUARIO */}
-          {(isCreatingTicket || isClosingTicketModal) && (
+          {(isCreatingTicket || isClosingTicketModal) && typeof document !== 'undefined' && createPortal(
             <div 
               className={`modal-backdrop-acrylic ${isClosingTicketModal ? 'closing' : ''}`} 
               style={{ zIndex: 10000, padding: '16px' }}
@@ -1428,9 +1429,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
-                  borderRadius: '20px',
-                  border: '1px solid var(--border-acrylic)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)'
+                  borderRadius: '20px'
                 }}
               >
                 {/* Header Fijo */}
@@ -1438,11 +1437,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   className="modal-header-acrylic"
                   style={{
                     padding: '16px 20px',
-                    borderBottom: '1px solid var(--border-modal-subtle)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: 'var(--bg-modal-header)',
                     flexShrink: 0
                   }}
                 >
@@ -1585,8 +1582,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                       justifyContent: 'flex-end',
                       gap: '10px',
                       padding: '12px 20px',
-                      borderTop: '1px solid var(--border-modal-subtle)',
-                      background: 'var(--bg-modal-footer)',
                       flexShrink: 0
                     }}
                   >
@@ -1619,7 +1614,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   </div>
                 </form>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* Ticket Cards List */}
@@ -2430,7 +2426,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           </div>
 
           {/* MODAL WINDOW: ENSEÑAR NUEVA SOLUCION A STIVIE */}
-          {(isTeaching || isClosingTeachModal) && (
+          {(isTeaching || isClosingTeachModal) && typeof document !== 'undefined' && createPortal(
             <div 
               className={`modal-backdrop-acrylic ${isClosingTeachModal ? 'closing' : ''}`} 
               style={{ zIndex: 10000, padding: '16px' }}
@@ -2449,9 +2445,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
-                  borderRadius: '20px',
-                  border: '1px solid var(--border-acrylic)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.45)'
+                  borderRadius: '20px'
                 }}
               >
                 {/* Header Fijo */}
@@ -2459,11 +2453,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   className="modal-header-acrylic"
                   style={{
                     padding: '16px 20px',
-                    borderBottom: '1px solid var(--border-modal-subtle)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: 'var(--bg-modal-header)',
                     flexShrink: 0
                   }}
                 >
@@ -2582,8 +2574,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                       justifyContent: 'flex-end',
                       gap: '10px',
                       padding: '12px 20px',
-                      borderTop: '1px solid var(--border-modal-subtle)',
-                      background: 'var(--bg-modal-footer)',
                       flexShrink: 0
                     }}
                   >
@@ -2605,7 +2595,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   </div>
                 </form>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* Knowledge Cards Grid */}

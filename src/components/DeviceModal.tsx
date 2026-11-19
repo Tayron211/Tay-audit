@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Printer, 
@@ -525,7 +526,9 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
     printWindow.document.close();
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div 
       className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
       onClick={(e) => {
@@ -1792,8 +1795,6 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 20px',
-            borderTop: '1px solid var(--border-modal-subtle)',
-            background: 'var(--bg-modal-footer)',
             flexShrink: 0,
             gap: '12px'
           }}
@@ -1885,7 +1886,8 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

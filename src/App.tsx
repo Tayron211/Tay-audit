@@ -923,7 +923,7 @@ exit
   if (!currentUser) {
     return (
       <>
-        <SplashScreen minDuration={1200} />
+        <SplashScreen minDuration={250} />
         <LoginScreen onLogin={handleLogin} />
       </>
     );
@@ -933,37 +933,35 @@ exit
     <ErrorBoundary>
       <div
         className="main-app-outer-wrapper"
-      style={{
-        minHeight: '100dvh',
-        width: '100%',
-        maxWidth: '100vw',
-        overflowX: 'clip',
-        padding: 0,
-        margin: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch',
-        touchAction: 'pan-y',
-        boxSizing: 'border-box',
-        flex: 1
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div 
-        className="main-app-inner-wrapper"
         style={{
-          width: '100%',
-          minWidth: 0,
           minHeight: '100dvh',
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          boxSizing: 'border-box',
+          width: '100%',
+          maxWidth: '100vw',
           padding: 0,
           margin: 0,
-          overflowX: 'clip'
-        }}>
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          touchAction: 'pan-y',
+          boxSizing: 'border-box',
+          flex: 1
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div 
+          className="main-app-inner-wrapper"
+          style={{
+            width: '100%',
+            minWidth: 0,
+            minHeight: '100dvh',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            boxSizing: 'border-box',
+            padding: 0,
+            margin: 0
+          }}>
         {/* Banner de Instalación como App Nativa en Móviles (PWA Standalone) */}
         <PwaInstallPrompt />
 
@@ -1018,7 +1016,8 @@ exit
           display: 'flex', 
           flexDirection: 'column', 
           boxSizing: 'border-box', 
-          padding: '16px 16px 120px 16px' 
+          padding: '16px 16px 120px 16px',
+          overflowX: 'hidden'
         }}>
         <ErrorBoundary>
           {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}
@@ -1444,7 +1443,7 @@ exit
       />
 
       {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen - Control Docente steel-pro1) */}
-      <SplashScreen minDuration={1200} />
+      <SplashScreen minDuration={250} />
     </div>
   </ErrorBoundary>
 );

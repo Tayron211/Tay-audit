@@ -48,7 +48,7 @@ export function useFadeModal<T = any>(
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isOpen, duration, shouldRender, isClosing]);
+  }, [isOpen, duration]);
 
   useEffect(() => {
     if (!isModal || typeof document === 'undefined') return;

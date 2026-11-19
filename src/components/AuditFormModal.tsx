@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Save, 
@@ -442,7 +443,9 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
     dotColor: c.dotColor
   }));
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div 
       className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
       onClick={(e) => {
@@ -467,12 +470,10 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           className="modal-header-acrylic"
           style={{
             padding: '14px 20px',
-            borderBottom: '1px solid var(--border-modal-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            flexShrink: 0,
-            background: 'var(--bg-modal-header)'
+            flexShrink: 0
           }}
         >
           <div>
@@ -1508,9 +1509,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                     onChange={(e) => setFormData({ ...formData, supplies: e.target.value })}
                     style={{
                       height: '38px',
-                      fontWeight: 700,
-                      backgroundColor: 'var(--bg-canvas)',
-                      color: 'var(--text-primary)'
+                      fontWeight: 700
                     }}
                   />
                 </div>
@@ -2110,8 +2109,6 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
               justifyContent: 'flex-end',
               gap: '10px',
               padding: '12px 20px',
-              borderTop: '1px solid var(--border-modal-subtle)',
-              background: 'var(--bg-modal-footer)',
               flexShrink: 0
             }}
           >
@@ -2143,6 +2140,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

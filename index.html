@@ -26,12 +26,8 @@
         50% { left: 25%; width: 60%; opacity: 1; }
         100% { left: 100%; width: 15%; opacity: 0.3; }
       }
-      /* Contenedor principal de la app con transición fade suave 120fps (sin transform para preservar navbar fija/sticky) */
+      /* Contenedor principal de la app (visibilidad instantánea sin retrasos en negro) */
       #root {
-        opacity: 0;
-        transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      #root.app-ready {
         opacity: 1 !important;
       }
       /* Splash Screen adaptativo Institucional UPN (Control Docente steel-pro1) */
@@ -177,14 +173,14 @@
         var root = document.getElementById('root');
         if (root) root.classList.add('app-ready');
         if (splash) {
-          splash.style.transition = 'opacity 0.5s ease';
+          splash.style.transition = 'opacity 0.25s ease';
           splash.style.opacity = '0';
           splash.style.pointerEvents = 'none';
           setTimeout(function() {
             if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-          }, 550);
+          }, 300);
         }
-      }, 2500);
+      }, 450);
     </script>
 
     <div id="root"></div>

@@ -11,7 +11,7 @@ export interface SplashScreenProps {
 /**
  * SplashScreen Controller Institucional (Exact Control Docente steel-pro1)
  * Controla la transición de salida suave del Splash Screen institucional
- * y la aparición cinematográfica tipo fade suave de la interfaz (sin bloqueos ni scrollbars).
+ * y la aparición cinematográfica instantánea y fluida de la interfaz (sin bloqueos ni retrasos en negro).
  */
 export const SplashScreen: React.FC<SplashScreenProps> = ({
   minDisplayTime,
@@ -19,14 +19,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   onFinish,
   onFinished
 }) => {
-  const duration = minDuration || minDisplayTime || 1200;
+  const duration = minDuration ?? minDisplayTime ?? 300;
   const finishCallback = onFinished || onFinish;
 
   useEffect(() => {
     // Si estamos en entorno nativo Capacitor (Android APK), desvanecer el splash nativo suavemente
     try {
       if (typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.SplashScreen) {
-        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => {});
+        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => {});
       }
     } catch (_) {}
 
@@ -41,22 +41,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       document.body.classList.remove('splash-active');
     };
 
+    // Liberar visibilidad de la interfaz de inmediato
+    makeInterfaceVisible();
+
     if (!splash) {
-      makeInterfaceVisible();
       if (finishCallback) finishCallback();
       return;
     }
 
     const timer = setTimeout(() => {
-      // 1. Iniciar aparición fluida con transición fade suave de la interfaz
-      makeInterfaceVisible();
-
-      // 2. Iniciar desvanecimiento cinematográfico ultra suave 120fps del splash
-      splash.style.transition = 'opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1)';
+      // Iniciar desvanecimiento cinematográfico ultra suave 120fps del splash
+      splash.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
       splash.style.opacity = '0';
       splash.style.pointerEvents = 'none';
 
-      // 3. Una vez completado el fade cruzado, remover el nodo
+      // Una vez completado el fade cruzado, remover el nodo
       const removeTimer = setTimeout(() => {
         try {
           if (splash && splash.parentNode) {
@@ -64,7 +63,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           }
         } catch (_) {}
         if (finishCallback) finishCallback();
-      }, 700);
+      }, 350);
 
       return () => clearTimeout(removeTimer);
     }, duration);
