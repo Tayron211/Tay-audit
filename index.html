@@ -108,29 +108,6 @@
           if (msMeta) {
             msMeta.setAttribute('content', themeColor);
           }
-
-          // Forzar modo inmersivo automáticamente SOLO en teléfonos móviles (NUNCA en computadoras / PC)
-          function isMobileDevice() {
-            var ua = navigator.userAgent || '';
-            var isMobileUa = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
-            var isSmallTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 820;
-            return isMobileUa || isSmallTouch;
-          }
-
-          function triggerAutoImmersive() {
-            if (!isMobileDevice()) return; // En PC NUNCA forzar pantalla completa
-            try {
-              var doc = document.documentElement;
-              if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (doc.requestFullscreen) {
-                  doc.requestFullscreen().catch(function() {});
-                } else if (doc.webkitRequestFullscreen) {
-                  doc.webkitRequestFullscreen();
-                }
-              }
-            } catch (e) {}
-          }
-          window.addEventListener('touchstart', triggerAutoImmersive, { passive: true });
         } catch (e) {}
       })();
     </script>

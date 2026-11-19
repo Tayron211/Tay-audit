@@ -287,30 +287,6 @@ const MainApp: React.FC = () => {
     }
   }, [activeTab]);
 
-  // Forzado de Modo Inmersivo Automático SOLO en Navegadores Móviles (NUNCA en computadoras / PC)
-  useEffect(() => {
-    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent) ||
-                     (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 820);
-
-    if (!isMobile) return; // En PC de escritorio NUNCA forzar pantalla completa
-
-    const requestImmersive = () => {
-      const docEl = document.documentElement as any;
-      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen();
-        }
-      }
-    };
-
-    window.addEventListener('touchstart', requestImmersive, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', requestImmersive);
-    };
-  }, []);
-
   useEffect(() => {
     if (!isAppLoading) {
       window.scrollTo(0, 0);

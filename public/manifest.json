@@ -8,8 +8,7 @@
   "display": "standalone",
   "display_override": [
     "standalone",
-    "window-controls-overlay",
-    "fullscreen"
+    "window-controls-overlay"
   ],
   "background_color": "#070c1e",
   "theme_color": "#070c1e",
