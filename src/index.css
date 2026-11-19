@@ -4077,6 +4077,22 @@ div.desktop-inventory-table.force-visible {
 /* ==================================================================== */
 /* SPLASH SCREEN INSTITUCIONAL TAY-AUDIT (MODO OSCURO & CLARO - STEEL-PRO1) */
 /* ==================================================================== */
+html.splash-active,
+body.splash-active,
+.tay-splash-screen {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html.splash-active::-webkit-scrollbar,
+body.splash-active::-webkit-scrollbar,
+.tay-splash-screen::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 .tay-splash-screen {
   background-color: #000000 !important;
   transition: background-color 0.3s ease;
@@ -5106,6 +5122,603 @@ input.login-input:-webkit-autofill:focus {
 [data-mode="light"] .glass-card:hover {
   border-color: rgba(203, 213, 225, 0.95) !important;
   box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* ==================================================================== */
+/* STEEL-PRO1 NAVBAR: LIVE CLOCK PILL, USER CAPSULE & DROPDOWN MENU      */
+/* ==================================================================== */
+
+/* 1. Live Clock Pill */
+.live-clock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(241, 245, 249, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  color: #1e293b;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+}
+
+[data-mode="dark"] .live-clock-pill,
+.dark .live-clock-pill {
+  background-color: rgba(24, 24, 27, 0.95);
+  border-color: rgba(39, 39, 42, 0.9);
+  color: #e4e4e7;
+}
+
+.live-clock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  flex-shrink: 0;
+  animation: liveClockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes liveClockPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* 2. User Capsule Button */
+.user-capsule-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.user-capsule-btn:active {
+  transform: scale(0.96);
+}
+
+/* Admin Role in Light Mode */
+.user-capsule-btn.admin {
+  background-color: #fffbeb;
+  border-color: rgba(251, 191, 36, 0.6);
+  color: #451a03;
+}
+.user-capsule-btn.admin:hover {
+  background-color: #fef3c7;
+}
+.user-capsule-btn.admin.open {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+}
+
+/* Admin Role in Dark Mode */
+[data-mode="dark"] .user-capsule-btn.admin,
+.dark .user-capsule-btn.admin {
+  background-color: rgba(24, 24, 27, 0.95);
+  border-color: rgba(253, 186, 48, 0.45);
+  color: #fef3c7;
+}
+[data-mode="dark"] .user-capsule-btn.admin:hover,
+.dark .user-capsule-btn.admin:hover {
+  background-color: rgba(39, 39, 42, 0.95);
+}
+[data-mode="dark"] .user-capsule-btn.admin.open,
+.dark .user-capsule-btn.admin.open {
+  background-color: rgba(69, 26, 3, 0.85);
+  border-color: #d97706;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+/* Operator Role */
+.user-capsule-btn.operator {
+  background-color: #f0f9ff;
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #082f49;
+}
+[data-mode="dark"] .user-capsule-btn.operator,
+.dark .user-capsule-btn.operator {
+  background-color: rgba(8, 47, 73, 0.35);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #bae6fd;
+}
+
+.user-capsule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: liveClockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.user-capsule-dot.admin {
+  background-color: #f59e0b;
+}
+.user-capsule-dot.operator {
+  background-color: #38bdf8;
+}
+
+.user-capsule-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-capsule-chevron {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+.user-capsule-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* 3. User Dropdown Window (Portaled) */
+.user-dropdown-window {
+  width: 270px;
+  border-radius: 18px;
+  padding: 10px;
+  z-index: 99999;
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Light Mode Dropdown */
+html:not(.dark) .user-dropdown-window,
+[data-mode="light"] .user-dropdown-window {
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.18), 0 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark Mode Dropdown */
+html.dark .user-dropdown-window,
+[data-mode="dark"] .user-dropdown-window {
+  background-color: rgba(18, 18, 22, 0.96);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.92), 0 0 45px rgba(253, 186, 48, 0.08);
+}
+
+/* Header */
+.user-dropdown-header {
+  padding: 4px 6px 8px 6px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  margin-bottom: 8px;
+}
+[data-mode="dark"] .user-dropdown-header,
+.dark .user-dropdown-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-dropdown-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-mode="dark"] .user-dropdown-title,
+.dark .user-dropdown-title {
+  color: #ffffff;
+}
+
+.user-dropdown-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.user-dropdown-subtitle.admin {
+  color: #d97706;
+}
+[data-mode="dark"] .user-dropdown-subtitle.admin,
+.dark .user-dropdown-subtitle.admin {
+  color: #FDBA30;
+}
+.user-dropdown-subtitle.operator {
+  color: #0284c7;
+}
+[data-mode="dark"] .user-dropdown-subtitle.operator,
+.dark .user-dropdown-subtitle.operator {
+  color: #38bdf8;
+}
+
+/* Admin Panel Button */
+.user-dropdown-admin-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #78350f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.user-dropdown-admin-btn:hover {
+  background-color: #fde68a;
+}
+.user-dropdown-admin-btn:active {
+  transform: scale(0.96);
+}
+[data-mode="dark"] .user-dropdown-admin-btn,
+.dark .user-dropdown-admin-btn {
+  background-color: #251d10;
+  border-color: rgba(253, 186, 48, 0.6);
+  color: #fde68a;
+}
+[data-mode="dark"] .user-dropdown-admin-btn:hover,
+.dark .user-dropdown-admin-btn:hover {
+  background-color: #322714;
+}
+
+/* 3 Actions Row */
+.user-dropdown-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.user-dropdown-action-btn {
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.user-dropdown-action-btn:hover {
+  background-color: #f8fafc;
+}
+.user-dropdown-action-btn:active {
+  transform: scale(0.95);
+}
+[data-mode="dark"] .user-dropdown-action-btn,
+.dark .user-dropdown-action-btn {
+  background-color: #18181b;
+  border-color: #27272a;
+}
+[data-mode="dark"] .user-dropdown-action-btn:hover,
+.dark .user-dropdown-action-btn:hover {
+  background-color: #27272a;
+}
+
+.user-dropdown-action-btn.logout:hover {
+  background-color: #fff1f2;
+  border-color: #fda4af;
+}
+[data-mode="dark"] .user-dropdown-action-btn.logout:hover,
+.dark .user-dropdown-action-btn.logout:hover {
+  background-color: rgba(76, 5, 25, 0.4);
+  border-color: #f43f5e;
+}
+
+/* Downloads Section */
+.user-dropdown-downloads-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-mode="dark"] .user-dropdown-downloads-section,
+.dark .user-dropdown-downloads-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-dropdown-downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.user-dropdown-download-btn {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.user-dropdown-download-btn:active {
+  transform: scale(0.95);
+}
+
+.user-dropdown-download-btn.apk-android {
+  background-color: #ffffff;
+  border: 1px solid #86efac;
+  color: #064e3b;
+}
+.user-dropdown-download-btn.apk-android:hover {
+  background-color: #ecfdf5;
+}
+[data-mode="dark"] .user-dropdown-download-btn.apk-android,
+.dark .user-dropdown-download-btn.apk-android {
+  background-color: #18181b;
+  border-color: #27272a;
+  color: #6ee7b7;
+}
+[data-mode="dark"] .user-dropdown-download-btn.apk-android:hover,
+.dark .user-dropdown-download-btn.apk-android:hover {
+  background-color: #27272a;
+  border-color: #10b981;
+}
+
+.user-dropdown-download-btn.webapp-apple {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+.user-dropdown-download-btn.webapp-apple:hover {
+  background-color: #f1f5f9;
+}
+[data-mode="dark"] .user-dropdown-download-btn.webapp-apple,
+.dark .user-dropdown-download-btn.webapp-apple {
+  background-color: #18181b;
+  border-color: #27272a;
+  color: #f4f4f5;
+}
+[data-mode="dark"] .user-dropdown-download-btn.webapp-apple:hover,
+.dark .user-dropdown-download-btn.webapp-apple:hover {
+  background-color: #27272a;
+  border-color: #52525b;
+}
+
+/* Update Button */
+.user-dropdown-update-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 10.5px;
+  font-weight: 500;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.user-dropdown-update-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.user-dropdown-update-btn:active {
+  transform: scale(0.97);
+}
+[data-mode="dark"] .user-dropdown-update-btn,
+.dark .user-dropdown-update-btn {
+  color: #a1a1aa;
+}
+[data-mode="dark"] .user-dropdown-update-btn:hover,
+.dark .user-dropdown-update-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.user-dropdown-update-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.user-dropdown-update-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.user-dropdown-update-btn:hover .user-dropdown-update-icon {
+  transform: rotate(180deg);
+}
+.user-dropdown-update-icon.spinning {
+  animation: spin 1s linear infinite !important;
+}
+
+.user-dropdown-version-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+[data-mode="dark"] .user-dropdown-version-tag,
+.dark .user-dropdown-version-tag {
+  color: #71717a;
+}
+
+/* 4. Modal de Estado de Actualización (Sistema al Día) */
+.upn-update-status-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  user-select: none;
+}
+
+.upn-update-status-window {
+  background-color: #ffffff;
+  border: 2px solid rgba(16, 185, 129, 0.8);
+  border-radius: 20px;
+  padding: 20px;
+  max-width: 340px;
+  width: 100%;
+  box-shadow: 0 16px 50px rgba(16, 185, 129, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+[data-mode="dark"] .upn-update-status-window,
+.dark .upn-update-status-window {
+  background-color: #0c0c10;
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+.upn-update-status-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: #09090b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  flex-shrink: 0;
+}
+
+.upn-update-status-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.upn-update-status-badge {
+  font-size: 9.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #047857;
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-block;
+}
+[data-mode="dark"] .upn-update-status-badge,
+.dark .upn-update-status-badge {
+  color: #34d399;
+  background-color: rgba(6, 78, 59, 0.6);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.upn-update-status-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+[data-mode="dark"] .upn-update-status-title,
+.dark .upn-update-status-title {
+  color: #ffffff;
+}
+
+.upn-update-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  background-color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+[data-mode="dark"] .upn-update-status-pill,
+.dark .upn-update-status-pill {
+  color: #e4e4e7;
+  background-color: #18181b;
+  border-color: #27272a;
+}
+
+.upn-update-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  flex-shrink: 0;
+  animation: liveClockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.upn-update-status-desc {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #64748b;
+  margin: 0;
+  padding: 0 4px;
+}
+[data-mode="dark"] .upn-update-status-desc,
+.dark .upn-update-status-desc {
+  color: #a1a1aa;
+}
+
+.upn-update-status-btn {
+  width: 100%;
+  height: 38px;
+  border-radius: 12px;
+  background-color: #FDBA30;
+  border: none;
+  color: #09090b;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(253, 186, 48, 0.25);
+}
+.upn-update-status-btn:hover {
+  background-color: #f59e0b;
+}
+.upn-update-status-btn:active {
+  transform: scale(0.96);
 }
 
 

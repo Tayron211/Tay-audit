@@ -15,6 +15,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
+    // Bloquear todo tipo de scrollbars globalmente en html y body mientras el SplashScreen esté presente
+    document.documentElement.classList.add('splash-active');
+    document.body.classList.add('splash-active');
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.classList.remove('splash-active');
+      document.body.classList.remove('splash-active');
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isLoading) {
       const fadeTimer = setTimeout(() => {
         setIsFadingOut(true);

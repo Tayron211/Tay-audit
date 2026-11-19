@@ -1,8 +1,8 @@
 import { registerPlugin } from '@capacitor/core';
 import { isNativeCapacitor } from '../services/api';
 
-export const APP_CURRENT_VERSION = '1.0.0';
-export const APP_CURRENT_BUILD = 1;
+export const APP_CURRENT_VERSION = '1.0.1';
+export const APP_CURRENT_BUILD = 2;
 
 export interface AppInstallerPluginInterface {
   getAppVersion(): Promise<{ version: string; build: number }>;
@@ -123,7 +123,7 @@ export async function checkAppVersion(isManual = false): Promise<AppUpdateInfo |
 
 export function initAppUpdateChecker(): () => void {
   if (!isNativeCapacitor()) {
-    return () => {};
+    return () => { };
   }
 
   // Primer chequeo a los 3 segundos de abrir la app

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   QrCode, 
   Plus, 
@@ -8,16 +9,20 @@ import {
   Moon, 
   Bot, 
   ShieldCheck,
-  User,
   LogOut,
   ChevronDown,
-  Smartphone,
-  Download,
-  X
+  X,
+  RotateCw,
+  CheckCircle2,
+  Cloud,
+  Share
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { AndroidIcon, AppleIcon } from './BrandIcons';
 import type { AppNotification, AuthUser } from '../types';
+import { checkAppVersion, APP_CURRENT_VERSION, APP_CURRENT_BUILD, triggerDirectApkInstall } from '../utils/appUpdateChecker';
+import { useFadeModal } from '../utils/useFadeModal';
+import { isNativeCapacitor } from '../services/api';
 
 // Logotipo Corporativo Oficial UPN (Universidad Privada del Norte - TI)
 // Emblema Vectorial Institucional con Corte Superior Horizontal y Alas Bipilares Hacia el Norte
@@ -89,57 +94,116 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onLogout
 }) => {
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isUserMenuClosing, setIsUserMenuClosing] = useState(false);
+  const [time, setTime] = useState(new Date());
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuFade = useFadeModal(userMenuOpen, () => setUserMenuOpen(false), 200, { isModal: false });
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 60, right: 16 });
 
-  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateStatusModal, setUpdateStatusModal] = useState<{ type: string; version: string; build: number; isNative: boolean } | null>(null);
+  const updateModalFade = useFadeModal(Boolean(updateStatusModal), () => setUpdateStatusModal(null), 200);
 
-  const handleInstallClick = async () => {
-    const prompt = (window as any).__pwaInstallPrompt;
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showIosModal, setShowIosModal] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  useEffect(() => {
+    if (userMenuOpen && userMenuRef.current) {
+      const updateCoords = () => {
+        if (!userMenuRef.current) return;
+        const rect = userMenuRef.current.getBoundingClientRect();
+        setDropdownCoords({
+          top: rect.bottom + 8,
+          right: Math.max(12, window.innerWidth - rect.right),
+        });
+      };
+      updateCoords();
+      window.addEventListener('resize', updateCoords);
+      window.addEventListener('scroll', updateCoords, true);
+      return () => {
+        window.removeEventListener('resize', updateCoords);
+        window.removeEventListener('scroll', updateCoords, true);
+      };
+    }
+  }, [userMenuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const clickedTrigger = userMenuRef.current && userMenuRef.current.contains(e.target as Node);
+      const clickedMenu = dropdownRef.current && dropdownRef.current.contains(e.target as Node);
+      if (!clickedTrigger && !clickedMenu) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
+  const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const currentDayName = daysOfWeek[time.getDay()];
+  const formattedTime = time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+
+  const handleInstallPwa = async () => {
+    const w = window as any;
+    const prompt = w.__pwaInstallPrompt || deferredPrompt;
     if (prompt) {
       prompt.prompt();
       try {
         const choice = await prompt.userChoice;
-        if (choice && choice.outcome === 'accepted') {
-          (window as any).__pwaInstallPrompt = null;
+        if (choice?.outcome === 'accepted') {
+          w.__pwaInstallPrompt = null;
+          setDeferredPrompt(null);
           return;
         }
       } catch {}
     }
-    setShowInstallModal(true);
+    setShowIosModal(true);
   };
 
-  const closeUserMenu = () => {
-    if (isUserMenuClosing || !isUserMenuOpen) return;
-    setIsUserMenuClosing(true);
-    setTimeout(() => {
-      setIsUserMenuClosing(false);
-      setIsUserMenuOpen(false);
-    }, 180);
-  };
-
-  const toggleUserMenu = () => {
-    if (isUserMenuOpen) {
-      closeUserMenu();
-    } else {
-      setIsUserMenuOpen(true);
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        closeUserMenu();
+  const handleCheckUpdate = async () => {
+    setUserMenuOpen(false);
+    setCheckingUpdate(true);
+    try {
+      const res = await checkAppVersion(true);
+      if (res && res.isAvailable) {
+        window.dispatchEvent(new CustomEvent('tayaudit:app-update-available', {
+          detail: res
+        }));
+      } else {
+        setUpdateStatusModal({
+          type: 'up-to-date',
+          version: res?.currentVersion || APP_CURRENT_VERSION,
+          build: res?.currentBuild || APP_CURRENT_BUILD,
+          isNative: res?.isNative ?? isNativeCapacitor()
+        });
       }
-    };
-    if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+    } catch (err) {
+      console.warn('[Navbar] Error checking update:', err);
+    } finally {
+      setCheckingUpdate(false);
     }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isUserMenuOpen, isUserMenuClosing]);
+  };
 
   return (
     <>
@@ -248,313 +312,313 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Registrar</span>
           </button>
 
-          {/* BOTÓN DIRECTO: MODO OSCURO / MODO CLARO */}
-          <button
-            type="button"
-            onClick={onToggleColorMode}
-            className="btn-flat"
-            style={{
-              height: '36px',
-              padding: '0 10px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '10px',
-              border: '1px solid var(--border-acrylic)',
-              backgroundColor: 'rgba(148, 163, 184, 0.08)',
-              cursor: 'pointer',
-              transition: 'all 0.18s ease'
+          {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK */}
+          <NotificationDropdown
+            notifications={notifications}
+            onSelectNotification={(n) => onSelectNotification?.(n)}
+            onMarkAllAsRead={() => onMarkAllAsRead?.()}
+            onClearAll={() => onClearAllNotifications?.()}
+            onDismissNotification={(id) => onDismissNotification?.(id)}
+            onGoToSupport={() => {
+              if (onGoToTickets) {
+                onGoToTickets();
+              } else {
+                onChangeTab('support');
+              }
             }}
-            title={colorMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
-            aria-label="Cambiar modo de pantalla"
-          >
-            {colorMode === 'dark' ? (
-              <Moon size={16} color="var(--accent-primary)" />
-            ) : (
-              <Sun size={16} color="var(--accent-primary)" />
-            )}
-          </button>
+            onGoToTickets={onGoToTickets}
+            openTicketsCount={openTicketsCount}
+          />
 
-        {/* NOTIFICACIONES EN VIVO ESTILO FACEBOOK (MÁXIMO 5 CON ALERTA TEMPORAL) */}
-        <NotificationDropdown
-          notifications={notifications}
-          onSelectNotification={(n) => onSelectNotification?.(n)}
-          onMarkAllAsRead={() => onMarkAllAsRead?.()}
-          onClearAll={() => onClearAllNotifications?.()}
-          onDismissNotification={(id) => onDismissNotification?.(id)}
-          onGoToSupport={() => {
-            if (onGoToTickets) {
-              onGoToTickets();
-            } else {
-              onChangeTab('support');
-            }
-          }}
-          onGoToTickets={onGoToTickets}
-          openTicketsCount={openTicketsCount}
-        />
+          {/* Live Clock Pill (Reloj Minimalista con Punto Verde Pulsante: "Mié 08:29 p. m.") */}
+          <div className="live-clock-pill hide-on-mobile" title="Hora actual del sistema">
+            <span className="live-clock-dot" />
+            <span className="live-clock-text">
+              {currentDayName} {formattedTime}
+            </span>
+          </div>
 
-        {/* UN SOLO BOTÓN DE USUARIO: AL DAR TAP DESPLIEGA EL MENÚ CON SALIR */}
-        {currentUser && (
-          <div style={{ position: 'relative' }} ref={userMenuRef}>
-            <button
-              type="button"
-              onClick={toggleUserMenu}
-              className="btn-flat nav-user-btn"
-              style={{
-                height: '36px',
-                padding: '0 10px',
-                borderRadius: '10px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: isUserMenuOpen 
-                  ? (currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.22)' : 'rgba(56, 189, 248, 0.22)')
-                  : (currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.12)' : 'rgba(56, 189, 248, 0.12)'),
-                border: isUserMenuOpen 
-                  ? (currentUser.role === 'admin' ? '1px solid #FDBA30' : '1px solid #38bdf8')
-                  : (currentUser.role === 'admin' ? '1px solid rgba(253, 186, 48, 0.32)' : '1px solid rgba(56, 189, 248, 0.32)'),
-                color: currentUser.role === 'admin' ? 'var(--accent-primary, #FDBA30)' : '#38bdf8',
-                fontSize: '0.76rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                userSelect: 'none'
-              }}
-              title={currentUser.role === 'admin' ? 'Sesión: Administrador (Click para opciones)' : 'Sesión: Operador TI (Click para opciones)'}
-              aria-haspopup="true"
-              aria-expanded={isUserMenuOpen}
-            >
-              {currentUser.role === 'admin' ? <ShieldCheck size={14} /> : <User size={14} />}
-              <span>{currentUser.username}</span>
-              <ChevronDown 
-                size={12} 
-                style={{ 
-                  transition: 'transform 0.2s ease', 
-                  transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  opacity: 0.8
-                }} 
-              />
-            </button>
-
-            {/* Menú Desplegable de Usuario (Al dar Tap) */}
-            {(isUserMenuOpen || isUserMenuClosing) && (
-              <div
-                className={`acrylic-popover ${isUserMenuClosing ? 'closing' : ''}`}
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
-                  width: '210px',
-                  padding: '8px',
-                  borderRadius: '14px',
-                  zIndex: 1000,
-                  boxShadow: '0 12px 36px rgba(0,0,0,0.45)'
-                }}
+          {/* UN SOLO BOTÓN DE USUARIO: CÁPSULA CON MENÚ DESPLEGABLE (ESTILO EXACTO STEEL-PRO1) */}
+          {currentUser && (
+            <div style={{ position: 'relative' }} ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className={`user-capsule-btn ${userMenuOpen ? 'open' : ''} ${currentUser.role === 'admin' ? 'admin' : 'operator'}`}
+                title="Opciones de cuenta y sistema"
+                aria-haspopup="true"
+                aria-expanded={userMenuOpen}
               >
-                {/* Cabecera del Usuario */}
-                <div style={{ padding: '8px 10px 10px 10px', borderBottom: '1px solid var(--border-acrylic)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: currentUser.role === 'admin' ? 'rgba(253, 186, 48, 0.16)' : 'rgba(56, 189, 248, 0.16)',
-                        color: currentUser.role === 'admin' ? '#FDBA30' : '#38bdf8'
-                      }}
-                    >
-                      {currentUser.role === 'admin' ? <ShieldCheck size={16} /> : <User size={16} />}
+                <span className={`user-capsule-dot ${currentUser.role === 'admin' ? 'admin' : 'operator'}`} />
+                <span className="user-capsule-name">
+                  {currentUser.displayName || currentUser.username || 'Asistente'}
+                </span>
+                <ChevronDown className={`user-capsule-chevron ${userMenuOpen ? 'rotated' : ''}`} size={14} />
+              </button>
+
+              {/* Menú Desplegable: Portaled a document.body para evitar clipping */}
+              {userMenuFade.shouldRender && typeof document !== 'undefined' && createPortal(
+                <div
+                  ref={dropdownRef}
+                  style={{
+                    position: 'fixed',
+                    top: `${dropdownCoords.top}px`,
+                    right: `${dropdownCoords.right}px`,
+                    backdropFilter: 'blur(36px) saturate(200%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+                  }}
+                  className={`user-dropdown-window ${userMenuFade.dropdownClass}`}
+                >
+                  {/* Cabecera del Usuario */}
+                  <div className="user-dropdown-header">
+                    <div className="user-dropdown-title">
+                      {currentUser.displayName || currentUser.username}
                     </div>
-                    <div style={{ overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                        {currentUser.username}
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                        {currentUser.role === 'admin' ? 'Administrador' : 'Operador TI'}
-                      </div>
+                    <div className={`user-dropdown-subtitle ${currentUser.role === 'admin' ? 'admin' : 'operator'}`}>
+                      {currentUser.role === 'admin' ? 'Modo Administrador' : 'Modo Operador TI'} • Comas
                     </div>
                   </div>
-                </div>
 
-                {/* Opción de Instalar como WebApp Nativa */}
-                <div style={{ marginTop: '4px', borderTop: '1px solid var(--border-acrylic)', paddingTop: '4px' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeUserMenu();
-                      handleInstallClick();
-                    }}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: 'transparent',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255, 184, 0, 0.12)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <Smartphone size={14} color="var(--accent-primary)" />
-                    <span>Instalar en el Móvil</span>
-                  </button>
-                </div>
-
-                {/* Opción de Salir / Cerrar Sesión */}
-                {onLogout && (
-                  <div style={{ marginTop: '2px' }}>
+                  {/* Botón Destacado Panel Admin si es Administrador */}
+                  {currentUser.role === 'admin' && (
                     <button
                       type="button"
                       onClick={() => {
-                        closeUserMenu();
-                        setTimeout(() => onLogout(), 160);
+                        setUserMenuOpen(false);
+                        onOpenAuditModal();
                       }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 10px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: '#ef4444',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
+                      className="user-dropdown-admin-btn"
                     >
-                      <LogOut size={14} />
-                      <span>Cerrar Sesión</span>
+                      <ShieldCheck size={16} strokeWidth={2.4} />
+                      <span>Panel de Control Admin</span>
+                    </button>
+                  )}
+
+                  {/* Fila de Iconos de Acciones (3 columnas) */}
+                  <div className="user-dropdown-actions-grid">
+                    {/* 1. Modo Claro / Oscuro */}
+                    <button
+                      type="button"
+                      onClick={() => onToggleColorMode()}
+                      className="user-dropdown-action-btn"
+                      title={colorMode === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+                    >
+                      {colorMode === 'dark' ? (
+                        <Sun size={17} strokeWidth={2.2} color="#FDBA30" />
+                      ) : (
+                        <Moon size={17} strokeWidth={2.2} color="#334155" />
+                      )}
+                    </button>
+
+                    {/* 2. Sincronizar / Estado Cloudflare */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(new CustomEvent('tayaudit:refresh-data'));
+                        }
+                      }}
+                      className="user-dropdown-action-btn"
+                      title="Conexión en Vivo y Sincronización Cloudflare"
+                    >
+                      <Cloud size={17} strokeWidth={2.2} color="#38bdf8" />
+                    </button>
+
+                    {/* 3. Cerrar Sesión */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onLogout?.();
+                      }}
+                      className="user-dropdown-action-btn logout"
+                      title="Cerrar Sesión"
+                    >
+                      <LogOut size={17} strokeWidth={2.2} color="#f43f5e" />
                     </button>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </header>
 
-    {/* MODAL GUÍA PARA INSTALAR COMO APP NATIVA (PWA / APK) */}
-    {showInstallModal && (
-      <div 
-        className="modal-backdrop-acrylic modal-centered-mobile"
-        onClick={() => setShowInstallModal(false)}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(7, 12, 30, 0.85)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          zIndex: 10090,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '16px'
-        }}
-      >
-        <div
-          className="acrylic-panel-elevated modal-window-acrylic"
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            maxWidth: '440px',
-            width: '100%',
-            padding: '24px',
-            borderRadius: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            background: 'var(--bg-popover, #0B132B)',
-            border: '1px solid var(--border-acrylic-active, rgba(253, 186, 48, 0.3))',
-            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(253, 186, 48, 0.15)',
-            margin: 'auto'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(253, 186, 48, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Smartphone size={18} color="var(--accent-primary, #FDBA30)" />
-              </div>
-              <span>Instalar como App en tu Móvil</span>
+                  {/* Sección de Instalación & Descargas (2 columnas + Buscar Actualización) */}
+                  <div className="user-dropdown-downloads-section">
+                    <div className="user-dropdown-downloads-grid">
+                      {/* Descargar e Instalar APK Android */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          triggerDirectApkInstall();
+                        }}
+                        className="user-dropdown-download-btn apk-android"
+                        title="Descargar e Instalar APK Nativo para Android"
+                      >
+                        <AndroidIcon size={14} color="#3DDC84" />
+                        <span>APK Android</span>
+                      </button>
+
+                      {/* Instalar WebApp / PWA (Apple) */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          handleInstallPwa();
+                        }}
+                        className="user-dropdown-download-btn webapp-apple"
+                        title="Instalar WebApp en Apple iOS (iPhone / iPad) o Safari"
+                      >
+                        <AppleIcon size={14} />
+                        <span>WebApp Apple</span>
+                      </button>
+                    </div>
+
+                    {/* Buscar Actualización (Línea Delgada con versión) */}
+                    <button
+                      type="button"
+                      disabled={checkingUpdate}
+                      onClick={handleCheckUpdate}
+                      className="user-dropdown-update-btn"
+                    >
+                      <div className="user-dropdown-update-left">
+                        <RotateCw size={13} strokeWidth={2.2} className={`user-dropdown-update-icon ${checkingUpdate ? 'spinning' : ''}`} />
+                        <span>{checkingUpdate ? 'Verificando...' : 'Buscar actualización'}</span>
+                      </div>
+                      <span className="user-dropdown-version-tag">v{APP_CURRENT_VERSION}</span>
+                    </button>
+                  </div>
+                </div>,
+                document.body
+              )}
             </div>
+          )}
+        </div>
+      </header>
+
+      {/* Modal estilizado UPN para estado de actualización (Aplicación al Día) */}
+      {updateModalFade.shouldRender && typeof document !== 'undefined' && createPortal(
+        <div
+          className={`upn-update-status-backdrop ${updateModalFade.backdropClass}`}
+          onClick={() => updateModalFade.requestClose()}
+        >
+          <div
+            className={`upn-update-status-window ${updateModalFade.modalClass}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="upn-update-status-icon-box">
+              <CheckCircle2 size={26} strokeWidth={2.5} />
+            </div>
+
+            <div className="upn-update-status-header">
+              <span className="upn-update-status-badge">
+                Sistema al Día
+              </span>
+              <h3 className="upn-update-status-title">
+                Aplicación al Día
+              </h3>
+            </div>
+
+            <div className="upn-update-status-pill">
+              <span className="upn-update-status-dot" />
+              <span>v{updateStatusModal?.version || APP_CURRENT_VERSION} (Build {updateStatusModal?.build || APP_CURRENT_BUILD})</span>
+            </div>
+
+            <p className="upn-update-status-desc">
+              Cuentas con la última versión oficial instalada. Todas las funciones de control y sincronización están activas.
+            </p>
+
             <button
               type="button"
-              onClick={() => setShowInstallModal(false)}
-              className="btn-flat"
-              style={{ padding: '6px', borderRadius: '8px' }}
+              onClick={() => updateModalFade.requestClose()}
+              className="upn-update-status-btn"
             >
-              <X size={16} />
+              Entendido
             </button>
           </div>
+        </div>,
+        document.body
+      )}
 
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Android Card con Logo Oficial Android */}
-            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(61, 220, 132, 0.08)', border: '1px solid rgba(61, 220, 132, 0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <AndroidIcon size={20} color="#3DDC84" />
-                <strong style={{ color: '#3DDC84', fontSize: '0.88rem' }}>
-                  Android (.APK)
-                </strong>
-              </div>
-              <a 
-                href="/TayAudit.apk" 
-                download="TayAudit.apk"
-                className="btn-flat btn-primary"
-                style={{ padding: '6px 14px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Download size={14} />
-                <span>Descargar TayAudit.apk</span>
-              </a>
-            </div>
-
-            {/* Apple iOS Card con Logo Oficial Apple */}
-            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.16)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                <AppleIcon size={18} color="var(--text-primary, #ffffff)" />
-                <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>
-                  Apple iOS (iPhone / iPad)
-                </strong>
-              </div>
-              <span style={{ fontSize: '0.80rem', lineHeight: 1.5 }}>
-                1. Toca el botón <strong>Compartir</strong> en Safari.<br />
-                2. Selecciona <strong>"Añadir a pantalla de inicio"</strong>.
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowInstallModal(false)}
-            className="btn-flat btn-primary"
-            style={{ width: '100%', padding: '10px', fontSize: '0.84rem', fontWeight: 800, justifyContent: 'center' }}
+      {/* Modal Instructivo para Instalación en Apple iOS (Safari) */}
+      {showIosModal && (
+        <div 
+          className="modal-backdrop-acrylic modal-centered-mobile"
+          onClick={() => setShowIosModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            zIndex: 10090,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+        >
+          <div
+            className="acrylic-panel-elevated modal-window-acrylic"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '380px',
+              width: '100%',
+              padding: '22px',
+              borderRadius: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              background: 'var(--bg-popover, #121216)',
+              border: '1px solid var(--border-acrylic-active, rgba(253, 186, 48, 0.3))',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
+              margin: 'auto'
+            }}
           >
-            Entendido
-          </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AppleIcon size={20} color="var(--text-primary, #ffffff)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)' }}>Instalar en iOS</h3>
+                  <p style={{ margin: 0, fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>iPhone & iPad (Safari)</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowIosModal(false)}
+                className="btn-flat"
+                style={{ padding: '6px', borderRadius: '8px' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.80rem', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>1</span>
+                <div>En Safari, pulsa el botón <strong>Compartir</strong> <Share size={13} style={{ display: 'inline', margin: '0 3px', verticalAlign: 'middle', color: '#38bdf8' }} /> en la barra inferior.</div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>2</span>
+                <div>Desplázate y selecciona <strong>"Añadir a pantalla de inicio"</strong>.</div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>3</span>
+                <div>Pulsa <strong>Añadir</strong> en la esquina superior derecha. Se abrirá como app oficial.</div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowIosModal(false)}
+              className="btn-flat btn-primary"
+              style={{ width: '100%', padding: '10px', fontSize: '0.84rem', fontWeight: 900, justifyContent: 'center', borderRadius: '12px', background: '#FDBA30', color: '#000000' }}
+            >
+              Entendido
+            </button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
 
 

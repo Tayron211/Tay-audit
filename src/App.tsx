@@ -905,7 +905,12 @@ exit
 
   // Si no hay sesión iniciada, mostrar Pantalla de Login Institucional UPN
   if (!currentUser) {
-    return <LoginScreen onLogin={handleLogin} />;
+    return (
+      <>
+        <LoginScreen onLogin={handleLogin} />
+        <SplashScreen isLoading={isAppLoading} />
+      </>
+    );
   }
 
   return (

@@ -34,14 +34,10 @@ public class MainActivity extends BridgeActivity {
             }
         }
 
-        // Iniciar el servicio monitor de tickets en segundo plano 24/7
+        // Iniciar el servicio monitor de tickets en segundo plano (sin notificación persistente de inicio)
         try {
             Intent serviceIntent = new Intent(this, TicketMonitorService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent);
-            } else {
-                startService(serviceIntent);
-            }
+            startService(serviceIntent);
         } catch (Exception e) {
             e.printStackTrace();
         }

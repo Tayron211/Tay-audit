@@ -45,40 +45,11 @@ public class TicketMonitorService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-        createSilentNotificationChannel();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChannel();
-        createSilentNotificationChannel();
-
-        // En Android 8.0+ activar modo primer plano para ejecución 24/7 ininterrumpida
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                Intent appIntent = new Intent(this, MainActivity.class);
-                PendingIntent pendingIntent = PendingIntent.getActivity(
-                    this, 0, appIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
-                );
-
-                NotificationCompat.Builder fgBuilder = new NotificationCompat.Builder(this, SILENT_CHANNEL_ID)
-                    .setContentTitle("TayAudit Activo")
-                    .setContentText("Sincronización y alertas 24/7 activas")
-                    .setSmallIcon(R.drawable.ic_stat_notification)
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .setOngoing(true)
-                    .setContentIntent(pendingIntent);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    startForeground(FOREGROUND_NOTIFICATION_ID, fgBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
-                } else {
-                    startForeground(FOREGROUND_NOTIFICATION_ID, fgBuilder.build());
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "No se pudo iniciar en primer plano: " + e.getMessage());
-            }
-        }
 
         if (!isRunning) {
             isRunning = true;

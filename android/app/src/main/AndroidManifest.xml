@@ -31,8 +31,7 @@
         <service
             android:name=".TicketMonitorService"
             android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:exported="false" />
 
         <receiver
             android:name=".BootReceiver"
