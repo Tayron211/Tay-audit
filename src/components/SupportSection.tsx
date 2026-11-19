@@ -1429,15 +1429,18 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 }}
               >
                 {/* Header Fijo */}
-                <div style={{
-                  padding: '18px 24px',
-                  borderBottom: '1px solid var(--border-acrylic)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: 'var(--bg-canvas)',
-                  flexShrink: 0
-                }}>
+                <div 
+                  className="modal-header-acrylic"
+                  style={{
+                    padding: '16px 20px',
+                    borderBottom: '1px solid var(--border-modal-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'var(--bg-modal-header)',
+                    flexShrink: 0
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
                       width: '38px',
@@ -1473,14 +1476,26 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   </button>
                 </div>
 
-                {/* Formulario Scrollable */}
+                {/* Formulario que contiene cuerpo scrollable y pie fijo */}
                 <form onSubmit={handleCreateTicket} style={{
-                  padding: '22px 24px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '14px',
-                  overflowY: 'auto'
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: 'hidden'
                 }}>
+                  {/* Cuerpo Scrollable con Inercia Táctil */}
+                  <div 
+                    className="modal-body-scrollable"
+                    style={{
+                      padding: '18px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '14px',
+                      flex: 1,
+                      overflowY: 'auto'
+                    }}
+                  >
                   {createError && (
                     <div style={{ padding: '10px 14px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.28)', borderRadius: '8px', color: '#f87171', fontSize: '0.78rem' }}>
                       {createError}
@@ -1554,7 +1569,22 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                     />
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  </div>
+
+                  {/* Pie Fijo Acrylic */}
+                  <div 
+                    className="modal-footer-acrylic"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      gap: '10px',
+                      padding: '12px 20px',
+                      borderTop: '1px solid var(--border-modal-subtle)',
+                      background: 'var(--bg-modal-footer)',
+                      flexShrink: 0
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={closeCreateTicketModal}
@@ -2420,15 +2450,18 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 }}
               >
                 {/* Header Fijo */}
-                <div style={{
-                  padding: '18px 24px',
-                  borderBottom: '1px solid var(--border-acrylic)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: 'var(--bg-canvas)',
-                  flexShrink: 0
-                }}>
+                <div 
+                  className="modal-header-acrylic"
+                  style={{
+                    padding: '16px 20px',
+                    borderBottom: '1px solid var(--border-modal-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'var(--bg-modal-header)',
+                    flexShrink: 0
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
                       width: '38px',
@@ -2464,14 +2497,26 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   </button>
                 </div>
 
-                {/* Formulario Scrollable */}
+                {/* Formulario que contiene cuerpo scrollable y pie fijo */}
                 <form ref={teachFormRef} onSubmit={handleTeachRule} style={{
-                  padding: '22px 24px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '14px',
-                  overflowY: 'auto'
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: 'hidden'
                 }}>
+                  {/* Cuerpo Scrollable con Inercia Táctil */}
+                  <div 
+                    className="modal-body-scrollable"
+                    style={{
+                      padding: '18px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '14px',
+                      flex: 1,
+                      overflowY: 'auto'
+                    }}
+                  >
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
                     <div>
                       <label className="form-label">Palabras Clave Desencadenantes (separadas por comas) *</label>
@@ -2521,7 +2566,22 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                     />
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  </div>
+
+                  {/* Pie Fijo Acrylic */}
+                  <div 
+                    className="modal-footer-acrylic"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      gap: '10px',
+                      padding: '12px 20px',
+                      borderTop: '1px solid var(--border-modal-subtle)',
+                      background: 'var(--bg-modal-footer)',
+                      flexShrink: 0
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={closeTeachingModal}

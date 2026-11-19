@@ -760,6 +760,36 @@ const MainApp: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [activeTab]);
 
+  // Observador global automático de ventanas modales para desenfocar el fondo (Control Docente)
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const checkModals = () => {
+      const hasModal = Boolean(
+        document.querySelector('.modal-backdrop-acrylic:not(.closing)') ||
+        document.querySelector('.apple-liquid-modal') ||
+        document.querySelector('.qr-scanner-backdrop:not(.closing)') ||
+        document.querySelector('[role="dialog"]')
+      );
+      if (hasModal) {
+        document.body.classList.add('modal-backdrop-blur-active');
+        document.documentElement.setAttribute('data-modal-open', 'true');
+      } else {
+        document.body.classList.remove('modal-backdrop-blur-active');
+        document.documentElement.removeAttribute('data-modal-open');
+      }
+    };
+
+    const observer = new MutationObserver(checkModals);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    checkModals();
+
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove('modal-backdrop-blur-active');
+      document.documentElement.removeAttribute('data-modal-open');
+    };
+  }, []);
+
   // Sincronizar URL y localStorage cuando cambia activeTab (soporta historial atrás/adelante en PC)
   useEffect(() => {
     localStorage.setItem('tay_audit_active_tab', activeTab);

@@ -534,57 +534,60 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
         }
       }}
     >
-      <div className={`modal-window-acrylic device-modal-window ${isClosing ? 'closing' : ''}`} style={{
-        width: '100%',
-        maxWidth: '860px',
-        maxHeight: 'min(92dvh, 880px)',
-        overflowY: 'auto',
-        padding: '24px 28px',
-        position: 'relative'
-      }}>
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={requestClose}
-          aria-label="Cerrar ventana"
-          title="Cerrar ventana"
-          className="modal-close-btn"
+      <div 
+        className={`modal-window-acrylic device-modal-window ${isClosing ? 'closing' : ''}`} 
+        style={{
+          width: '100%',
+          maxWidth: '860px',
+          maxHeight: 'min(94dvh, 880px)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          padding: 0,
+          position: 'relative'
+        }}
+      >
+        {/* Encabezado Fijo Acrylic (Estilo Control Docente) */}
+        <div 
+          className="modal-header-acrylic"
           style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            zIndex: 10
+            padding: '14px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexShrink: 0
           }}
         >
-          <X size={18} strokeWidth={2.4} />
-        </button>
-
-        {/* Header with Hostname, Status & Action Mode Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', paddingRight: '44px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
             <div style={{
-              width: '48px',
-              height: '48px',
+              width: '42px',
+              height: '42px',
               borderRadius: '12px',
               backgroundColor: `${categoryColor}20`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               border: `1.5px solid ${categoryColor}40`,
-              boxShadow: `0 4px 18px ${categoryColor}25`
+              boxShadow: `0 4px 18px ${categoryColor}25`,
+              flexShrink: 0
             }}>
-              <CategoryIcon size={26} color={categoryColor} />
+              <CategoryIcon size={22} color={categoryColor} />
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <h2 style={{
-                  fontSize: '1.4rem',
+                  fontSize: '1.25rem',
                   fontWeight: 800,
                   color: 'var(--text-primary)',
                   fontFamily: 'JetBrains Mono, monospace',
                   letterSpacing: '-0.02em',
-                  margin: 0
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%'
                 }}>
                   {isEditing ? (editForm.hostname || 'EDITAR EQUIPO') : device.hostname}
                 </h2>
@@ -598,14 +601,15 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                       style={{
                         cursor: 'pointer',
                         fontWeight: 700,
-                        fontSize: '0.74rem',
-                        gap: '6px'
+                        fontSize: '0.72rem',
+                        gap: '5px',
+                        padding: '3px 9px'
                       }}
                       title="Haz clic para cambiar el estado de inventario del equipo"
                     >
                       <span>{getStatusBadge(device.status).label}</span>
                       <ChevronDown
-                        size={12}
+                        size={11}
                         style={{
                           transition: 'transform 0.2s ease',
                           transform: isStatusDropdownOpen ? 'rotate(180deg)' : 'none'
@@ -688,30 +692,50 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '5px',
-                      padding: '4px 10px',
+                      padding: '3px 8px',
                       borderRadius: '8px',
                       backgroundColor: 'rgba(255, 184, 0, 0.14)',
                       border: '1px solid rgba(255, 184, 0, 0.38)',
                       color: 'var(--accent-primary, #FDBA30)',
-                      fontSize: '0.72rem',
+                      fontSize: '0.70rem',
                       fontWeight: 800,
                       letterSpacing: '0.02em',
                       whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      boxShadow: '0 0 12px rgba(255, 184, 0, 0.12)'
+                      flexShrink: 0
                     }}
                   >
-                    <Edit3 size={12} />
+                    <Edit3 size={11} />
                     <span>Modo Edición</span>
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-                {device.brand || 'Equipo'} {device.model || ''} • <strong style={{ color: 'var(--text-primary)' }}>{device.deviceType.toUpperCase()}</strong> • Ubicación: <strong style={{ color: 'var(--accent-cyan)' }}>{device.location || 'Sede Central'}</strong>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '3px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {device.brand || 'Equipo'} {device.model || ''} • <strong style={{ color: 'var(--text-primary)' }}>{(device.deviceType || 'pc').toUpperCase()}</strong> • Ubicación: <strong style={{ color: 'var(--accent-cyan)' }}>{device.location || 'Sede Central'}</strong>
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={requestClose}
+            aria-label="Cerrar ventana"
+            title="Cerrar ventana"
+            className="modal-close-btn"
+          >
+            <X size={18} strokeWidth={2.4} />
+          </button>
         </div>
+
+        {/* Cuerpo Scrollable con Inercia Táctil */}
+        <div 
+          className="modal-body-scrollable"
+          style={{
+            padding: '18px 22px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px'
+          }}
+        >
 
         {/* Feedback message banner */}
         {actionMessage && (
@@ -1758,16 +1782,20 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
           </>
         )}
 
-        {/* Footer */}
+        </div>
+
+        {/* Pie Fijo Acrylic (Estilo Control Docente) */}
         <div 
-          className="device-modal-footer"
+          className="modal-footer-acrylic device-modal-footer"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: '16px',
-            borderTop: '1px solid var(--border-acrylic)',
-            marginTop: '20px'
+            padding: '12px 20px',
+            borderTop: '1px solid var(--border-modal-subtle)',
+            background: 'var(--bg-modal-footer)',
+            flexShrink: 0,
+            gap: '12px'
           }}
         >
           <div className="device-modal-footer-danger">

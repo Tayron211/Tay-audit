@@ -123,6 +123,11 @@
   --modal-glass-border: rgba(255, 255, 255, 0.12);
   --bg-modal-window: rgba(18, 18, 22, 0.96);
   --border-modal-window: rgba(255, 255, 255, 0.12);
+  --bg-modal-header: rgba(22, 22, 28, 0.95);
+  --bg-modal-footer: rgba(22, 22, 28, 0.95);
+  --bg-modal-card: rgba(255, 255, 255, 0.04);
+  --border-modal-card: rgba(255, 255, 255, 0.08);
+  --border-modal-subtle: rgba(255, 255, 255, 0.08);
 
   --border-acrylic: rgba(255, 255, 255, 0.12);
   --border-acrylic-hover: rgba(253, 186, 48, 0.40);
@@ -143,10 +148,10 @@
   --input-border: rgba(255, 255, 255, 0.14);
   --input-color: #f8fafc;
 
-  --bg-modal-section: #121214;
+  --bg-modal-section: rgba(255, 255, 255, 0.04);
   --border-modal-section: rgba(255, 255, 255, 0.08);
-  --shadow-modal-section: 0 2px 6px rgba(0, 0, 0, 0.40);
-  --input-modal-bg: #121214;
+  --shadow-modal-section: 0 4px 18px rgba(0, 0, 0, 0.35);
+  --input-modal-bg: rgba(0, 0, 0, 0.35);
   --input-modal-border: rgba(255, 255, 255, 0.14);
   --input-modal-text: #f8fafc;
 
@@ -184,6 +189,11 @@
   --modal-glass-border: rgba(226, 232, 240, 0.95);
   --bg-modal-window: rgba(255, 255, 255, 0.96);
   --border-modal-window: rgba(226, 232, 240, 0.95);
+  --bg-modal-header: rgba(248, 250, 252, 0.96);
+  --bg-modal-footer: rgba(248, 250, 252, 0.96);
+  --bg-modal-card: rgba(248, 250, 252, 0.90);
+  --border-modal-card: rgba(226, 232, 240, 0.90);
+  --border-modal-subtle: rgba(226, 232, 240, 0.90);
   
   --border-acrylic: rgba(226, 232, 240, 0.95);
   --border-acrylic-hover: rgba(203, 213, 225, 0.95);
@@ -555,21 +565,42 @@ code, pre, .font-mono {
 }
 
 /* ==================================================================== */
+/* GLOBAL APP DEFOCUS (BLUR) WHEN ANY MODAL IS OPEN (CONTROL DOCENTE)   */
+/* ==================================================================== */
+#root {
+  transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: filter, transform;
+}
+
+html[data-modal-open="true"] #root,
+body.modal-backdrop-blur-active #root,
+html:has(.modal-backdrop-acrylic) #root,
+html:has(.apple-liquid-modal) #root,
+html:has(.upn-update-status-backdrop) #root,
+html:has(.qr-scanner-backdrop) #root,
+html:has([role="dialog"]) #root {
+  filter: blur(8px) saturate(130%) brightness(0.92) !important;
+  -webkit-filter: blur(8px) saturate(130%) brightness(0.92) !important;
+  transform: scale(0.992) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* ==================================================================== */
 /* MODAL ACRYLIC FROSTED GLASS & FLUID OPEN/CLOSE TRANSITIONS            */
 /* ==================================================================== */
 .modal-backdrop-acrylic {
   position: fixed;
   inset: 0;
   background: var(--modal-backdrop-bg);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000 !important; /* Siempre por encima de la barra de navegación móvil (z-index: 1000) */
   padding: 16px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   animation: appleBackdropFade 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: opacity 0.22s ease;
   will-change: opacity;
@@ -600,17 +631,57 @@ code, pre, .font-mono {
   animation: appleModalFadeEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: center center;
   box-sizing: border-box !important;
-  margin: auto !important; /* Mantiene la ventana siempre perfectamente centrada en vertical y horizontal */
+  margin: auto !important; /* Mantiene la ventana siempre perfectamente centrada */
   will-change: transform, opacity;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+/* Encabezado Fijo Acrylic de Ventanas Modales */
+.modal-header-acrylic {
+  background: var(--bg-modal-header) !important;
+  border-bottom: 1px solid var(--border-modal-subtle) !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Cuerpo Scrollable con Inercia Táctil y Aislamiento de Overflow */
+.modal-body-scrollable {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  box-sizing: border-box !important;
+}
+
+/* Pie Fijo Acrylic de Ventanas Modales */
+.modal-footer-acrylic {
+  background: var(--bg-modal-footer) !important;
+  border-top: 1px solid var(--border-modal-subtle) !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Eliminación total de cuadros negros en modo oscuro dentro de ventanas modales */
+.modal-window-acrylic div[style*="var(--bg-canvas-subtle)"],
+.modal-window-acrylic div[style*="var(--bg-canvas)"],
+.acrylic-card div[style*="var(--bg-canvas-subtle)"],
+.acrylic-card div[style*="var(--bg-canvas)"] {
+  background-color: var(--bg-modal-card) !important;
+  background: var(--bg-modal-card) !important;
+  border-color: var(--border-modal-card) !important;
 }
 
 /* Adaptación fluida de ventanas modales en pantallas móviles y tablets */
 @media (max-width: 768px) {
   .modal-backdrop-acrylic {
-    padding: 12px 10px calc(24px + env(safe-area-inset-bottom, 0px)) 10px !important;
-    align-items: flex-start !important; /* Evita que el encabezado quede cortado arriba al hacer overflow */
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+    padding: 8px 8px calc(12px + env(safe-area-inset-bottom, 0px)) 8px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
   }
 
   /* Ventanas que deben salir exactamente en medio de la pantalla (ej. Instalar en Móvil) */
@@ -629,14 +700,28 @@ code, pre, .font-mono {
   }
 
   .modal-window-acrylic {
-    margin: auto 0 !important;
+    margin: auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    max-height: calc(100dvh - 24px) !important;
-    padding: 18px 14px 20px 14px !important;
-    border-radius: 18px !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    height: auto !important;
+    padding: 0 !important;
+    border-radius: 20px !important;
     display: flex !important;
     flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .modal-header-acrylic {
+    padding: 12px 14px !important;
+  }
+
+  .modal-body-scrollable {
+    padding: 14px 14px !important;
+  }
+
+  .modal-footer-acrylic {
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px !important;
   }
 
   /* Footer de botones de acción en modales para que no se apachurren en móvil */
@@ -644,8 +729,6 @@ code, pre, .font-mono {
     flex-direction: column-reverse !important;
     align-items: stretch !important;
     gap: 10px !important;
-    margin-top: 16px !important;
-    padding-top: 14px !important;
   }
 
   .device-modal-footer-danger {
@@ -3487,11 +3570,11 @@ select option {
 /* DEVICE MODAL ENTERPRISE STYLING (FLAWLESS IN DARK & LIGHT MODES)     */
 /* ==================================================================== */
 :root, [data-mode="dark"] {
-  --bg-modal-section: #121214;
-  --border-modal-section: rgba(255, 255, 255, 0.10);
-  --shadow-modal-section: 0 2px 6px rgba(0, 0, 0, 0.40);
-  --input-modal-bg: #121214;
-  --input-modal-border: rgba(255, 255, 255, 0.16);
+  --bg-modal-section: rgba(255, 255, 255, 0.04);
+  --border-modal-section: rgba(255, 255, 255, 0.08);
+  --shadow-modal-section: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --input-modal-bg: rgba(0, 0, 0, 0.35);
+  --input-modal-border: rgba(255, 255, 255, 0.14);
   --input-modal-text: #f4f4f5;
 }
 
@@ -3505,9 +3588,9 @@ select option {
 }
 
 .device-modal-section {
-  background: var(--bg-modal-section);
-  border: 1px solid var(--border-modal-section);
-  border-radius: 12px;
+  background: var(--bg-modal-card, var(--bg-modal-section));
+  border: 1px solid var(--border-modal-card, var(--border-modal-section));
+  border-radius: 14px;
   padding: 16px;
   box-shadow: var(--shadow-modal-section);
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),

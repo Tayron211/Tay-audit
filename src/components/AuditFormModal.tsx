@@ -463,15 +463,18 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
         transition: 'max-width 0.3s ease'
       }}>
         {/* Encabezado Fijo Adaptativo */}
-        <div style={{
-          padding: '16px 22px',
-          borderBottom: '1px solid var(--border-acrylic)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-          background: 'var(--bg-canvas)'
-        }}>
+        <div 
+          className="modal-header-acrylic"
+          style={{
+            padding: '14px 20px',
+            borderBottom: '1px solid var(--border-modal-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            background: 'var(--bg-modal-header)'
+          }}
+        >
           <div>
             <h3 style={{
               fontSize: '1.15rem',
@@ -517,15 +520,27 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           </button>
         </div>
 
-        {/* Cuerpo del Formulario Scrollable */}
+        {/* Formulario que contiene cuerpo scrollable y pie fijo */}
         <form onSubmit={handleSubmit} style={{
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
-          overflowY: 'auto',
-          padding: '18px 22px',
-          gap: '16px'
+          minHeight: 0,
+          overflow: 'hidden'
         }}>
+          {/* Cuerpo del Formulario Scrollable con Inercia Táctil */}
+          <div 
+            className="modal-body-scrollable"
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              padding: '16px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}
+          >
           {error && (
             <div style={{
               padding: '10px 14px',
@@ -547,7 +562,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           <div
             ref={hwMenuRef}
             style={{
-              backgroundColor: 'var(--bg-canvas-subtle)',
+              backgroundColor: 'var(--bg-modal-card)',
               padding: '14px 16px',
               borderRadius: '12px',
               border: '1px solid var(--border-acrylic)',
@@ -597,7 +612,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                       borderRadius: '8px',
                       fontSize: '0.76rem',
                       fontWeight: isSelected ? 800 : 600,
-                      backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-canvas)',
+                      backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--input-modal-bg)',
                       color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
                       borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-acrylic)',
                       boxShadow: isSelected ? '0 2px 10px var(--accent-glow)' : 'none',
@@ -634,7 +649,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                   borderRadius: '8px',
                   fontSize: '0.76rem',
                   fontWeight: isComponent ? 800 : 600,
-                  backgroundColor: isComponent ? 'var(--accent-primary)' : 'var(--bg-canvas)',
+                  backgroundColor: isComponent ? 'var(--accent-primary)' : 'var(--input-modal-bg)',
                   color: isComponent ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
                   borderColor: isComponent || isHwMenuOpen ? 'var(--accent-primary)' : 'var(--border-acrylic)',
                   boxShadow: isComponent ? '0 2px 10px var(--accent-glow)' : 'none',
@@ -773,7 +788,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* Bloque 1: Selector de Componente, Código, Serie, Marca y Modelo */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -936,7 +951,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
               {/* Bloque 2: Campos Técnicos Específicos según el Componente Elegido */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -984,7 +999,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
               {/* Bloque 3: Ubicación, Stock de Almacén o Equipo donde está Instalado */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1045,7 +1060,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           {isEcran && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1209,7 +1224,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           {isSpeaker && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1375,7 +1390,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           {isPrinter && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1429,7 +1444,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                       left: 0,
                       right: 0,
                       marginTop: '4px',
-                      backgroundColor: 'var(--bg-canvas)',
+                      backgroundColor: 'var(--bg-modal-window)',
                       border: '1px solid var(--border-acrylic-active)',
                       borderRadius: '10px',
                       boxShadow: '0 12px 30px rgba(0, 0, 0, 0.45)',
@@ -1450,7 +1465,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
                             borderBottom: idx < printerSuggestions.length - 1 ? '1px solid var(--border-acrylic)' : 'none',
                             transition: 'background-color 0.15s ease'
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-canvas-subtle)'}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--table-hover)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1616,7 +1631,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* Sección Identificación */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1669,7 +1684,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
               {/* Sección Serial, Placa y Hardware */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1818,7 +1833,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
               {/* Asignación y Ubicación */}
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -1872,7 +1887,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
 
                 {/* Sección 4: Monitor / Pantalla Conectada */}
                 <div style={{
-                  backgroundColor: 'var(--bg-canvas-subtle)',
+                  backgroundColor: 'var(--bg-modal-card)',
                   padding: '16px',
                   borderRadius: '12px',
                   border: '1px solid var(--border-acrylic)',
@@ -1985,7 +2000,7 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
           {(isMonitor || isNetwork || currentType === 'other') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{
-                backgroundColor: 'var(--bg-canvas-subtle)',
+                backgroundColor: 'var(--bg-modal-card)',
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid var(--border-acrylic)',
@@ -2084,17 +2099,20 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
             </div>
           )}
 
-          {/* Botones de Acción Inferiores */}
+          </div>
+
+          {/* Botones de Acción Inferiores Fijos (Estilo Control Docente) */}
           <div 
-            className="audit-modal-footer"
+            className="modal-footer-acrylic audit-modal-footer"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
               gap: '10px',
-              paddingTop: '8px',
-              borderTop: '1px solid var(--border-acrylic)',
-              marginTop: 'auto'
+              padding: '12px 20px',
+              borderTop: '1px solid var(--border-modal-subtle)',
+              background: 'var(--bg-modal-footer)',
+              flexShrink: 0
             }}
           >
             <button

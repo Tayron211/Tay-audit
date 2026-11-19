@@ -102,7 +102,9 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({ updateInfo, onCl
           width: '100%',
           maxWidth: '430px',
           maxHeight: '92vh',
-          backgroundColor: 'var(--bg-canvas-subtle)',
+          backgroundColor: 'var(--bg-modal-window)',
+          backdropFilter: 'blur(28px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(180%)',
           border: '2px solid rgba(253, 186, 48, 0.8)',
           borderRadius: '24px',
           padding: '18px',
@@ -284,7 +286,9 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({ updateInfo, onCl
                     gap: '8px',
                     padding: '8px',
                     borderRadius: '10px',
-                    backgroundColor: 'var(--bg-canvas-subtle)',
+                    backgroundColor: 'var(--bg-modal-window)',
+          backdropFilter: 'blur(28px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(180%)',
                     border: '1px solid var(--border-acrylic)'
                   }}
                 >

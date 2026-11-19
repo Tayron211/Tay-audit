@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 let activeModalCount = 0;
 
-function syncGlobalModalBlur(shouldBeActive: boolean) {
+export function syncGlobalModalBlur(shouldBeActive: boolean) {
   if (typeof document === 'undefined') return;
   if (shouldBeActive) {
     activeModalCount++;
