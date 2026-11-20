@@ -2203,13 +2203,13 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav {
-    /* Espacio blur superior equilibrado para Status Bar: libre de conflicto con reloj/iconos de Android pero compacto */
-    padding-top: max(30px, env(safe-area-inset-top, 30px)) !important;
+    /* Espacio blur superior equilibrado para Status Bar: libre de conflicto con reloj/iconos de Android */
+    padding-top: max(48px, env(safe-area-inset-top, 48px)) !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: max(30px, env(safe-area-inset-top, 30px)) !important;
+  padding-top: max(48px, env(safe-area-inset-top, 48px)) !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2226,14 +2226,14 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: calc(44px + max(30px, env(safe-area-inset-top, 30px))) !important;
+    height: calc(44px + max(48px, env(safe-area-inset-top, 48px))) !important;
     padding-top: 0 !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: calc(44px + max(30px, env(safe-area-inset-top, 30px))) !important;
+  height: calc(44px + max(48px, env(safe-area-inset-top, 48px))) !important;
 }
 
 /* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */

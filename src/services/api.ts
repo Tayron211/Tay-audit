@@ -71,6 +71,19 @@ export const getApiBaseUrl = (): string => {
 
 export const API_BASE = getApiBaseUrl();
 
+export function notifyLocalAndTabsDataChanged() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('tayaudit:refresh-data'));
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('tayaudit_cross_tab_sync');
+        bc.postMessage({ type: 'REFRESH', ts: Date.now() });
+        setTimeout(() => bc.close(), 100);
+      }
+    } catch {}
+  }
+}
+
 export const api = {
   // Lightweight real-time sync state check (Cloudflare D1 + local compatible)
   async getSyncState(): Promise<{ ok: boolean; version: string; serverTime?: string }> {
@@ -108,7 +121,9 @@ export const api = {
       body: JSON.stringify(device),
     });
     if (!res.ok) throw new Error('Error al registrar equipo');
-    return res.json();
+    const data = await res.json();
+    notifyLocalAndTabsDataChanged();
+    return data;
   },
 
   // Update device
@@ -119,7 +134,9 @@ export const api = {
       body: JSON.stringify(device),
     });
     if (!res.ok) throw new Error('Error al actualizar equipo');
-    return res.json();
+    const data = await res.json();
+    notifyLocalAndTabsDataChanged();
+    return data;
   },
 
   // Delete device
@@ -128,6 +145,7 @@ export const api = {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Error al eliminar equipo');
+    notifyLocalAndTabsDataChanged();
   },
 
   // Trigger remote action (Restart, Shutdown, Screen Mirroring, DisplaySwitch, Remote Desktop)
@@ -262,6 +280,7 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al registrar ticket');
+    notifyLocalAndTabsDataChanged();
     return data;
   },
 
@@ -274,6 +293,7 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al actualizar ticket');
+    notifyLocalAndTabsDataChanged();
     return data;
   },
 

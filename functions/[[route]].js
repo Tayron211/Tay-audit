@@ -73,7 +73,7 @@ function resolveCloudServerHost(request, url) {
   return `${url.protocol}//${url.host}`;
 }
 
-let schemaVerified = false;
+let schemaVerified = true;
 async function ensureSchema(db) {
   if (schemaVerified) return;
   await db.batch([
@@ -1243,7 +1243,7 @@ export async function onRequest(context) {
   const db = env.DB;
 
   try {
-    if (db) {
+    if (db && !schemaVerified) {
       try {
         await ensureSchema(db);
       } catch (err) {
@@ -1266,11 +1266,23 @@ export async function onRequest(context) {
       });
     }
 
-    // Instant Zero-Quota Real-Time Sync State (Zero D1 reads)
+    // Distributed 24/7 Real-Time Sync State (Shared across all Cloudflare Edge Colos via D1 system_meta)
     if (method === 'GET' && (pathname === '/api/sync-state' || pathname === '/api/sync/state')) {
+      let currentVersion = globalSyncVersion;
+      if (db) {
+        try {
+          const row = await db.prepare("SELECT value FROM system_meta WHERE key = 'last_change_ts'").first();
+          if (row && row.value) {
+            currentVersion = String(row.value);
+            globalSyncVersion = currentVersion;
+          }
+        } catch (e) {
+          // fallback to memory version
+        }
+      }
       return jsonResponse({
         ok: true,
-        version: globalSyncVersion,
+        version: currentVersion,
         serverTime: new Date().toISOString()
       }, 200, {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'

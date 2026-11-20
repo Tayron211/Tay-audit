@@ -1,6 +1,6 @@
 // Service Worker para Notificaciones Push Nativas y WebAPK en Android / iOS (TAY-AUDIT 24/7)
 
-const CACHE_NAME = 'tay-audit-pwa-v2.7.4';
+const CACHE_NAME = 'tay-audit-pwa-v2.7.5';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',

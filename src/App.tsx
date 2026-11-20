@@ -48,20 +48,46 @@ const getInitialTab = (): NavTab => {
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>(() => getInitialTab());
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
-  const [knowledgeList, setKnowledgeList] = useState<StivieKnowledge[]>([]);
-  const [stats, setStats] = useState<SystemStats>({
-    totalDevices: 0,
-    onlineCount: 0,
-    pcCount: 0,
-    laptopCount: 0,
-    serverCount: 0,
-    printerCount: 0,
-    networkCount: 0,
-    otherCount: 0,
-    recentlyAudited: 0,
+  const [devices, setDevices] = useState<Device[]>(() => {
+    try {
+      const cached = localStorage.getItem('tayaudit_cached_devices');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [logs, setLogs] = useState<AuditLog[]>(() => {
+    try {
+      const cached = localStorage.getItem('tayaudit_cached_logs');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [tickets, setTickets] = useState<SupportTicket[]>(() => {
+    try {
+      const cached = localStorage.getItem('tayaudit_cached_tickets');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [knowledgeList, setKnowledgeList] = useState<StivieKnowledge[]>(() => {
+    try {
+      const cached = localStorage.getItem('tayaudit_cached_knowledge');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [stats, setStats] = useState<SystemStats>(() => {
+    try {
+      const cached = localStorage.getItem('tayaudit_cached_stats');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      totalDevices: 0,
+      onlineCount: 0,
+      pcCount: 0,
+      laptopCount: 0,
+      serverCount: 0,
+      printerCount: 0,
+      networkCount: 0,
+      otherCount: 0,
+      recentlyAudited: 0,
+    };
   });
 
   const [isLiveConnected, setIsLiveConnected] = useState(false);
@@ -366,18 +392,23 @@ const MainApp: React.FC = () => {
 
       if (fetchedDevices && Array.isArray(fetchedDevices) && fetchedDevices.length > 0) {
         setDevices(fetchedDevices);
+        try { localStorage.setItem('tayaudit_cached_devices', JSON.stringify(fetchedDevices)); } catch {}
       }
       if (fetchedStats) {
         setStats(fetchedStats);
+        try { localStorage.setItem('tayaudit_cached_stats', JSON.stringify(fetchedStats)); } catch {}
       }
       if (fetchedLogs && Array.isArray(fetchedLogs) && fetchedLogs.length > 0) {
         setLogs(fetchedLogs);
+        try { localStorage.setItem('tayaudit_cached_logs', JSON.stringify(fetchedLogs)); } catch {}
       }
       if (fetchedTickets && Array.isArray(fetchedTickets) && fetchedTickets.length > 0) {
         setTickets(fetchedTickets);
+        try { localStorage.setItem('tayaudit_cached_tickets', JSON.stringify(fetchedTickets)); } catch {}
       }
       if (fetchedKnowledge && Array.isArray(fetchedKnowledge)) {
         setKnowledgeList(fetchedKnowledge);
+        try { localStorage.setItem('tayaudit_cached_knowledge', JSON.stringify(fetchedKnowledge)); } catch {}
       }
 
       const validDevices = (fetchedDevices && Array.isArray(fetchedDevices)) ? fetchedDevices : devices;
@@ -504,6 +535,23 @@ const MainApp: React.FC = () => {
       } catch {}
     };
 
+    let broadcastChannel: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        broadcastChannel = new BroadcastChannel('tayaudit_cross_tab_sync');
+        broadcastChannel.onmessage = (ev) => {
+          if (ev.data?.type === 'REFRESH') {
+            loadData();
+          }
+        };
+      }
+    } catch {}
+
+    const handleManualRefresh = () => {
+      loadData();
+    };
+    window.addEventListener('tayaudit:refresh-data', handleManualRefresh);
+
     const checkCloudSync = async () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
         return;
@@ -514,7 +562,7 @@ const MainApp: React.FC = () => {
         setIsLiveConnected(true);
         const now = Date.now();
         const versionChanged = lastSyncVersionRef.current !== null && sync.version !== lastSyncVersionRef.current;
-        const ticketCheckIntervalPassed = (now - lastFastTicketCheckTsRef.current) > 5000;
+        const ticketCheckIntervalPassed = (now - lastFastTicketCheckTsRef.current) > 4000;
 
         if (lastSyncVersionRef.current === null) {
           lastSyncVersionRef.current = sync.version;
@@ -524,7 +572,8 @@ const MainApp: React.FC = () => {
           await checkFastTicketsSync();
         }
 
-        if (versionChanged || (now - lastFullLoadTsRef.current > 45000)) {
+        const needsInitialFill = devices.length === 0 || tickets.length === 0;
+        if (versionChanged || needsInitialFill || (now - lastFullLoadTsRef.current > 20000)) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
           loadData();
@@ -535,10 +584,11 @@ const MainApp: React.FC = () => {
     };
 
     checkCloudSync();
-    const syncTimer = setInterval(checkCloudSync, 3000);
+    const syncTimer = setInterval(checkCloudSync, 2500);
 
     const handleResumeOrFocus = () => {
       checkCloudSync();
+      loadData();
     };
     document.addEventListener('visibilitychange', handleResumeOrFocus);
     window.addEventListener('focus', handleResumeOrFocus);
@@ -570,6 +620,8 @@ const MainApp: React.FC = () => {
       window.removeEventListener('focus', handleResumeOrFocus);
       window.removeEventListener('online', handleResumeOrFocus);
       document.removeEventListener('resume', handleResumeOrFocus as EventListener);
+      window.removeEventListener('tayaudit:refresh-data', handleManualRefresh);
+      if (broadcastChannel) broadcastChannel.close();
       if (eventSource) eventSource.close();
     };
   }, []);
