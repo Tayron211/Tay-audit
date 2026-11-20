@@ -2318,13 +2318,13 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav {
-    /* Encabezado móvil calibrado con espacio de seguridad justo bajo la barra de estado de Android */
-    padding-top: 14px !important;
+    /* Encabezado móvil equilibrado con espacio de seguridad bajo la barra de estado */
+    padding-top: 18px !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: 14px !important;
+  padding-top: 18px !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2341,14 +2341,14 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: 54px !important;
+    height: 58px !important;
     padding-top: 0 !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: 54px !important;
+  height: 58px !important;
 }
 
 /* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */
