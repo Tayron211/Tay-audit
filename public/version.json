@@ -1,12 +1,12 @@
 {
-  "version": "1.0.16",
-  "versionCode": 17,
+  "version": "1.0.17",
+  "versionCode": 18,
   "releaseDate": "2026-11-20",
-  "notes": "Ajuste del espaciado superior del encabezado móvil idéntico a Control Docente.",
+  "notes": "Ajuste fino del encabezado móvil: subido ligeramente para una altura y separación perfectas.",
   "features": [
     {
-      "title": "Encabezado Móvil Idéntico a Control Docente",
-      "desc": "Espaciado superior seguro bajo la barra de estado de Android (34px safe area) y altura de barra de 64px para perfecta separación y respiración visual."
+      "title": "Encabezado Móvil Calibrado",
+      "desc": "Espacio superior ajustado a 24px con altura de barra de 52px para una separación limpia y proporcionada."
     },
     {
       "title": "Botón Flotante 100% Circular",
