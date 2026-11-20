@@ -1,16 +1,20 @@
 {
-  "version": "1.0.7",
-  "versionCode": 8,
+  "version": "1.0.8",
+  "versionCode": 9,
   "releaseDate": "2026-11-20",
-  "notes": "Cabecera elevada y compacta en móvil (22px) para máxima visibilidad sin espacios sobrantes.",
+  "notes": "Barra inferior con desenfoque blur, eliminación de barra gris en splash screen, transiciones suaves y botones táctiles optimizados.",
   "features": [
     {
-      "title": "Cabecera Elevada y Compacta (22px)",
-      "desc": "Posición superior elevada y contenido más visible sin espacios innecesarios."
+      "title": "Splash Screen Inmersivo sin Barra Gris",
+      "desc": "Eliminación total del scrim gris de inicio en Android 10+ mediante configuración nativa de contraste transparente."
     },
     {
-      "title": "Sincronización Bidireccional 100% 24/7",
-      "desc": "Conexión en vivo compartida a través de D1 global entre la plataforma Web y la app APK Android."
+      "title": "Barra Inferior con Efecto Blur",
+      "desc": "Fondo esmerilado acrílico translúcido 32px en la navegación móvil con botones redondeados y respuesta táctil suave."
+    },
+    {
+      "title": "Transiciones Líquidas y Cero Contornos Cuadrados",
+      "desc": "Efectos fade suaves al abrir y cerrar menús desplegables y ventanas modales sin recuadros de selección."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",

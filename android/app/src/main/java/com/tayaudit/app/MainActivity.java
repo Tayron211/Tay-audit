@@ -16,7 +16,18 @@ public class MainActivity extends BridgeActivity {
 
         // Status bar transparente e inmersiva de inmediato desde el primer frame (sin barra gris superior)
         try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                getWindow().getAttributes().layoutInDisplayCutoutMode = 
+                    android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                getWindow().setStatusBarContrastEnforced(false);
+                getWindow().setNavigationBarContrastEnforced(false);
+            }
+            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
             getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -24,6 +35,19 @@ public class MainActivity extends BridgeActivity {
         } catch (Exception ignored) {}
 
         super.onCreate(savedInstanceState);
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                getWindow().setStatusBarContrastEnforced(false);
+                getWindow().setNavigationBarContrastEnforced(false);
+            }
+            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            );
+        } catch (Exception ignored) {}
 
         // Eliminar ActionBar nativa bajo cualquier circunstancia
         try {
