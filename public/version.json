@@ -1,16 +1,16 @@
 {
-  "version": "1.0.3",
-  "versionCode": 4,
-  "releaseDate": "2026-11-19",
-  "notes": "Espacio blur para Status Bar y ajuste del margen de contenido scroleable.",
+  "version": "1.0.4",
+  "versionCode": 5,
+  "releaseDate": "2026-11-20",
+  "notes": "Ajuste de altura de cabecera a 30px para liberar por completo los iconos del sistema Android.",
   "features": [
     {
-      "title": "Espacio Blur Status Bar",
-      "desc": "Espacio superior esmerilado seguro para que el reloj y los iconos del móvil floten sin superponerse a los controles del encabezado."
+      "title": "Alineación Status Bar Android",
+      "desc": "Espacio superior calibrado a 30px libre de interferencias con iconos de reloj y batería del sistema."
     },
     {
-      "title": "Alineación de Contenido",
-      "desc": "Reducción del espacio inferior para que el inventario y las tarjetas comiencen exactamente debajo del encabezado."
+      "title": "Sincronización Bidireccional 100%",
+      "desc": "Conexión en vivo en tiempo real garantizada entre la plataforma Web y la app APK Android."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",

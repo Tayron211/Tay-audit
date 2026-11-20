@@ -348,22 +348,45 @@ const MainApp: React.FC = () => {
   const loadData = useCallback(async () => {
     try {
       const [fetchedDevices, fetchedStats, fetchedLogs, fetchedTickets, fetchedKnowledge] = await Promise.all([
-        api.getDevices(),
-        api.getStats(),
-        api.getLogs(),
-        api.getTickets().catch(() => []),
+        api.getDevices().catch(err => {
+          console.warn('[App] getDevices fallback:', err);
+          return null;
+        }),
+        api.getStats().catch(err => {
+          console.warn('[App] getStats fallback:', err);
+          return null;
+        }),
+        api.getLogs().catch(err => {
+          console.warn('[App] getLogs fallback:', err);
+          return null;
+        }),
+        api.getTickets().catch(() => null),
         api.getStivieKnowledge().catch(() => [])
       ]);
-      setDevices(fetchedDevices);
-      setStats(fetchedStats);
-      setLogs(fetchedLogs);
-      setTickets(fetchedTickets);
-      setKnowledgeList(fetchedKnowledge);
+
+      if (fetchedDevices && Array.isArray(fetchedDevices) && fetchedDevices.length > 0) {
+        setDevices(fetchedDevices);
+      }
+      if (fetchedStats) {
+        setStats(fetchedStats);
+      }
+      if (fetchedLogs && Array.isArray(fetchedLogs) && fetchedLogs.length > 0) {
+        setLogs(fetchedLogs);
+      }
+      if (fetchedTickets && Array.isArray(fetchedTickets) && fetchedTickets.length > 0) {
+        setTickets(fetchedTickets);
+      }
+      if (fetchedKnowledge && Array.isArray(fetchedKnowledge)) {
+        setKnowledgeList(fetchedKnowledge);
+      }
+
+      const validDevices = (fetchedDevices && Array.isArray(fetchedDevices)) ? fetchedDevices : devices;
+      const validTickets = (fetchedTickets && Array.isArray(fetchedTickets)) ? fetchedTickets : tickets;
 
       // Sincronizar el equipo seleccionado si el modal está abierto en tiempo real
       setSelectedDevice(prev => {
         if (!prev) return null;
-        const fresh = fetchedDevices.find(d => d.id === prev.id);
+        const fresh = validDevices.find(d => d.id === prev.id);
         if (!fresh) return prev;
         if (fresh.updatedAt === prev.updatedAt && fresh.lastAgentPing === prev.lastAgentPing) {
           return prev;
@@ -372,13 +395,13 @@ const MainApp: React.FC = () => {
       });
 
       // Sistema de Notificaciones de Tickets en Vivo estilo FB (Máximo 5)
-      const openTickets = fetchedTickets.filter(t => t.status !== 'resuelto');
+      const openTickets = validTickets.filter(t => t.status !== 'resuelto');
       const activeTicketIds = new Set(openTickets.map(t => t.id));
 
       if (knownTicketIdsRef.current === null) {
         // Carga inicial: registrar IDs conocidos y marcarlos para no alertar retroactivamente
-        knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
-        fetchedTickets.forEach(t => notifiedTicketIdsRef.current.add(t.id));
+        knownTicketIdsRef.current = new Set(validTickets.map(t => t.id));
+        validTickets.forEach(t => notifiedTicketIdsRef.current.add(t.id));
         try {
           localStorage.setItem('tayaudit_notified_ticket_ids', JSON.stringify(Array.from(notifiedTicketIdsRef.current)));
         } catch {}
@@ -404,7 +427,7 @@ const MainApp: React.FC = () => {
       } else {
         // En recargas de datos generales sincronizamos la lista sin duplicar alertas push
         setNotifications(prev => prev.filter(n => activeTicketIds.has(n.ticketId)).slice(0, 5));
-        knownTicketIdsRef.current = new Set(fetchedTickets.map(t => t.id));
+        knownTicketIdsRef.current = new Set(validTickets.map(t => t.id));
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -482,6 +505,9 @@ const MainApp: React.FC = () => {
     };
 
     const checkCloudSync = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
       try {
         const sync = await api.getSyncState();
         if (!isMounted) return;
@@ -498,7 +524,7 @@ const MainApp: React.FC = () => {
           await checkFastTicketsSync();
         }
 
-        if (versionChanged || (now - lastFullLoadTsRef.current > 60000)) {
+        if (versionChanged || (now - lastFullLoadTsRef.current > 45000)) {
           lastSyncVersionRef.current = sync.version;
           lastFullLoadTsRef.current = now;
           loadData();
@@ -551,6 +577,7 @@ const MainApp: React.FC = () => {
   // Inicialización de Service Worker, suscripción Web Push y permisos nativos en APK
   useEffect(() => {
     if (isNativeCapacitor()) {
+      document.documentElement.classList.add('is-capacitor');
       requestPushNotificationPermission().catch(() => {});
     }
     setupNativeNotificationChannel().catch(() => {});

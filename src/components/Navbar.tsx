@@ -13,7 +13,6 @@ import {
   X,
   RotateCw,
   CheckCircle2,
-  Cloud,
   Share
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -381,21 +380,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       )}
                     </button>
 
-                    {/* 2. Sincronizar / Estado Cloudflare */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (typeof window !== 'undefined') {
-                          window.dispatchEvent(new CustomEvent('tayaudit:refresh-data'));
-                        }
-                      }}
-                      className="user-dropdown-action-btn"
-                      title="Conexión en Vivo y Sincronización Cloudflare"
-                    >
-                      <Cloud size={17} strokeWidth={2.2} color="#38bdf8" />
-                    </button>
-
-                    {/* 3. Cerrar Sesión */}
+                    {/* 2. Cerrar Sesión */}
                     <button
                       type="button"
                       onClick={() => {

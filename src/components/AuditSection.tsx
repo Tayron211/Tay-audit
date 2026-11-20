@@ -69,7 +69,7 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
   }, [activeView]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
+    <div className="audit-section-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
       
       {/* 1. SECTION HEADER & VIEW TOGGLE (Centrado, Ordenado, Simétrico y Sin Recortes) */}
       <div style={{
