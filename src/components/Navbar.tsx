@@ -583,7 +583,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
 
     {/* NATIVE MOBILE BOTTOM NAVIGATION BAR (Thumb-friendly & 100% Native Feel) */}
-    <nav className="mobile-bottom-bar" aria-label="Navegación móvil principal">
+    <nav 
+      className="mobile-bottom-bar" 
+      aria-label="Navegación móvil principal"
+      style={{
+        backdropFilter: 'blur(32px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(32px) saturate(200%)'
+      }}
+    >
       <button
         type="button"
         onClick={() => onChangeTab('audit')}

@@ -1,20 +1,16 @@
 {
-  "version": "1.0.10",
-  "versionCode": 11,
+  "version": "1.0.11",
+  "versionCode": 12,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado móvil elevado y optimizado a 8px padding superior para máxima ergonomía visual.",
+  "notes": "Encabezado elevado hacia el borde superior y barra inferior de navegación con efecto blur esmerilado idéntico al encabezado.",
   "features": [
     {
-      "title": "STIVIE Presencia en Vivo 100% Precisa",
-      "desc": "Detección exacta y en tiempo real de equipos conectados y activos en la Consola Remota con auto-selección de estación activa."
+      "title": "Encabezado Móvil Más Elevado",
+      "desc": "Posicionamiento elevado a 8px exactos sin espacios muertos en la parte superior."
     },
     {
-      "title": "Blindaje Absoluto del Inventario",
-      "desc": "STIVIE solo inventaría una vez al ser instalado. Los pings y latidos continuos nunca alteran el usuario asignado, notas, ubicación ni estado del inventario."
-    },
-    {
-      "title": "Monitoreo Remoto con Refresco Inteligente",
-      "desc": "Tolerancia a desfases horarios y refresco dinámico cada 4s en la consola de soporte remoto."
+      "title": "Barra Inferior con Efecto Blur Idéntico",
+      "desc": "Acabado acrílico esmerilado blur 32px y saturación al 200% idéntico al encabezado superior tanto en modo oscuro como claro."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",

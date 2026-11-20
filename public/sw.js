@@ -1,6 +1,6 @@
 // Service Worker para Notificaciones Push Nativas y WebAPK en Android / iOS (TAY-AUDIT 24/7)
 
-const CACHE_NAME = 'tay-audit-pwa-v2.7.10';
+const CACHE_NAME = 'tay-audit-pwa-v2.7.11';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
@@ -15,7 +15,7 @@ const PRECACHE_ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)).catch(() => { })
   );
   self.skipWaiting();
 });
@@ -43,7 +43,7 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache).catch(() => {});
+            cache.put(event.request, responseToCache).catch(() => { });
           });
         }
         return networkResponse;
@@ -65,8 +65,8 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const ticketId = event.notification.data ? event.notification.data.ticketId : null;
-  const targetUrl = ticketId 
-    ? `/?tab=support&subtab=tickets&ticketId=${ticketId}` 
+  const targetUrl = ticketId
+    ? `/?tab=support&subtab=tickets&ticketId=${ticketId}`
     : '/?tab=support&subtab=tickets';
 
   event.waitUntil((async () => {
@@ -115,8 +115,8 @@ self.addEventListener('push', (event) => {
     }
 
     const urgencyTag = ticket?.urgency === 'critica' ? '🔴 CRÍTICA' : ticket?.urgency === 'alta' ? '🟠 ALTA' : '🟡 TI';
-    const title = ticket?.category 
-      ? `🎫 [${urgencyTag}] ${ticket.category} • ${ticket.hostname || 'UPN'}` 
+    const title = ticket?.category
+      ? `🎫 [${urgencyTag}] ${ticket.category} • ${ticket.hostname || 'UPN'}`
       : (payload?.title || '🎫 Nuevo Ticket Soporte TI UPN');
 
     const body = ticket?.description
