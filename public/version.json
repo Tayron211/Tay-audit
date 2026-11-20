@@ -1,20 +1,20 @@
 {
-  "version": "1.0.17",
-  "versionCode": 18,
+  "version": "1.0.18",
+  "versionCode": 19,
   "releaseDate": "2026-11-20",
-  "notes": "Ajuste fino del encabezado móvil: subido ligeramente para una altura y separación perfectas.",
+  "notes": "Encabezado calibrado inmediatamente bajo los iconos del status bar y menú de notificaciones con efecto blur frosted glass 32px idéntico a la barra superior.",
   "features": [
     {
-      "title": "Encabezado Móvil Calibrado",
-      "desc": "Espacio superior ajustado a 24px con altura de barra de 52px para una separación limpia y proporcionada."
+      "title": "Encabezado Alineado con Status Bar",
+      "desc": "Posición superior exacta a 16px con altura de 44px, situando el logo directamente bajo la línea de los iconos del sistema sin cubrirlos."
+    },
+    {
+      "title": "Notificaciones Frosted Glass Blur 32px",
+      "desc": "Panel de notificaciones con efecto blur acrílico traslúcido idéntico al encabezado y fondo adaptable al modo claro y oscuro."
     },
     {
       "title": "Botón Flotante 100% Circular",
       "desc": "Posicionamiento independiente fuera de la barra de navegación que elimina cualquier corte horizontal por filtro GPU."
-    },
-    {
-      "title": "Escáner QR Totalmente Centrado",
-      "desc": "Logo de escáner y título perfectamente contenidos dentro de la ventana modal con padding protegido en móviles."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",

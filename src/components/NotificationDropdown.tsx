@@ -236,11 +236,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               right: popoverPos.right,
               width: popoverPos.width,
               maxWidth: popoverPos.maxWidth,
-              borderRadius: '16px',
-              boxShadow: '0 12px 36px -4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-acrylic)',
-              backgroundColor: 'var(--bg-acrylic-popover)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: '20px',
               zIndex: 1100,
               display: 'flex',
               flexDirection: 'column',
@@ -309,9 +305,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           {pushPermission !== 'granted' && pushPermission !== 'unsupported' ? (
             <div
               style={{
-                padding: '8px 14px',
-                backgroundColor: 'rgba(255, 184, 0, 0.08)',
-                borderBottom: '1px solid var(--border-acrylic)',
+                padding: '9px 14px',
+                backgroundColor: 'rgba(253, 186, 48, 0.10)',
+                borderBottom: '1px solid rgba(253, 186, 48, 0.20)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
