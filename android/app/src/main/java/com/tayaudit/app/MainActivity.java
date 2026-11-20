@@ -59,7 +59,28 @@ public class MainActivity extends BridgeActivity {
             }
         } catch (Exception ignored) {}
 
-        // Aceleración de Hardware GPU a 120 FPS, eliminación de scrollbars nativos y viewport fluido
+        // Aceleración de Hardware GPU a 120 FPS, refresco de pantalla fluido y viewport optimizado
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                try {
+                    android.view.Display display = getWindowManager().getDefaultDisplay();
+                    android.view.Display.Mode[] modes = display.getSupportedModes();
+                    android.view.Display.Mode bestMode = null;
+                    for (android.view.Display.Mode mode : modes) {
+                        if (bestMode == null || mode.getRefreshRate() > bestMode.getRefreshRate()) {
+                            bestMode = mode;
+                        }
+                    }
+                    if (bestMode != null && bestMode.getRefreshRate() > 60.0f) {
+                        android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
+                        params.preferredDisplayModeId = bestMode.getModeId();
+                        params.preferredRefreshRate = bestMode.getRefreshRate();
+                        getWindow().setAttributes(params);
+                    }
+                } catch (Exception ignoredMode) {}
+            }
+        } catch (Exception ignored) {}
+
         try {
             WebView webView = getBridge().getWebView();
             if (webView != null) {
@@ -71,6 +92,10 @@ public class MainActivity extends BridgeActivity {
                 settings.setUseWideViewPort(true);
                 settings.setLoadWithOverviewMode(true);
                 settings.setTextZoom(100);
+                settings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+                settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                settings.setDomStorageEnabled(true);
+                settings.setDatabaseEnabled(true);
             }
         } catch (Exception ignored) {}
 

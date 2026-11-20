@@ -1036,15 +1036,42 @@ html:not(.dark) .modal-window-acrylic {
 
 #tay-qr-reader {
   width: 100% !important;
+  max-width: 100% !important;
   border: none !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  background: #000000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#tay-qr-reader * {
+  border-color: transparent !important;
 }
 
 #tay-qr-reader video {
   width: 100% !important;
-  height: auto !important;
-  max-height: 52vh !important;
+  height: 100% !important;
+  max-height: 46vh !important;
   object-fit: cover !important;
-  border-radius: 12px;
+  border-radius: 16px !important;
+  display: block !important;
+}
+
+#tay-qr-reader img {
+  display: none !important;
+}
+
+#tay-qr-reader__scan_region {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+#tay-qr-reader__dashboard,
+#tay-qr-reader__dashboard_section {
+  display: none !important;
 }
 
 /* =========================================================
@@ -2280,18 +2307,24 @@ pre {
   display: block !important;
   backdrop-filter: blur(32px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  contain: layout paint !important;
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
 }
 
 @media (max-width: 768px) {
   .acrylic-nav {
-    /* Encabezado móvil elevado hacia el borde superior */
-    padding-top: 8px !important;
+    /* Encabezado móvil calibrado con espacio de seguridad justo bajo la barra de estado de Android */
+    padding-top: 14px !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: 8px !important;
+  padding-top: 14px !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2308,14 +2341,14 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: 48px !important;
+    height: 54px !important;
     padding-top: 0 !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: 48px !important;
+  height: 54px !important;
 }
 
 /* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */
@@ -3615,6 +3648,10 @@ textarea:focus {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 140px;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .desktop-nav-tabs {
@@ -3672,6 +3709,12 @@ textarea:focus {
     background-color: rgba(0, 0, 0, 0.30) !important;
     backdrop-filter: blur(32px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    will-change: transform !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    contain: layout paint !important;
     border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
     box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.40) !important;
     z-index: 1000 !important;

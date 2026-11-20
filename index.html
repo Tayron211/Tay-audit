@@ -34,6 +34,9 @@
       #upn-boot-splash {
         position: fixed;
         inset: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -42,6 +45,8 @@
         user-select: none;
         -webkit-user-select: none;
         overflow: hidden !important;
+        box-sizing: border-box;
+        padding: max(24px, env(safe-area-inset-top, 24px)) 24px max(24px, env(safe-area-inset-bottom, 24px));
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
         transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
       }
@@ -119,16 +124,16 @@
       <div class="splash-glow" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22rem;height:22rem;border-radius:9999px;pointer-events:none;filter:blur(40px);"></div>
       
       <!-- Top Institutional Label -->
-      <div class="splash-text-muted" style="padding-top:calc(env(safe-area-inset-top, 0px) + 3.75rem);font-size:10.5px;text-transform:uppercase;font-family:monospace;letter-spacing:0.3em;font-weight:600;position:relative;z-index:2;text-align:center;">
+      <div class="splash-text-muted" style="font-size:11px;text-transform:uppercase;font-family:monospace;letter-spacing:0.25em;font-weight:700;position:relative;z-index:2;text-align:center;">
         Universidad Privada del Norte
       </div>
       
-      <!-- Center Identity Core -->
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 1.5rem;margin-top:-1.5rem;position:relative;z-index:2;">
-        <div class="splash-logo-card" style="width:5rem;height:5rem;border-radius:1.1rem;display:flex;align-items:center;justify-content:center;padding:0.75rem;margin-bottom:1.5rem;">
+      <!-- Center Identity Core (Perfectamente Centrado) -->
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0;margin:auto 0;position:relative;z-index:2;">
+        <div class="splash-logo-card" style="width:5rem;height:5rem;border-radius:1.2rem;display:flex;align-items:center;justify-content:center;padding:0.75rem;margin-bottom:1.25rem;">
           <img src="/icon.svg" alt="UPN" style="width:100%;height:100%;object-fit:contain;" />
         </div>
-        <h1 class="splash-text-title" style="font-size:1.35rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif;margin:0;line-height:1.2;">
+        <h1 class="splash-text-title" style="font-size:1.4rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif;margin:0;line-height:1.2;">
           TAY<span style="color:#FDBA30;">-AUDIT</span>
         </h1>
         <div class="splash-text-muted" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:11px;font-family:monospace;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;">
@@ -137,14 +142,14 @@
           <span style="color:#FDBA30;font-weight:700;">Operaciones TI</span>
         </div>
         <!-- Hairline Loader -->
-        <div class="splash-loader-track" style="width:9rem;height:2.5px;border-radius:9999px;margin-top:2rem;overflow:hidden;position:relative;">
+        <div class="splash-loader-track" style="width:9rem;height:2.5px;border-radius:9999px;margin-top:1.75rem;overflow:hidden;position:relative;">
           <div style="position:absolute;top:0;bottom:0;left:0;background-color:#FDBA30;border-radius:9999px;box-shadow:0 0 10px rgba(253,186,48,0.7);animation:splashProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
         </div>
       </div>
       
       <!-- Footer -->
-      <div class="splash-text-muted" style="padding-bottom:2.25rem;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:0.15em;position:relative;z-index:2;">
-        <span>Sistema Integrado 2026 • v2.6</span>
+      <div class="splash-text-muted" style="font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:0.15em;position:relative;z-index:2;text-align:center;">
+        <span>Tay-Audit & STIVIE Cloud 24/7</span>
       </div>
     </div>
 

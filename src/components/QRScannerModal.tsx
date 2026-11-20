@@ -60,11 +60,11 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         stream.getTracks().forEach((track) => {
           try {
             track.stop();
-          } catch {}
+          } catch { }
         });
         videoElem.srcObject = null;
       }
-    } catch {}
+    } catch { }
 
     if (scannerRef.current) {
       try {
@@ -77,7 +77,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
       try {
         scannerRef.current.clear();
-      } catch {}
+      } catch { }
 
       scannerRef.current = null;
     }
@@ -117,7 +117,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       if (clean.startsWith('{') && clean.endsWith('}')) {
         parsed = JSON.parse(clean);
       }
-    } catch {}
+    } catch { }
 
     let matched: any = null;
 
@@ -153,8 +153,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     if (!matched) {
       const isGenericSerial = ['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie', '0', ''].includes(clean.toLowerCase());
       if (!isGenericSerial) {
-        matched = currentDevices.find(d => 
-          d.serialNumber && 
+        matched = currentDevices.find(d =>
+          d.serialNumber &&
           !['n/a', 'na', 'none', 'sn', 's/n', 'sn-auto', 'sn-desconocido', 'sn-stivie'].includes(d.serialNumber.toLowerCase()) &&
           d.serialNumber.toLowerCase() === clean.toLowerCase()
         );
@@ -196,7 +196,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             await scannerRef.current.stop();
           }
           scannerRef.current.clear();
-        } catch {}
+        } catch { }
         scannerRef.current = null;
       }
 
@@ -208,16 +208,15 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       scannerRef.current = html5QrCode;
 
       const qrConfig = {
-        fps: 15,
+        fps: 24,
         qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
           const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const qrboxEdgeSize = Math.floor(minEdge * 0.72);
+          const size = Math.min(240, Math.floor(minEdge * 0.72));
           return {
-            width: Math.max(qrboxEdgeSize, 180),
-            height: Math.max(qrboxEdgeSize, 180)
+            width: Math.max(size, 180),
+            height: Math.max(size, 180)
           };
-        },
-        aspectRatio: 1.0
+        }
       };
 
       let started = false;
@@ -228,7 +227,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           { facingMode: 'environment' },
           qrConfig,
           (decodedText) => handleCodeScanned(decodedText),
-          () => {}
+          () => { }
         );
         started = true;
       } catch (errEnv) {
@@ -241,7 +240,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             { facingMode: 'user' },
             qrConfig,
             (decodedText) => handleCodeScanned(decodedText),
-            () => {}
+            () => { }
           );
           started = true;
         }
@@ -252,7 +251,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         if (started && html5QrCode.isScanning) {
           await html5QrCode.stop();
         }
-        try { html5QrCode.clear(); } catch {}
+        try { html5QrCode.clear(); } catch { }
         scannerRef.current = null;
         return;
       }
@@ -304,7 +303,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div 
+    <div
       className={`modal-backdrop-acrylic qr-scanner-backdrop ${isClosing ? 'closing' : ''}`}
       style={{ zIndex: 10060, padding: '12px' }}
       onClick={(e) => {
@@ -316,15 +315,16 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     >
       <div className={`modal-window-acrylic qr-scanner-window ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',
-        maxWidth: '480px',
-        maxHeight: 'min(92dvh, 750px)',
+        maxWidth: '430px',
+        maxHeight: 'min(90dvh, 680px)',
         overflowY: 'auto',
         padding: '22px 20px',
-        borderRadius: '26px 8px 26px 8px',
+        borderRadius: '24px',
         border: '1.5px solid var(--accent-primary)',
-        boxShadow: '0 30px 80px rgba(0, 0, 0, 0.70), 0 0 35px rgba(255, 184, 0, 0.30)',
+        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.70), 0 0 30px rgba(255, 184, 0, 0.20)',
         position: 'relative',
-        zIndex: 10061
+        zIndex: 10061,
+        boxSizing: 'border-box'
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button
@@ -379,23 +379,25 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
           </p>
         </div>
 
-        {/* Visor de Cámara con Estado de Carga Elegante (Sin Pantalla Negra) */}
+        {/* Visor de Cámara con Marco Equilibrado */}
         <div style={{
           position: 'relative',
           width: '100%',
           minHeight: '260px',
+          maxHeight: '46vh',
           borderRadius: '16px',
           overflow: 'hidden',
-          backgroundColor: '#0a0f1d',
+          backgroundColor: '#000000',
           border: '1.5px solid var(--border-acrylic)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '0'
+          marginBottom: '0',
+          boxSizing: 'border-box'
         }}>
           {/* Contenedor del escáner HTML5 */}
-          <div id="tay-qr-reader" style={{ width: '100%' }} />
+          <div id="tay-qr-reader" style={{ width: '100%', height: '100%' }} />
 
           {/* Overlay de Carga Visual: Se muestra mientras la cámara se activa */}
           {isCameraStarting && !cameraError && (

@@ -1,16 +1,20 @@
 {
-  "version": "1.0.11",
-  "versionCode": 12,
+  "version": "1.0.12",
+  "versionCode": 13,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado elevado hacia el borde superior y barra inferior de navegación con efecto blur esmerilado idéntico al encabezado.",
+  "notes": "Encabezado calibrado a 14px, splash screen centrado, ventana de escaneo perfectamente cuadrada y aceleración GPU 120 FPS.",
   "features": [
     {
-      "title": "Encabezado Móvil Más Elevado",
-      "desc": "Posicionamiento elevado a 8px exactos sin espacios muertos en la parte superior."
+      "title": "Encabezado Calibrado",
+      "desc": "Espacio superior ajustado a 14px para librar la barra de estado de Android sin bajar excesivamente."
     },
     {
-      "title": "Barra Inferior con Efecto Blur Idéntico",
-      "desc": "Acabado acrílico esmerilado blur 32px y saturación al 200% idéntico al encabezado superior tanto en modo oscuro como claro."
+      "title": "Splash Screen y Escáner Cuadrados",
+      "desc": "Alineación vertical y horizontal equilibrada en el Splash Screen institucional y visor simétrico sin distorsión en la ventana de escaneo QR."
+    },
+    {
+      "title": "Aceleración de Hardware a 120 FPS",
+      "desc": "Modo de alto refresco nativo en Android y optimización de capas GPU para scroll ultrasuave."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
