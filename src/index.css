@@ -2285,13 +2285,13 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav {
-    /* Espacio blur superior compacto para Status Bar */
-    padding-top: max(22px, env(safe-area-inset-top, 22px)) !important;
+    /* Espacio blur superior ultra-compacto y elevado hacia el borde superior */
+    padding-top: max(8px, env(safe-area-inset-top, 8px)) !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: max(22px, env(safe-area-inset-top, 22px)) !important;
+  padding-top: max(8px, env(safe-area-inset-top, 8px)) !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2308,14 +2308,14 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: calc(42px + max(22px, env(safe-area-inset-top, 22px))) !important;
+    height: calc(40px + max(8px, env(safe-area-inset-top, 8px))) !important;
     padding-top: 0 !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: calc(42px + max(22px, env(safe-area-inset-top, 22px))) !important;
+  height: calc(40px + max(8px, env(safe-area-inset-top, 8px))) !important;
 }
 
 /* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */
@@ -2370,7 +2370,7 @@ html.dark .acrylic-nav {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    height: 42px !important;
+    height: 40px !important;
     padding: 0 12px !important;
   }
 }

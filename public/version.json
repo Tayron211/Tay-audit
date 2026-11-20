@@ -1,8 +1,8 @@
 {
-  "version": "1.0.9",
-  "versionCode": 10,
+  "version": "1.0.10",
+  "versionCode": 11,
   "releaseDate": "2026-11-20",
-  "notes": "Detección precisa en tiempo real de presencia STIVIE en consola remota y protección absoluta del inventario (STIVIE solo inventaría al instalar por primera vez).",
+  "notes": "Encabezado móvil elevado y optimizado a 8px padding superior para máxima ergonomía visual.",
   "features": [
     {
       "title": "STIVIE Presencia en Vivo 100% Precisa",
