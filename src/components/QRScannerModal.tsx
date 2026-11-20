@@ -314,17 +314,18 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       }}
     >
       <div className={`modal-window-acrylic qr-scanner-window ${isClosing ? 'closing' : ''}`} style={{
-        width: '100%',
+        width: 'calc(100vw - 32px)',
         maxWidth: '430px',
         maxHeight: 'min(90dvh, 680px)',
-        overflowY: 'auto',
-        padding: '22px 20px',
         borderRadius: '24px',
         border: '1.5px solid var(--accent-primary)',
         boxShadow: '0 25px 60px rgba(0, 0, 0, 0.70), 0 0 30px rgba(255, 184, 0, 0.20)',
         position: 'relative',
         zIndex: 10061,
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button
@@ -346,56 +347,93 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             top: '12px',
             right: '12px',
             zIndex: 100,
-            width: '42px',
-            height: '42px',
-            minWidth: '42px',
-            minHeight: '42px',
+            width: '40px',
+            height: '40px',
+            minWidth: '40px',
+            minHeight: '40px',
             touchAction: 'manipulation'
           }}
         >
           <X size={20} strokeWidth={2.4} />
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          {/* Icono de Escáner */}
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '10px',
-            background: 'var(--accent-primary)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '8px',
-            boxShadow: 'none'
-          }}>
-            <Barcode size={24} color="var(--accent-contrast, #000000)" strokeWidth={2.4} />
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
-            {customTitle || 'Escanear Código / QR'}
-          </h3>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0 }}>
-            Apunta la cámara del celular al código de barras o número de serie del equipo
-          </p>
-        </div>
-
-        {/* Visor de Cámara con Marco Equilibrado */}
+        {/* Contenedor Interior Seguro con Padding Completo */}
         <div style={{
-          position: 'relative',
+          padding: '24px 18px 20px 18px',
           width: '100%',
-          minHeight: '260px',
-          maxHeight: '46vh',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          backgroundColor: '#000000',
-          border: '1.5px solid var(--border-acrylic)',
+          boxSizing: 'border-box',
+          overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '0',
-          boxSizing: 'border-box'
+          alignItems: 'center'
         }}>
+          {/* Encabezado y Logo Centrado dentro de la ventana */}
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '16px',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            boxSizing: 'border-box',
+            padding: '0 8px'
+          }}>
+            {/* Icono de Escáner dentro de la ventana */}
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: 'var(--accent-primary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '4px',
+              marginBottom: '10px',
+              boxShadow: '0 4px 14px rgba(253, 186, 48, 0.25)'
+            }}>
+              <Barcode size={26} color="var(--accent-contrast, #000000)" strokeWidth={2.4} />
+            </div>
+            <h3 style={{
+              fontSize: '1.15rem',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              margin: '0 0 4px 0',
+              textAlign: 'center',
+              wordBreak: 'break-word',
+              maxWidth: '100%',
+              lineHeight: 1.3
+            }}>
+              {customTitle || 'Escanear Código / QR'}
+            </h3>
+            <p style={{
+              fontSize: '0.78rem',
+              color: 'var(--text-secondary)',
+              margin: 0,
+              textAlign: 'center',
+              maxWidth: '300px',
+              lineHeight: 1.35
+            }}>
+              Apunta la cámara del celular al código de barras o número de serie del equipo
+            </p>
+          </div>
+
+          {/* Visor de Cámara con Marco Equilibrado */}
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            minHeight: '260px',
+            maxHeight: '46vh',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#000000',
+            border: '1.5px solid var(--border-acrylic)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '0',
+            boxSizing: 'border-box'
+          }}>
           {/* Contenedor del escáner HTML5 */}
           <div id="tay-qr-reader" style={{ width: '100%', height: '100%' }} />
 
@@ -490,6 +528,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>,

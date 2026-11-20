@@ -680,6 +680,13 @@ main,
 .modal-window-acrylic.qr-scanner-window {
   z-index: 10061 !important;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.70), 0 0 35px rgba(253, 186, 48, 0.30) !important;
+  padding: 0 !important;
+  max-width: 440px !important;
+  width: calc(100vw - 32px) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  margin: auto !important;
+  border-radius: 24px !important;
 }
 
 .modal-backdrop-acrylic.closing {
@@ -3442,7 +3449,8 @@ textarea:focus {
   }
 }
 
-.mobile-bottom-bar {
+.mobile-bottom-bar,
+.mobile-center-action-btn {
   display: none;
 }
 
@@ -3796,8 +3804,8 @@ textarea:focus {
 
   .mobile-bottom-badge {
     position: absolute;
-    top: -5px;
-    right: -10px;
+    top: -3px;
+    right: -7px;
     background: var(--accent-primary);
     color: var(--accent-contrast, #ffffff);
     font-size: 0.58rem;
@@ -3818,29 +3826,33 @@ textarea:focus {
   }
 
   .mobile-center-action-btn {
-    width: 48px !important;
-    height: 48px !important;
+    display: flex !important;
+    position: fixed !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 50px !important;
+    height: 50px !important;
     border-radius: 50% !important;
     outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
     background: var(--accent-primary) !important;
     color: var(--accent-contrast, #000000) !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 18px var(--accent-glow) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 6px 20px var(--accent-glow), 0 2px 8px rgba(0, 0, 0, 0.40) !important;
     border: 2px solid rgba(0, 0, 0, 0.25) !important;
-    margin-top: -18px !important;
-    cursor: pointer;
-    flex-shrink: 0;
-    position: relative !important;
-    z-index: 100 !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    z-index: 1005 !important;
     box-sizing: border-box !important;
+    margin: 0 !important;
+    pointer-events: auto !important;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
   }
 
   .mobile-center-action-btn:active {
-    transform: scale(0.90) !important;
+    transform: translateX(-50%) scale(0.90) !important;
     box-shadow: 0 2px 8px var(--accent-glow) !important;
   }
 

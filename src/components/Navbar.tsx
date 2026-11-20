@@ -616,16 +616,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         <span>Asistencia TI</span>
       </button>
 
-      {/* Central Floating Action: + Registrar */}
-      <button
-        type="button"
-        onClick={onOpenAuditModal}
-        className="mobile-center-action-btn"
-        title="Registrar nuevo equipo en inventario"
-        aria-label="Registrar nuevo equipo en inventario"
-      >
-        <Plus size={22} strokeWidth={2.8} />
-      </button>
+      {/* Espacio reservado para el botón central flotante */}
+      <div className="mobile-center-spacer" style={{ width: '48px', height: '100%', flexShrink: 0, pointerEvents: 'none' }} />
 
       <button
         type="button"
@@ -650,6 +642,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         <span>STIVIE</span>
       </button>
     </nav>
+
+    {/* Central Floating Action: + Registrar (Fuera de nav para evitar recortes de GPU / backdrop-filter) */}
+    <button
+      type="button"
+      onClick={onOpenAuditModal}
+      className="mobile-center-action-btn"
+      title="Registrar nuevo equipo en inventario"
+      aria-label="Registrar nuevo equipo en inventario"
+    >
+      <Plus size={22} strokeWidth={2.8} />
+    </button>
   </>
   );
 };
