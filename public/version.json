@@ -1,9 +1,13 @@
 {
-  "version": "1.0.15",
-  "versionCode": 16,
+  "version": "1.0.16",
+  "versionCode": 17,
   "releaseDate": "2026-11-20",
-  "notes": "Corrección de corte en el botón flotante central de la barra inferior y alineación centrada del logo en el escáner.",
+  "notes": "Ajuste del espaciado superior del encabezado móvil idéntico a Control Docente.",
   "features": [
+    {
+      "title": "Encabezado Móvil Idéntico a Control Docente",
+      "desc": "Espaciado superior seguro bajo la barra de estado de Android (34px safe area) y altura de barra de 64px para perfecta separación y respiración visual."
+    },
     {
       "title": "Botón Flotante 100% Circular",
       "desc": "Posicionamiento independiente fuera de la barra de navegación que elimina cualquier corte horizontal por filtro GPU."
@@ -11,10 +15,6 @@
     {
       "title": "Escáner QR Totalmente Centrado",
       "desc": "Logo de escáner y título perfectamente contenidos dentro de la ventana modal con padding protegido en móviles."
-    },
-    {
-      "title": "Splash Screen sin Barra Gris",
-      "desc": "Transición instantánea inmersiva en negro absoluto desde el arranque en Android APK."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
