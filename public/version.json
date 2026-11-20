@@ -1,12 +1,12 @@
 {
-  "version": "1.0.6",
-  "versionCode": 7,
+  "version": "1.0.7",
+  "versionCode": 8,
   "releaseDate": "2026-11-20",
-  "notes": "Ajuste de precisión de altura de cabecera a 35px para liberar perfectamente los iconos del sistema Android sin bajar en exceso.",
+  "notes": "Cabecera elevada y compacta en móvil (22px) para máxima visibilidad sin espacios sobrantes.",
   "features": [
     {
-      "title": "Alineación Precisa Status Bar Android (35px)",
-      "desc": "Espacio superior calibrado a 35px: compacto, sin interferencias con reloj y batería del sistema."
+      "title": "Cabecera Elevada y Compacta (22px)",
+      "desc": "Posición superior elevada y contenido más visible sin espacios innecesarios."
     },
     {
       "title": "Sincronización Bidireccional 100% 24/7",

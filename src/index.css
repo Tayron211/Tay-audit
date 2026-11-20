@@ -2203,13 +2203,13 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav {
-    /* Espacio blur superior equilibrado para Status Bar: libre de conflicto con reloj/iconos de Android pero compacto */
-    padding-top: max(35px, env(safe-area-inset-top, 35px)) !important;
+    /* Espacio blur superior compacto para Status Bar */
+    padding-top: max(22px, env(safe-area-inset-top, 22px)) !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: max(35px, env(safe-area-inset-top, 35px)) !important;
+  padding-top: max(22px, env(safe-area-inset-top, 22px)) !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2226,14 +2226,14 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: calc(44px + max(35px, env(safe-area-inset-top, 35px))) !important;
+    height: calc(42px + max(22px, env(safe-area-inset-top, 22px))) !important;
     padding-top: 0 !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: calc(44px + max(35px, env(safe-area-inset-top, 35px))) !important;
+  height: calc(42px + max(22px, env(safe-area-inset-top, 22px))) !important;
 }
 
 /* Modo Claro: Exacto steel-pro1 (bg-white/25 - Ultra Traslúcido Frosted Glass Blur 32px) */
@@ -2288,7 +2288,7 @@ html.dark .acrylic-nav {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    height: 44px !important;
+    height: 42px !important;
     padding: 0 12px !important;
   }
 }
