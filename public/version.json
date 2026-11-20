@@ -1,8 +1,8 @@
 {
-  "version": "1.0.13",
-  "versionCode": 14,
+  "version": "1.0.14",
+  "versionCode": 15,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado móvil bajado ligeramente a 18px para dejar espacio libre bajo los iconos de la barra de estado de Android.",
+  "notes": "Corrección de corte en el botón flotante central de la barra inferior (overflow visible) y optimizaciones de renderizado.",
   "features": [
     {
       "title": "Encabezado Calibrado",
