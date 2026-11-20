@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   LayoutDashboard, 
@@ -241,11 +241,20 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   );
 
   const interactiveDevices = useMemo(() => {
-    const candidates = devices.filter(d => ['pc', 'laptop', 'server'].includes(d.deviceType));
+    let candidates = devices.filter(d => ['pc', 'laptop', 'server'].includes(d.deviceType));
     if (remoteFilterMode === 'stivie_only') {
-      return candidates.filter(d => Boolean(d.stivieInstalled));
+      candidates = candidates.filter(d => Boolean(d.stivieInstalled));
     }
-    return candidates;
+    // Ordenar: primero las estaciones con STIVIE que hayan transmitido más recientemente (en vivo primero)
+    return [...candidates].sort((a, b) => {
+      const aPing = a.lastAgentPing ? new Date(a.lastAgentPing).getTime() : 0;
+      const bPing = b.lastAgentPing ? new Date(b.lastAgentPing).getTime() : 0;
+      if (aPing !== bPing) return bPing - aPing;
+      const aInst = a.stivieInstalled ? 1 : 0;
+      const bInst = b.stivieInstalled ? 1 : 0;
+      if (aInst !== bInst) return bInst - aInst;
+      return (a.hostname || '').localeCompare(b.hostname || '');
+    });
   }, [devices, remoteFilterMode]);
   const [selectedRemoteDeviceId, setSelectedRemoteDeviceId] = useState<string>('');
   const [remoteSearch, setRemoteSearch] = useState('');
@@ -497,23 +506,16 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     }
   };
 
-  const activeRemoteDevice = useMemo(() => {
-    if (selectedRemoteDeviceId) {
-      const found = interactiveDevices.find(d => d.id === selectedRemoteDeviceId);
-      if (found) return found;
-    }
-    return interactiveDevices[0] || null;
-  }, [interactiveDevices, selectedRemoteDeviceId]);
-
-  // Ticker en vivo para evaluar expiración de latidos en tiempo real (solo en consola remota activa)
+  // Ticker en vivo para evaluar expiración de latidos en tiempo real (cada 2 segundos)
   const [clockTick, setClockTick] = useState<number>(Date.now());
   useEffect(() => {
     if (supportSubTab !== 'remote') return;
-    const timer = setInterval(() => setClockTick(Date.now()), 10000);
+    setClockTick(Date.now());
+    const timer = setInterval(() => setClockTick(Date.now()), 2000);
     return () => clearInterval(timer);
   }, [supportSubTab]);
 
-  // Auto-refresco en vivo periódico en la Consola Remota solo si la pestaña remota está visible
+  // Auto-refresco en vivo periódico en la Consola Remota solo si la pestaña remota está visible (cada 4 segundos)
   const onRefreshRef = useRef(onRefresh);
   useEffect(() => {
     onRefreshRef.current = onRefresh;
@@ -521,20 +523,35 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
   useEffect(() => {
     if (supportSubTab !== 'remote') return;
+    onRefreshRef.current?.();
     const pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         onRefreshRef.current?.();
       }
-    }, 30000);
+    }, 4000);
     return () => clearInterval(pollTimer);
   }, [supportSubTab]);
 
-  // Detección REAL de presencia en línea mediante heartbeat de STIVIE (latidos activos en los últimos 60s)
-  const isDeviceOnline = (d: Device | null | undefined) => {
+  // Detección PRECISA y resiliente de presencia en línea mediante heartbeat de STIVIE (latidos activos en vivo)
+  const isDeviceOnline = useCallback((d: Device | null | undefined): boolean => {
     if (!d || !d.stivieInstalled || !d.lastAgentPing) return false;
-    const diffSeconds = (clockTick - new Date(d.lastAgentPing).getTime()) / 1000;
-    return diffSeconds >= 0 && diffSeconds <= 60; // En línea si STIVIE está instalado y transmitió en los últimos 60s
-  };
+    const pingTime = new Date(d.lastAgentPing).getTime();
+    if (isNaN(pingTime)) return false;
+    const diffSeconds = (clockTick - pingTime) / 1000;
+    // Tolerar desfase horario cliente-servidor (-45s) y considerar en línea si transmitió en los últimos 120s
+    return diffSeconds >= -45 && diffSeconds <= 120;
+  }, [clockTick]);
+
+  const activeRemoteDevice = useMemo(() => {
+    if (selectedRemoteDeviceId) {
+      const found = interactiveDevices.find(d => d.id === selectedRemoteDeviceId);
+      if (found) return found;
+    }
+    // Priorizar estación con STIVIE actualmente en línea y transmitiendo
+    const onlineDevice = interactiveDevices.find(d => isDeviceOnline(d));
+    if (onlineDevice) return onlineDevice;
+    return interactiveDevices[0] || null;
+  }, [interactiveDevices, selectedRemoteDeviceId, isDeviceOnline]);
 
   // Vincular o retirar máquina de la consola remota sin tocar el inventario físico
   const handleToggleStivie = async (device: Device, enable: boolean) => {
@@ -1976,7 +1993,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                           width: '7px',
                           height: '7px',
                           borderRadius: '50%',
-                          backgroundColor: isOnline ? '#10b981' : '#ef4444',
+                          backgroundColor: isOnline ? '#10b981' : d.stivieInstalled ? '#ef4444' : '#94a3b8',
                           boxShadow: isOnline ? '0 0 6px #10b981' : 'none',
                           flexShrink: 0
                         }} />
@@ -2120,9 +2137,11 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                         activeRemoteDevice.lastAgentPing ? (
                           <span>Última Señal: <strong style={{ color: isDeviceOnline(activeRemoteDevice) ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
                             {(() => {
-                              const sec = Math.max(0, Math.round((clockTick - new Date(activeRemoteDevice.lastAgentPing).getTime()) / 1000));
-                              if (sec <= 60) return `Hace ${sec}s (En vivo)`;
-                              if (sec < 180) return `Hace ${Math.round(sec / 60)} min (Reciente)`;
+                              const pingMs = new Date(activeRemoteDevice.lastAgentPing).getTime();
+                              const sec = Math.round((clockTick - pingMs) / 1000);
+                              if (sec <= 10) return 'Hace unos segundos (En vivo)';
+                              if (sec <= 60) return `Hace ${Math.max(0, sec)}s (En vivo)`;
+                              if (sec <= 120) return `Hace ${sec}s (Activo)`;
                               const min = Math.round(sec / 60);
                               return `Hace ${min} min (Desconectado)`;
                             })()}

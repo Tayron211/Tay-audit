@@ -1723,7 +1723,7 @@ exit /b 0
         let isStivieActive = false;
         if (device.lastAgentPing) {
           secondsSinceLastPing = Math.max(0, Math.round((Date.now() - new Date(device.lastAgentPing).getTime()) / 1000));
-          isStivieActive = secondsSinceLastPing <= 60;
+          isStivieActive = secondsSinceLastPing <= 120;
         }
 
         const statusSummary = isStivieActive
@@ -1871,37 +1871,20 @@ exit /b 0
         actionType = 'ACTUALIZACION_AGENTE';
         try {
           if (db) {
+            // STIVIE solo inventaría una vez al ser instalado por primera vez (!existing).
+            // Si el equipo ya existe en el inventario, NO se sobreescriben datos manuales:
+            // assignedUser, department, location, notes, status, deviceType, brand, model permanecen intactos.
+            // Únicamente se actualiza la presencia de STIVIE y latido en vivo.
             await db.prepare(`
               UPDATE devices SET
-                deviceType = COALESCE(?, deviceType),
-                os = COALESCE(?, os),
-                ram = COALESCE(?, ram),
-                cpu = COALESCE(?, cpu),
-                storage = COALESCE(?, storage),
                 ipAddress = COALESCE(?, ipAddress),
-                macAddress = COALESCE(?, macAddress),
-                serialNumber = COALESCE(?, serialNumber),
-                motherboard = COALESCE(?, motherboard),
-                compatibility = COALESCE(?, compatibility),
-                brand = COALESCE(?, brand),
-                model = COALESCE(?, model),
-                assignedUser = COALESCE(?, assignedUser),
-                notes = COALESCE(?, notes),
-                monitorBrand = COALESCE(?, monitorBrand),
-                monitorModel = COALESCE(?, monitorModel),
-                monitorSerial = COALESCE(?, monitorSerial),
-                monitorSpecs = COALESCE(?, monitorSpecs),
-                status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
                 stivieInstalled = CASE WHEN ? = 1 THEN 1 ELSE stivieInstalled END,
                 lastAgentPing = CASE WHEN ? = 1 THEN ? ELSE lastAgentPing END,
-                lastAuditDate = COALESCE(lastAuditDate, ?),
                 updatedAt = ?
               WHERE id = ?
             `).bind(
-              deviceType, os, ram, cpu, storage, ipAddress, macAddress, serialNumber,
-              motherboard, compatibility, brand, model, assignedUser, notes,
-              monitorBrand, monitorModel, monitorSerial, monitorSpecs,
-              isStivie ? 1 : 0, isStivie ? 1 : 0, now, now, now, deviceId
+              ipAddress,
+              isStivie ? 1 : 0, isStivie ? 1 : 0, now, now, deviceId
             ).run();
           }
         } catch (err) {
@@ -1944,24 +1927,24 @@ exit /b 0
       const repDevice = {
         id: deviceId,
         hostname: cleanHostname,
-        deviceType: deviceType || (existing ? existing.deviceType : 'pc'),
-        status: 'operativo',
-        os: os || (existing ? existing.os : 'Windows'),
-        ram: ram || (existing ? existing.ram : 'N/A'),
-        cpu: cpu || (existing ? existing.cpu : 'CPU Generico'),
-        storage: storage || (existing ? existing.storage : 'N/A'),
+        deviceType: existing ? existing.deviceType : (deviceType || 'pc'),
+        status: existing ? existing.status : 'instalado',
+        os: existing ? existing.os : (os || 'Windows'),
+        ram: existing ? existing.ram : (ram || 'N/A'),
+        cpu: existing ? existing.cpu : (cpu || 'CPU Generico'),
+        storage: existing ? existing.storage : (storage || 'N/A'),
         ipAddress: ipAddress || (existing ? existing.ipAddress : '127.0.0.1'),
-        macAddress: macAddress || (existing ? existing.macAddress : ''),
-        serialNumber: serialNumber || (existing ? existing.serialNumber : 'SN-AUTO'),
-        motherboard: motherboard || (existing ? existing.motherboard : ''),
-        compatibility: compatibility || (existing ? existing.compatibility : 'Compatible'),
-        brand: brand || (existing ? existing.brand : 'Genérico'),
-        model: model || (existing ? existing.model : 'Estación'),
-        assignedUser: assignedUser || (existing ? existing.assignedUser : 'Usuario Local'),
+        macAddress: existing ? existing.macAddress : (macAddress || ''),
+        serialNumber: existing ? existing.serialNumber : (serialNumber || 'SN-AUTO'),
+        motherboard: existing ? existing.motherboard : (motherboard || ''),
+        compatibility: existing ? existing.compatibility : (compatibility || 'Compatible'),
+        brand: existing ? existing.brand : (brand || 'Genérico'),
+        model: existing ? existing.model : (model || 'Estación'),
+        assignedUser: existing ? existing.assignedUser : (assignedUser || 'Usuario Local'),
         location: existing ? existing.location : 'Red Pública Cloud',
         department: existing ? existing.department : 'Operaciones',
-        lastAuditDate: now,
-        notes: notes || (existing ? existing.notes : 'Reporte agente'),
+        lastAuditDate: existing ? existing.lastAuditDate : now,
+        notes: existing ? existing.notes : (notes || 'Reporte agente'),
         stivieInstalled: isStivie ? 1 : (existing ? existing.stivieInstalled : 0),
         lastAgentPing: isStivie ? now : (existing ? existing.lastAgentPing : null),
         updatedAt: now,
@@ -1975,26 +1958,28 @@ exit /b 0
         globalCachedDevices.unshift(repDevice);
       }
 
-      const reportLog = {
-        id: `log-${shortUuid()}`,
-        deviceId,
-        hostname: cleanHostname,
-        action: actionType,
-        details: `Levantamiento automático de hardware: RAM: ${ram || 'N/A'}, SO: ${os || 'N/A'}, IP: ${ipAddress || 'N/A'}`,
-        performedBy: 'Agente Tay-Audit Cloud',
-        timestamp: now
-      };
-      globalCachedLogs = [reportLog, ...globalCachedLogs];
+      if (!existing) {
+        const reportLog = {
+          id: `log-${shortUuid()}`,
+          deviceId,
+          hostname: cleanHostname,
+          action: actionType,
+          details: `Descubrimiento e inventario inicial de hardware: RAM: ${ram || 'N/A'}, SO: ${os || 'N/A'}, IP: ${ipAddress || 'N/A'}`,
+          performedBy: 'Agente Tay-Audit Cloud',
+          timestamp: now
+        };
+        globalCachedLogs = [reportLog, ...globalCachedLogs];
 
-      try {
-        if (db) {
-          await db.prepare(`
-            INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
-            VALUES (?, ?, ?, ?, ?, 'Agente Tay-Audit Cloud', ?)
-          `).bind(reportLog.id, deviceId, cleanHostname, actionType, reportLog.details, now).run();
+        try {
+          if (db) {
+            await db.prepare(`
+              INSERT INTO audit_logs (id, deviceId, hostname, action, details, performedBy, timestamp)
+              VALUES (?, ?, ?, ?, ?, 'Agente Tay-Audit Cloud', ?)
+            `).bind(reportLog.id, deviceId, cleanHostname, actionType, reportLog.details, now).run();
+          }
+        } catch (err) {
+          console.warn('[D1 Report Log Fallback]:', err?.message);
         }
-      } catch (err) {
-        console.warn('[D1 Report Log Fallback]:', err?.message);
       }
 
       await touchSyncVersion(db);
@@ -2027,22 +2012,20 @@ exit /b 0
 
       if (existing) {
         const prevPingMs = existing.lastAgentPing ? Date.parse(existing.lastAgentPing) : 0;
-        const wasOffline = !prevPingMs || (nowMs - prevPingMs) > 60000 || existing.stivieInstalled !== 1;
+        const wasOffline = !prevPingMs || (nowMs - prevPingMs) > 120000 || existing.stivieInstalled !== 1;
         existing.stivieInstalled = 1;
         existing.lastAgentPing = now;
-        existing.status = existing.status === 'baja' ? 'baja' : 'operativo';
+        // IMPORTANTE: El ping en vivo de STIVIE NO altera el status ('custodia', 'mantenimiento', etc.) ni los datos del inventario.
         if (wasOffline || (nowMs - prevPingMs) >= 10000) {
           try {
             if (db) {
               await db.prepare(`
                 UPDATE devices SET
-                  status = CASE WHEN status = 'baja' THEN 'baja' ELSE 'instalado' END,
                   stivieInstalled = 1,
                   lastAgentPing = ?,
-                  lastAuditDate = COALESCE(lastAuditDate, ?),
                   updatedAt = ?
                 WHERE id = ?
-              `).bind(now, now, now, existing.id).run();
+              `).bind(now, now, existing.id).run();
             }
           } catch (err) {
             console.warn('[D1 Ping Update Fallback]:', err?.message);

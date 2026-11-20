@@ -1,20 +1,20 @@
 {
-  "version": "1.0.8",
-  "versionCode": 9,
+  "version": "1.0.9",
+  "versionCode": 10,
   "releaseDate": "2026-11-20",
-  "notes": "Barra inferior con desenfoque blur, eliminación de barra gris en splash screen, transiciones suaves y botones táctiles optimizados.",
+  "notes": "Detección precisa en tiempo real de presencia STIVIE en consola remota y protección absoluta del inventario (STIVIE solo inventaría al instalar por primera vez).",
   "features": [
     {
-      "title": "Splash Screen Inmersivo sin Barra Gris",
-      "desc": "Eliminación total del scrim gris de inicio en Android 10+ mediante configuración nativa de contraste transparente."
+      "title": "STIVIE Presencia en Vivo 100% Precisa",
+      "desc": "Detección exacta y en tiempo real de equipos conectados y activos en la Consola Remota con auto-selección de estación activa."
     },
     {
-      "title": "Barra Inferior con Efecto Blur",
-      "desc": "Fondo esmerilado acrílico translúcido 32px en la navegación móvil con botones redondeados y respuesta táctil suave."
+      "title": "Blindaje Absoluto del Inventario",
+      "desc": "STIVIE solo inventaría una vez al ser instalado. Los pings y latidos continuos nunca alteran el usuario asignado, notas, ubicación ni estado del inventario."
     },
     {
-      "title": "Transiciones Líquidas y Cero Contornos Cuadrados",
-      "desc": "Efectos fade suaves al abrir y cerrar menús desplegables y ventanas modales sin recuadros de selección."
+      "title": "Monitoreo Remoto con Refresco Inteligente",
+      "desc": "Tolerancia a desfases horarios y refresco dinámico cada 4s en la consola de soporte remoto."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
