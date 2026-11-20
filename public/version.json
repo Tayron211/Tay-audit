@@ -1,12 +1,12 @@
 {
-  "version": "1.0.5",
-  "versionCode": 6,
+  "version": "1.0.6",
+  "versionCode": 7,
   "releaseDate": "2026-11-20",
-  "notes": "Ajuste de altura de cabecera a 48px para liberar por completo los iconos del sistema Android y sincronización bidireccional 100% 24/7.",
+  "notes": "Ajuste de precisión de altura de cabecera a 35px para liberar perfectamente los iconos del sistema Android sin bajar en exceso.",
   "features": [
     {
-      "title": "Alineación Status Bar Android",
-      "desc": "Espacio superior calibrado a 48px libre de interferencias con iconos de reloj y batería del sistema."
+      "title": "Alineación Precisa Status Bar Android (35px)",
+      "desc": "Espacio superior calibrado a 35px: compacto, sin interferencias con reloj y batería del sistema."
     },
     {
       "title": "Sincronización Bidireccional 100% 24/7",
