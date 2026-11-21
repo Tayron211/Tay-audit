@@ -2762,7 +2762,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '14px 16px',
+                      gap: '10px',
+                      padding: '12px 14px',
                       borderBottom: '1px solid var(--border-acrylic)',
                       cursor: 'pointer',
                       transition: 'background 0.15s ease',
@@ -2773,43 +2774,60 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                     onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = 'rgba(148, 163, 184, 0.08)'; }}
                     onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = 'transparent'; }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                         <span style={{
                           fontSize: '0.65rem',
                           fontWeight: 800,
                           padding: '2px 8px',
                           borderRadius: '4px',
                           backgroundColor: 'rgba(139, 92, 246, 0.15)',
-                          color: 'var(--accent-primary)'
+                          color: 'var(--accent-primary)',
+                          flexShrink: 0,
+                          whiteSpace: 'nowrap'
                         }}>
                           {rule.category}
                         </span>
-                        <span style={{
-                          fontSize: '0.65rem',
-                          color: 'var(--text-muted)',
-                          marginLeft: 'auto'
-                        }}>
+                        <span
+                          title={rule.learnedFrom}
+                          style={{
+                            fontSize: '0.65rem',
+                            color: 'var(--text-muted)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            minWidth: 0
+                          }}
+                        >
                           {rule.learnedFrom}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleVoteKnowledge(rule.id);
                           }}
                           className="btn-flat"
-                          style={{ padding: '4px 8px', fontSize: '0.7rem', gap: '4px' }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '0.7rem',
+                            gap: '5px',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                          }}
                           title="Votar solución como útil (+1 efectividad)"
                         >
-                          <ThumbsUp size={11} color="#10b981" />
-                          <span>{rule.helpfulCount} útiles</span>
+                          <ThumbsUp size={11} color="#10b981" style={{ flexShrink: 0 }} />
+                          <span>{rule.helpfulCount} {rule.helpfulCount === 1 ? 'útil' : 'útiles'}</span>
                         </button>
                         <span style={{
                           fontSize: '0.7rem',
                           color: 'var(--text-muted)',
                           transform: `rotate(${isExpanded ? 180 : 0}deg)`,
-                          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                          transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                          flexShrink: 0
                         }}>
                           ▾
                         </span>

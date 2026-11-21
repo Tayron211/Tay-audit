@@ -1,18 +1,14 @@
 {
-  "version": "1.0.52",
-  "versionCode": 53,
+  "version": "1.0.53",
+  "versionCode": 54,
   "releaseDate": "2026-11-21",
-  "notes": "Tipografía oficial (Space Grotesk y JetBrains Mono) restaurada en la pantalla de bienvenida (Splash Screen) manteniendo alineación exacta, además de encabezados Excel exportados en color institucional #FDBA30.",
+  "notes": "Corrección de diseño en las tarjetas de soluciones aprendidas de STIVIE para evitar el salto de línea en el botón de votos (útil/útiles) y truncar limpiamente textos largos en el encabezado.",
   "features": [
     {
-      "title": "Tipografía Oficial en Splash Screen",
-      "desc": "La pantalla de inicio usa Space Grotesk para TAY-AUDIT y JetBrains Mono para los textos institucionales sin saltos de carga."
-    },
-    {
-      "title": "Encabezados Excel en Amarillo UPN (#FDBA30)",
-      "desc": "Todos los reportes Excel exportados desde Inventario y Asistencia TI muestran sus encabezados en color #FDBA30 con texto negro de alto contraste."
+      "title": "Diseño Limpio en Base de Conocimiento",
+      "desc": "El botón de votos útiles ahora se mantiene siempre en una sola línea sin deformarse y el origen de la regla se trunca ordenadamente."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.52",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.53",
   "forceUpdate": true
 }
