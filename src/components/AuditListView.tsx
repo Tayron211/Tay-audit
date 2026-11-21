@@ -499,71 +499,47 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
       
       {/* 1. FILTER & SEARCH TOOLBAR (ORDENADO, BALANCEADO & AMIGABLE EN MÓVILES Y ESCRITORIO) */}
       <div className="acrylic-panel inventory-toolbar-panel">
-        {/* FILA SUPERIOR: Buscador + Icono Excel aislado + Filtros de Estado + Selector Vista */}
+        {/* FILA SUPERIOR: Buscador + Filtros de Estado + Selector Vista */}
         <div className="inventory-toolbar-top-row">
-          {/* Search Input with Scanner Icon Button + Isolated Icon-Only Excel Button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 280px', minWidth: '220px' }}>
-            <div className="inventory-search-box" style={{ flex: 1, minWidth: 0 }}>
-              <Search
-                size={14}
-                color="var(--accent-primary)"
-                style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-              />
-              <input
-                type="text"
-                placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="form-input inventory-search-input"
-                style={{
-                  paddingLeft: '33px',
-                  paddingRight: '40px',
-                  height: '35px',
-                  fontSize: '0.79rem',
-                  width: '100%',
-                  borderRadius: '8px'
-                }}
-              />
-              <button
-                type="button"
-                onClick={onOpenScanner}
-                className="btn-flat"
-                style={{
-                  position: 'absolute',
-                  right: '4px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  padding: '4px 7px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(148, 163, 184, 0.14)'
-                }}
-                title="Escanear Código QR o Código de Barras"
-                aria-label="Escanear código"
-              >
-                <Barcode size={14} color="var(--accent-primary)" />
-              </button>
-            </div>
-
-            {/* Botón Excel Solo Icono (Ubicado junto al buscador para no confundirse con los filtros) */}
+          {/* Search Input with Scanner Icon Button */}
+          <div className="inventory-search-box">
+            <Search
+              size={14}
+              color="var(--accent-primary)"
+              style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+            />
+            <input
+              type="text"
+              placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input inventory-search-input"
+              style={{
+                paddingLeft: '33px',
+                paddingRight: '40px',
+                height: '35px',
+                fontSize: '0.79rem',
+                width: '100%',
+                borderRadius: '8px'
+              }}
+            />
             <button
               type="button"
-              onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
-              className="btn-flat btn-excel"
+              onClick={onOpenScanner}
+              className="btn-flat"
               style={{
-                width: '35px',
-                height: '35px',
-                minWidth: '35px',
-                padding: 0,
-                borderRadius: '8px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
+                position: 'absolute',
+                right: '4px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                padding: '4px 7px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(148, 163, 184, 0.14)'
               }}
-              title="Exportar inventario consolidado a Excel (.xlsx)"
-              aria-label="Exportar inventario a Excel"
+              title="Escanear Código QR o Código de Barras"
+              aria-label="Escanear código"
             >
-              <FileSpreadsheet size={16} />
+              <Barcode size={14} color="var(--accent-primary)" />
             </button>
           </div>
 
@@ -682,54 +658,79 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
           </div>
         </div>
 
-        {/* FILA INFERIOR: Tira de Categorías con Scroll Táctil Fluido (Sin activar swipe de página) */}
-        <div className="inventory-category-strip" data-no-swipe="true">
-          {[
-            { id: 'all', label: 'Todos', count: counts.total },
-            { id: 'pc', label: 'PCs', count: counts.pc },
-            { id: 'laptop', label: 'Laptops', count: counts.laptop },
-            { id: 'server', label: 'Servidores', count: counts.server },
-            { id: 'printer', label: 'Impresoras', count: counts.printer },
-            { id: 'network', label: 'Red', count: counts.network },
-            { id: 'speaker', label: 'Parlantes', count: counts.speaker },
-            { id: 'ecran', label: 'Ecran', count: counts.ecran },
-            { id: 'monitor', label: 'Monitores', count: counts.monitor },
-            { id: 'component', label: 'Hardware', count: counts.component }
-          ].map(c => {
-            const isSelected = categoryFilter === c.id;
-            const isEmpty = c.id !== 'all' && c.count === 0;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setCategoryFilter(c.id)}
-                className={`btn-flat inventory-cat-pill ${isSelected ? 'btn-primary' : ''}`}
-                style={{
-                  backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-canvas-subtle)',
-                  borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-acrylic)',
-                  color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                  opacity: !isSelected && isEmpty ? 0.68 : 1,
-                  boxShadow: isSelected ? '0 1px 4px var(--accent-glow)' : 'none'
-                }}
-              >
-                <span>{c.label}</span>
-                <span style={{
-                  fontSize: '0.63rem',
-                  fontWeight: 900,
-                  backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.16)' : 'rgba(148, 163, 184, 0.18)',
-                  color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
-                  padding: '1px 5.5px',
-                  borderRadius: '9999px',
-                  border: isSelected ? '1px solid rgba(0, 0, 0, 0.25)' : '1px solid var(--border-acrylic)',
-                  minWidth: '17px',
-                  textAlign: 'center',
-                  lineHeight: '1.2'
-                }}>
-                  {c.count}
-                </span>
-              </button>
-            );
-          })}
+        {/* FILA INFERIOR: Tira de Categorías con Scroll Táctil Fluido + Icono Excel a la derecha */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%', minWidth: 0 }}>
+          <div className="inventory-category-strip" data-no-swipe="true" style={{ flex: 1, minWidth: 0 }}>
+            {[
+              { id: 'all', label: 'Todos', count: counts.total },
+              { id: 'pc', label: 'PCs', count: counts.pc },
+              { id: 'laptop', label: 'Laptops', count: counts.laptop },
+              { id: 'server', label: 'Servidores', count: counts.server },
+              { id: 'printer', label: 'Impresoras', count: counts.printer },
+              { id: 'network', label: 'Red', count: counts.network },
+              { id: 'speaker', label: 'Parlantes', count: counts.speaker },
+              { id: 'ecran', label: 'Ecran', count: counts.ecran },
+              { id: 'monitor', label: 'Monitores', count: counts.monitor },
+              { id: 'component', label: 'Hardware', count: counts.component }
+            ].map(c => {
+              const isSelected = categoryFilter === c.id;
+              const isEmpty = c.id !== 'all' && c.count === 0;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(c.id)}
+                  className={`btn-flat inventory-cat-pill ${isSelected ? 'btn-primary' : ''}`}
+                  style={{
+                    backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-canvas-subtle)',
+                    borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-acrylic)',
+                    color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
+                    opacity: !isSelected && isEmpty ? 0.68 : 1,
+                    boxShadow: isSelected ? '0 1px 4px var(--accent-glow)' : 'none'
+                  }}
+                >
+                  <span>{c.label}</span>
+                  <span style={{
+                    fontSize: '0.63rem',
+                    fontWeight: 900,
+                    backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.16)' : 'rgba(148, 163, 184, 0.18)',
+                    color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
+                    padding: '1px 5.5px',
+                    borderRadius: '9999px',
+                    border: isSelected ? '1px solid rgba(0, 0, 0, 0.25)' : '1px solid var(--border-acrylic)',
+                    minWidth: '17px',
+                    textAlign: 'center',
+                    lineHeight: '1.2'
+                  }}>
+                    {c.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Botón Excel Solo Icono ubicado en el extremo derecho de la segunda fila */}
+          <button
+            type="button"
+            onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
+            className="btn-flat btn-excel"
+            style={{
+              width: '30px',
+              height: '30px',
+              minWidth: '30px',
+              padding: 0,
+              borderRadius: '7px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginLeft: 'auto'
+            }}
+            title="Exportar inventario consolidado a Excel (.xlsx)"
+            aria-label="Exportar inventario a Excel"
+          >
+            <FileSpreadsheet size={15} />
+          </button>
         </div>
       </div>
 

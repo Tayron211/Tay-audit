@@ -1,14 +1,14 @@
 {
-  "version": "1.0.37",
-  "versionCode": 38,
+  "version": "1.0.38",
+  "versionCode": 39,
   "releaseDate": "2026-11-21",
-  "notes": "Anuncios flotantes compactos con mensaje breve y transición fade de apertura y cierre.",
+  "notes": "Reubicación del icono de exportación Excel al extremo derecho inferior del panel de filtros de Inventario.",
   "features": [
     {
-      "title": "Avisos Flotantes Compactos con Fade",
-      "desc": "Los anuncios de acciones remotas y tickets ahora son más pequeños, breves y cuentan con transición suave tipo fade al abrir y cerrar."
+      "title": "Icono Excel en Extremo Inferior Derecho de Filtros",
+      "desc": "Se movió el botón de icono Excel al extremo derecho de la segunda fila de filtros (bajo el selector Fichas/Tabla)."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.37",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.38",
   "forceUpdate": true
 }
