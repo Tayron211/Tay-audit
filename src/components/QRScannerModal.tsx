@@ -24,6 +24,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   onCustomScan
 }) => {
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -250,12 +251,42 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         scannerRef.current = null;
         return;
       }
+
+      // Esperar al primer frame real de video antes de mostrar la ventana para que NUNCA salga pantalla negra
+      const videoElem = document.querySelector('#tay-qr-reader video') as HTMLVideoElement | null;
+      if (videoElem) {
+        if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
+          setIsCameraReady(true);
+        } else {
+          await new Promise<void>((resolve) => {
+            let resolved = false;
+            const done = () => {
+              if (resolved) return;
+              resolved = true;
+              videoElem.removeEventListener('playing', done);
+              videoElem.removeEventListener('loadeddata', done);
+              videoElem.removeEventListener('canplay', done);
+              resolve();
+            };
+            videoElem.addEventListener('playing', done, { once: true });
+            videoElem.addEventListener('loadeddata', done, { once: true });
+            videoElem.addEventListener('canplay', done, { once: true });
+            setTimeout(done, 450);
+          });
+          if (!isCancelledRef.current) {
+            setIsCameraReady(true);
+          }
+        }
+      } else {
+        setIsCameraReady(true);
+      }
     } catch (err: any) {
       if (isCancelledRef.current) return;
       console.warn('Error al activar cámara:', err);
       setCameraError(
         'No se pudo activar la cámara directamente (posible permiso denegado o conexión no segura).'
       );
+      setIsCameraReady(true);
     } finally {
       isStartingRef.current = false;
     }
@@ -264,6 +295,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   // Ciclo de vida estricto: iniciar cámara de inmediato al abrir el modal, y liberarla al cerrar
   useEffect(() => {
     if (!isOpen) {
+      setIsCameraReady(false);
       stopScanner();
       return;
     }
@@ -271,6 +303,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     isCancelledRef.current = false;
     isClosingRef.current = false;
     setIsClosing(false);
+    setIsCameraReady(false);
 
     const rafId = requestAnimationFrame(() => {
       startCamera();
@@ -294,10 +327,18 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   if (!isOpen || typeof document === 'undefined') return null;
 
+  const showModal = isCameraReady || Boolean(cameraError);
+
   return createPortal(
     <div
-      className={`modal-backdrop-acrylic qr-scanner-backdrop ${isClosing ? 'closing' : ''}`}
-      style={{ zIndex: 10060, padding: '12px' }}
+      className={`modal-backdrop-acrylic qr-scanner-backdrop ${!showModal ? 'scanner-warming' : ''} ${isClosing ? 'closing' : ''}`}
+      style={{
+        zIndex: 10060,
+        padding: '12px',
+        opacity: showModal && !isClosing ? 1 : 0,
+        pointerEvents: showModal && !isClosing ? 'auto' : 'none',
+        transition: 'opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
       onClick={(e) => {
         // Cerrar al tocar fuera de la ventana del modal
         if (e.target === e.currentTarget) {
@@ -317,7 +358,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         boxSizing: 'border-box',
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        opacity: showModal && !isClosing ? 1 : 0,
+        transition: 'opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button
@@ -409,7 +452,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             </p>
           </div>
 
-          {/* Visor de Cámara con Marco Equilibrado */}
+          {/* Visor de Cámara con Marco Equilibrado (Sin fondo negro previo) */}
           <div style={{
             position: 'relative',
             width: '100%',
@@ -417,7 +460,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             maxHeight: '46vh',
             borderRadius: '16px',
             overflow: 'hidden',
-            backgroundColor: '#000000',
+            backgroundColor: 'transparent',
             border: '1.5px solid var(--border-acrylic)',
             display: 'flex',
             flexDirection: 'column',

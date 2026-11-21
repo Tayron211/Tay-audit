@@ -1,22 +1,18 @@
 {
-  "version": "1.0.25",
-  "versionCode": 26,
+  "version": "1.0.26",
+  "versionCode": 27,
   "releaseDate": "2026-11-20",
-  "notes": "Transición suave fade en todos los apartados y notificaciones, Equipos y Tickets por defecto a la izquierda, botones Registrar a la derecha, navegación multipágina y cámara de escáner directa.",
+  "notes": "Activación instantánea de cámara QR sin pantalla negra previa, transición suave fade en todos los apartados y navegación multipágina.",
   "features": [
     {
-      "title": "Transición Suave Fade en Apartados y Notificaciones",
-      "desc": "Efecto fade al aparecer y desaparecer en cada apartado y al abrir o cerrar la ventana de notificaciones."
+      "title": "Cámara QR Directa sin Pantalla Negra",
+      "desc": "El visor del escáner aparece directamente en el primer frame activo del lente trasero, eliminando cualquier recuadro o fondo negro previo."
     },
     {
-      "title": "Orden de Apartados y Botones Registrar a la Derecha",
-      "desc": "Equipos por defecto a la izquierda y Dashboard a la derecha en Inventario; Tickets primero en Asistencia TI y botones Registrar a la derecha."
-    },
-    {
-      "title": "Navegación Multipágina y Cámara Directa",
-      "desc": "Swipe en medio para pasar de apartado en apartado, swipe en los extremos o botón Atrás para retroceder en el historial, y cámara del escáner directa."
+      "title": "Transición Suave Fade y Orden de Apartados",
+      "desc": "Efecto fade al aparecer y desaparecer en cada apartado y notificaciones, con Equipos y Tickets por defecto a la izquierda y botones Registrar a la derecha."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.25",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.26",
   "forceUpdate": true
 }

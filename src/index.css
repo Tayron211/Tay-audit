@@ -1054,7 +1054,7 @@ html:not(.dark) .modal-window-acrylic {
   border: none !important;
   overflow: hidden !important;
   border-radius: 16px !important;
-  background: #000000 !important;
+  background: transparent !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -6552,4 +6552,11 @@ html.dark .user-dropdown-window,
 .section-fade-content {
   animation: sectionContentFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
+}
+
+.modal-backdrop-acrylic.scanner-warming,
+.modal-backdrop-acrylic.scanner-warming .modal-window-acrylic {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  animation: none !important;
 }

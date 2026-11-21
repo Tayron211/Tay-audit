@@ -223,14 +223,14 @@ const MainApp: React.FC = () => {
 
   // Sincronización proactiva cuando cambian los estados de modales principales en App.tsx
   useEffect(() => {
-    const isAnyModalActive = Boolean(selectedDevice || isAuditModalOpen || isScannerOpen || updateInfo);
+    const isAnyModalActive = Boolean(selectedDevice || isAuditModalOpen || updateInfo);
     if (typeof document !== 'undefined') {
       if (isAnyModalActive) {
         document.body.classList.add('modal-backdrop-blur-active');
         document.body.classList.add('has-active-modal');
         document.documentElement.setAttribute('data-modal-open', 'true');
       } else {
-        const remaining = document.querySelector('.modal-backdrop-acrylic:not(.closing), .upn-update-status-backdrop');
+        const remaining = document.querySelector('.modal-backdrop-acrylic:not(.closing):not(.scanner-warming), .upn-update-status-backdrop');
         if (!remaining) {
           document.body.classList.remove('modal-backdrop-blur-active');
           document.body.classList.remove('has-active-modal');
@@ -270,7 +270,7 @@ const MainApp: React.FC = () => {
 
     const syncModalPresence = () => {
       const activeModal = document.querySelector(
-        '.modal-backdrop-acrylic:not(.closing), .upn-update-status-backdrop, [data-modal-backdrop="true"]'
+        '.modal-backdrop-acrylic:not(.closing):not(.scanner-warming), .upn-update-status-backdrop, [data-modal-backdrop="true"]'
       );
       if (activeModal) {
         document.body.classList.add('modal-backdrop-blur-active');
