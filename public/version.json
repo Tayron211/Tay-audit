@@ -1,18 +1,18 @@
 {
-  "version": "1.0.22",
-  "versionCode": 23,
+  "version": "1.0.23",
+  "versionCode": 24,
   "releaseDate": "2026-11-20",
-  "notes": "Ajuste fino del encabezado a 45px de margen superior para lograr la altura exacta deseada.",
+  "notes": "Encabezado bajado a 52px de margen superior con altura de 52px para mayor despeje bajo la barra de estado.",
   "features": [
     {
-      "title": "Encabezado Calibrado a 45px",
-      "desc": "Se bajó ligeramente el encabezado 5px adicionales (de 40px a 45px) manteniendo la proporción visual bajo la barra de estado."
+      "title": "Encabezado Calibrado a 52px",
+      "desc": "Se bajó el encabezado a 52px de padding superior (y 52px de altura interior) para situarlo más abajo con mayor holgura visual."
     },
     {
       "title": "Notificaciones Frosted Glass Blur 32px",
       "desc": "Desenfoque acrílico real e integrado con los colores institucionales de la aplicación."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.22",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.23",
   "forceUpdate": true
 }

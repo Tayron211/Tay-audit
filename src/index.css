@@ -2360,12 +2360,12 @@ pre {
 @media (max-width: 768px) {
   .acrylic-nav {
     /* Posición bajada con holgura amplia bajo los iconos del status bar */
-    padding-top: 45px !important;
+    padding-top: 52px !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: 45px !important;
+  padding-top: 52px !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2383,16 +2383,16 @@ pre {
 
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
-    height: 50px !important;
-    padding-top: 45px !important;
+    height: 52px !important;
+    padding-top: 52px !important;
     box-sizing: content-box !important;
     margin-bottom: 0px !important;
   }
 }
 
 .is-capacitor .acrylic-nav-spacer {
-  height: 50px !important;
-  padding-top: 45px !important;
+  height: 52px !important;
+  padding-top: 52px !important;
   box-sizing: content-box !important;
 }
 
@@ -2448,7 +2448,7 @@ html.dark .acrylic-nav {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    height: 50px !important;
+    height: 52px !important;
     padding: 0 14px !important;
   }
 }
