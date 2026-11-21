@@ -2357,12 +2357,12 @@ pre {
 @media (max-width: 768px) {
   .acrylic-nav {
     /* Despeja con total holgura los iconos del status bar (reloj 4:53, wifi, batería) */
-    padding-top: 28px !important;
+    padding-top: 33px !important;
   }
 }
 
 .is-capacitor .acrylic-nav {
-  padding-top: 28px !important;
+  padding-top: 33px !important;
 }
 
 /* Espaciador del Navbar para reservar el espacio exacto en el flujo y que el contenido empiece debajo */
@@ -2381,7 +2381,7 @@ pre {
 @media (max-width: 768px) {
   .acrylic-nav-spacer {
     height: 48px !important;
-    padding-top: 28px !important;
+    padding-top: 33px !important;
     box-sizing: content-box !important;
     margin-bottom: 0px !important;
   }
@@ -2389,7 +2389,7 @@ pre {
 
 .is-capacitor .acrylic-nav-spacer {
   height: 48px !important;
-  padding-top: 28px !important;
+  padding-top: 33px !important;
   box-sizing: content-box !important;
 }
 
