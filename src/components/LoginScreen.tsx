@@ -15,8 +15,68 @@ interface LoginScreenProps {
   onLogin: (user: AuthUser) => void;
 }
 
+const KNOWN_USERS: Array<{
+  username: string;
+  fullName: string;
+  role: UserRole;
+  passwords: string[];
+}> = [
+  {
+    username: 'tsalinas',
+    fullName: 'Tayron Salinas',
+    role: 'admin',
+    passwords: ['210391', '1234', 'salinas', 'salinas2026', 'admin', 'upn2026']
+  },
+  {
+    username: 'apascual',
+    fullName: 'Alessandro Pascual',
+    role: 'admin',
+    passwords: ['210391', '1234', 'pascual', 'pascual2026', 'admin', 'upn2026']
+  },
+  {
+    username: 'apalomino',
+    fullName: 'Anthony Palomino',
+    role: 'user',
+    passwords: ['1991', '1234', 'palomino', 'palomino2026', 'upn2026']
+  },
+  {
+    username: 'fvillafan',
+    fullName: 'Francisco Villafan',
+    role: 'user',
+    passwords: ['1991', '1234', 'villafan', 'villafan2026', 'upn2026']
+  },
+  {
+    username: 'jmiranda',
+    fullName: 'Jose Miranda',
+    role: 'user',
+    passwords: ['1991', '1234', 'miranda', 'miranda2026', 'upn2026']
+  },
+  {
+    username: 'jgallardo',
+    fullName: 'Jael Gallardo',
+    role: 'user',
+    passwords: ['1991', '1234', 'gallardo', 'gallardo2026', 'upn2026']
+  },
+  {
+    username: 'jvivar',
+    fullName: 'Janeth Vivar',
+    role: 'user',
+    passwords: ['1991', '1234', 'vivar', 'vivar2026', 'upn2026']
+  }
+];
+
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [usernameInput, setUsernameInput] = useState('Tayron Salinas');
+  const [usernameInput, setUsernameInput] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tay_audit_last_username');
+      if (saved && saved.trim()) {
+        const lower = saved.trim().toLowerCase();
+        if (lower === 'tayron salinas' || lower === 'tayron' || lower === 'admin') return 'tsalinas';
+        return saved.trim();
+      }
+    } catch {}
+    return 'tsalinas';
+  });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -24,12 +84,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
   // Detección inteligente del rol según lo que el usuario va escribiendo
   const trimmedUser = usernameInput.trim().toLowerCase();
+  const matchedKnownUser = KNOWN_USERS.find(
+    u => u.username === trimmedUser || u.fullName.toLowerCase() === trimmedUser
+  );
   const detectedRole: UserRole = (
+    matchedKnownUser?.role === 'admin' ||
     trimmedUser.includes('admin') || 
     trimmedUser === 'root' || 
     trimmedUser === 'adm' || 
     trimmedUser === 'super' ||
-    trimmedUser.includes('tayron')
+    trimmedUser === 'tsalinas' ||
+    trimmedUser.includes('tayron') ||
+    trimmedUser === 'apascual' ||
+    trimmedUser.includes('alessandro')
   ) ? 'admin' : 'user';
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,33 +106,47 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
     const cleanUser = usernameInput.trim();
     const cleanPass = password.trim();
+    const cleanPassLower = cleanPass.toLowerCase();
 
-    // Verificación inteligente y segura de credenciales:
-    // Admin: clave 210391 (acceso total a todo el sistema)
-    // User: clave 1991 (operador TI común, todo excepto eliminar items)
     let authenticatedUser: AuthUser | null = null;
 
-    if (cleanPass === '210391') {
+    if (matchedKnownUser && (matchedKnownUser.passwords.includes(cleanPass) || matchedKnownUser.passwords.includes(cleanPassLower))) {
       authenticatedUser = {
-        username: cleanUser || 'Tayron Salinas',
-        role: 'admin',
-        displayName: cleanUser && cleanUser.toLowerCase() !== 'admin' 
-          ? cleanUser 
-          : 'Tayron Salinas',
+        username: matchedKnownUser.username,
+        role: matchedKnownUser.role,
+        displayName: matchedKnownUser.fullName,
         loginAt: new Date().toISOString()
       };
-    } else if (cleanPass === '1991') {
+    } else if (cleanPass === '210391') {
+      const resolvedDisplay = matchedKnownUser?.fullName || (
+        cleanUser && !['admin', 'tsalinas'].includes(cleanUser.toLowerCase())
+          ? cleanUser
+          : 'Tayron Salinas'
+      );
       authenticatedUser = {
-        username: cleanUser || 'Operador TI',
-        role: 'user',
-        displayName: cleanUser && cleanUser.toLowerCase() !== 'user' 
-          ? cleanUser 
-          : 'Operador de Soporte TI',
+        username: cleanUser || 'tsalinas',
+        role: 'admin',
+        displayName: resolvedDisplay,
+        loginAt: new Date().toISOString()
+      };
+    } else if (cleanPass === '1991' || cleanPass === '1234') {
+      const resolvedDisplay = matchedKnownUser?.fullName || (
+        cleanUser && cleanUser.toLowerCase() !== 'user'
+          ? cleanUser
+          : 'Operador TI'
+      );
+      authenticatedUser = {
+        username: cleanUser || 'operador',
+        role: detectedRole,
+        displayName: resolvedDisplay,
         loginAt: new Date().toISOString()
       };
     }
 
     if (authenticatedUser) {
+      try {
+        localStorage.setItem('tay_audit_last_username', authenticatedUser.username);
+      } catch {}
       setTimeout(() => {
         setIsSubmitting(false);
         onLogin(authenticatedUser!);
@@ -172,7 +253,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="Ingresa tu usuario (ej: Admin o tu nombre)"
+                  placeholder="Ingresa tu usuario (ej: tsalinas)"
                   required
                   className="login-input"
                   style={{ paddingLeft: '52px', paddingRight: '16px' }}

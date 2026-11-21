@@ -1,18 +1,14 @@
 {
-  "version": "1.0.41",
-  "versionCode": 42,
+  "version": "1.0.42",
+  "versionCode": 43,
   "releaseDate": "2026-11-21",
-  "notes": "Contador de notificaciones en rojo en la barra móvil inferior, texto superior del Splash Screen ligeramente más bajo y desactivación del reajuste de SystemBars en Capacitor 8 que provocaba el salto del Splash en APK.",
+  "notes": "Cápsula de usuario compacta con solo el primer nombre (ej: TAYRON) y login institucional con usuario corto (ej: tsalinas).",
   "features": [
     {
-      "title": "Badge de Notificaciones en Rojo (Barra Móvil)",
-      "desc": "El globo contador de Asistencia TI en la barra inferior móvil ahora se muestra en color rojo alerta (#ef4444) con texto blanco."
-    },
-    {
-      "title": "Splash Screen Sin Salto de Insets en APK",
-      "desc": "Se desactivó el reajuste asíncrono de padding de SystemBars en Capacitor 8 al cargar el viewport y se ubicó ligeramente más bajo el título superior."
+      "title": "Cápsula de Usuario Compacta (Solo Nombre)",
+      "desc": "El botón de perfil en la barra superior ahora muestra únicamente el primer nombre para ganar espacio, mientras que el login usa formato de usuario institucional (ej: tsalinas)."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.41",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.42",
   "forceUpdate": true
 }

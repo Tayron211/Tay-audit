@@ -194,13 +194,32 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  const displayedUserName = (
-    currentUser?.username && currentUser.username.toLowerCase() !== 'admin' && currentUser.username.toLowerCase() !== 'user'
-      ? currentUser.username
-      : (currentUser?.displayName && !currentUser.displayName.toLowerCase().includes('administrador del sistema'))
-        ? currentUser.displayName.replace(/\s*\((Admin|Operador TI)\)/i, '')
-        : 'Tayron Salinas'
+  const USERNAME_TO_FULLNAME: Record<string, string> = {
+    tsalinas: 'Tayron Salinas',
+    admin: 'Tayron Salinas',
+    apascual: 'Alessandro Pascual',
+    apalomino: 'Anthony Palomino',
+    fvillafan: 'Francisco Villafan',
+    jmiranda: 'Jose Miranda',
+    jgallardo: 'Jael Gallardo',
+    jvivar: 'Janeth Vivar'
+  };
+
+  const rawDisplayOrUser = (
+    (currentUser?.displayName && !currentUser.displayName.toLowerCase().includes('administrador del sistema'))
+      ? currentUser.displayName.replace(/\s*\((Admin|Operador TI)\)/i, '').trim()
+      : (currentUser?.username || 'Tayron Salinas').trim()
+  );
+
+  const resolvedFullUserName = (
+    USERNAME_TO_FULLNAME[rawDisplayOrUser.toLowerCase()] ||
+    USERNAME_TO_FULLNAME[(currentUser?.username || '').trim().toLowerCase()] ||
+    rawDisplayOrUser ||
+    'Tayron Salinas'
   ).toUpperCase();
+
+  // En la cápsula superior mostrar únicamente el primer nombre (sin apellido) para ganar espacio
+  const displayedFirstName = resolvedFullUserName.split(/\s+/)[0] || resolvedFullUserName;
 
   return (
     <>
@@ -336,7 +355,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <span className={`user-capsule-dot ${currentUser.role === 'admin' ? 'admin' : 'operator'}`} />
                 <span className="user-capsule-name">
-                  {displayedUserName}
+                  {displayedFirstName}
                 </span>
                 <ChevronDown className={`user-capsule-chevron ${userMenuOpen ? 'rotated' : ''}`} size={14} />
               </button>
@@ -357,7 +376,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {/* Cabecera del Usuario */}
                   <div className="user-dropdown-header">
                     <div className="user-dropdown-title">
-                      {displayedUserName}
+                      {resolvedFullUserName}
                     </div>
                     <div className={`user-dropdown-subtitle ${currentUser.role === 'admin' ? 'admin' : 'operator'}`}>
                       {currentUser.role === 'admin' ? 'Modo Administrador' : 'Modo Asistente TI'} • Comas
