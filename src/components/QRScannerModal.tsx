@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, AlertCircle, Barcode, Camera, Loader2, RefreshCw } from 'lucide-react';
+import { X, AlertCircle, Barcode, RefreshCw } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import type { Device } from '../types';
 
@@ -24,8 +24,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   onCustomScan
 }) => {
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [isCameraStarting, setIsCameraStarting] = useState(true);
-  const [activeCameraLabel, setActiveCameraLabel] = useState<string>('Iniciando lente de la cámara...');
   const [isClosing, setIsClosing] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -185,9 +183,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     try {
       isCancelledRef.current = false;
       isStartingRef.current = true;
-      setIsCameraStarting(true);
       setCameraError(null);
-      setActiveCameraLabel('Iniciando lente trasero...');
 
       // Limpieza preventiva de instancias previas
       if (scannerRef.current) {
@@ -221,7 +217,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
       let started = false;
 
-      // Intento 1: Cámara trasera (ideal para teléfonos móviles)
+      // Intento 1: Cámara trasera directa sin anuncios intermedios
       try {
         await html5QrCode.start(
           { facingMode: 'environment' },
@@ -232,7 +228,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         started = true;
       } catch (errEnv) {
         console.warn('Lente trasero no disponible o bloqueado, intentando cámara general:', errEnv);
-        setActiveCameraLabel('Intentando cámara general...');
 
         if (!isCancelledRef.current) {
           // Intento 2: Cualquier cámara disponible (frontal o predeterminada)
@@ -255,12 +250,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         scannerRef.current = null;
         return;
       }
-
-      setIsCameraStarting(false);
     } catch (err: any) {
       if (isCancelledRef.current) return;
       console.warn('Error al activar cámara:', err);
-      setIsCameraStarting(false);
       setCameraError(
         'No se pudo activar la cámara directamente (posible permiso denegado o conexión no segura).'
       );
@@ -269,7 +261,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     }
   }, [handleCodeScanned]);
 
-  // Ciclo de vida estricto: iniciar cámara una sola vez al abrir el modal, y liberarla al cerrar
+  // Ciclo de vida estricto: iniciar cámara de inmediato al abrir el modal, y liberarla al cerrar
   useEffect(() => {
     if (!isOpen) {
       stopScanner();
@@ -280,9 +272,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     isClosingRef.current = false;
     setIsClosing(false);
 
-    const timeout = setTimeout(() => {
+    const rafId = requestAnimationFrame(() => {
       startCamera();
-    }, 120);
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -294,7 +286,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     window.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
-      clearTimeout(timeout);
+      cancelAnimationFrame(rafId);
       window.removeEventListener('keydown', handleKeyDown, true);
       stopScanner();
     };
@@ -434,58 +426,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
             marginBottom: '0',
             boxSizing: 'border-box'
           }}>
-          {/* Contenedor del escáner HTML5 */}
+          {/* Contenedor del escáner HTML5: Cámara directa sin anuncios intermedios */}
           <div id="tay-qr-reader" style={{ width: '100%', height: '100%' }} />
-
-          {/* Overlay de Carga Visual: Se muestra mientras la cámara se activa */}
-          {isCameraStarting && !cameraError && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'linear-gradient(180deg, #0b1120 0%, #030712 100%)',
-              padding: '24px 16px',
-              textAlign: 'center',
-              zIndex: 10,
-              gap: '12px'
-            }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '18px',
-                background: 'rgba(56, 189, 248, 0.08)',
-                border: '1.5px solid var(--accent-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 24px rgba(56, 189, 248, 0.2)'
-              }}>
-                <Camera size={30} color="var(--accent-primary)" strokeWidth={2.2} />
-              </div>
-
-              <div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  fontSize: '0.92rem',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
-                  marginBottom: '4px'
-                }}>
-                  <Loader2 size={16} className="spin-fast" />
-                  <span>{activeCameraLabel}</span>
-                </div>
-                <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: 0, maxWidth: '280px' }}>
-                  Si tu navegador solicita permiso de cámara, pulsa <strong>"Permitir"</strong>
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Estado de Error con Botón para Reintentar */}
           {cameraError && (

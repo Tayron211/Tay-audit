@@ -16,8 +16,8 @@ import { Navbar, type NavTab } from './components/Navbar';
 import { DeviceModal } from './components/DeviceModal';
 import { QRScannerModal } from './components/QRScannerModal';
 import { AuditFormModal, type FieldScanResult } from './components/AuditFormModal';
-import { AuditSection } from './components/AuditSection';
-import { SupportSection } from './components/SupportSection';
+import { AuditSection, getInitialAuditView, VALID_AUDIT_VIEWS, type AuditView } from './components/AuditSection';
+import { SupportSection, getInitialSupportSubTab, VALID_SUBTABS, type SupportSubTab } from './components/SupportSection';
 import { StivieClientApp } from './components/StivieClientApp';
 import { SplashScreen } from './components/SplashScreen';
 import { DeveloperFooter } from './components/DeveloperFooter';
@@ -48,6 +48,9 @@ const getInitialTab = (): NavTab => {
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>(() => getInitialTab());
+  const [displayedTab, setDisplayedTab] = useState<NavTab>(() => getInitialTab());
+  const [isTabFading, setIsTabFading] = useState<boolean>(false);
+  const [auditView, setAuditView] = useState<AuditView>(() => getInitialAuditView());
   const [devices, setDevices] = useState<Device[]>(() => {
     try {
       const cached = localStorage.getItem('tayaudit_cached_devices');
@@ -137,9 +140,27 @@ const MainApp: React.FC = () => {
     } catch {}
   }, [notifications]);
 
-  // Navegación dirigida a tickets específicos o subpestañas de Soporte TI
-  const [supportInitialSubTab, setSupportInitialSubTab] = useState<'dashboard' | 'tickets' | 'remote' | 'knowledge'>('dashboard');
+  // Navegación dirigida a tickets específicos o subpestañas de Soporte TI (Por defecto: 'tickets')
+  const [supportInitialSubTab, setSupportInitialSubTab] = useState<SupportSubTab>(() => getInitialSupportSubTab());
   const [targetTicketId, setTargetTicketId] = useState<string | null>(null);
+
+  // Transición suave de Fade al desaparecer y aparecer al cambiar de módulo principal
+  useEffect(() => {
+    const normActive = (activeTab === 'dashboard' || activeTab === 'inventory') ? 'audit' : activeTab;
+    const normDisplayed = (displayedTab === 'dashboard' || displayedTab === 'inventory') ? 'audit' : displayedTab;
+    if (normActive === normDisplayed) {
+      if (activeTab !== displayedTab) setDisplayedTab(activeTab);
+      return;
+    }
+    setIsTabFading(true);
+    const timer = setTimeout(() => {
+      setDisplayedTab(activeTab);
+      requestAnimationFrame(() => {
+        setIsTabFading(false);
+      });
+    }, 140);
+    return () => clearTimeout(timer);
+  }, [activeTab, displayedTab]);
 
   // Sesión y Autenticación Corporativa (Admin: 210391 / User: 1991)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
@@ -769,19 +790,20 @@ const MainApp: React.FC = () => {
   // Disparador para resetear vista a inicio al hacer clic en el botón de marca/logo
   const [resetViewTrigger, setResetViewTrigger] = useState(0);
 
-  // Acción de Ir al Inicio: regresa a la pestaña principal (audit), resetea a dashboard y hace scroll suave al tope
+  // Acción de Ir al Inicio: regresa a la pestaña principal (audit), resetea a Equipos ('list') y hace scroll suave al tope
   const handleGoHome = () => {
     setActiveTab('audit');
+    setAuditView('list');
     setResetViewTrigger(prev => prev + 1);
     localStorage.setItem('tay_audit_active_tab', 'audit');
-    localStorage.setItem('tay_audit_audit_view', 'dashboard');
+    localStorage.setItem('tay_audit_audit_view', 'list');
     const params = new URLSearchParams(window.location.search);
     params.set('tab', 'audit');
-    params.set('view', 'dashboard');
+    params.set('view', 'list');
     params.delete('subtab');
     params.delete('ticketId');
     const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({ tab: 'audit' }, '', newUrl);
+    window.history.pushState({ tab: 'audit', view: 'list' }, '', newUrl);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -834,10 +856,14 @@ const MainApp: React.FC = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Sincronizar activeTab y modales con la navegación del navegador (botón atrás en PC y swipe atrás en móvil)
+  // Sincronizar activeTab, sub-apartados y modales con la navegación multipágina (botón atrás en PC y swipe en los extremos en móvil)
   useEffect(() => {
     if (typeof window !== 'undefined' && (!window.history.state || !window.history.state.tab)) {
-      window.history.replaceState({ tab: getInitialTab() }, '', window.location.href);
+      window.history.replaceState(
+        { tab: getInitialTab(), view: getInitialAuditView(), subtab: getInitialSupportSubTab() },
+        '',
+        window.location.href
+      );
     }
 
     const handlePopState = (e: PopStateEvent) => {
@@ -849,11 +875,10 @@ const MainApp: React.FC = () => {
 
       // REGLA 1: Si hay alguna ventana o modal abierto, el botón atrás / swipe atrás DEBE CERRAR LA VENTANA sin cerrar la app
       if (modalHistoryPushedRef.current || selectedDeviceRef.current || isAuditModalOpenRef.current || isScannerOpenRef.current) {
-        // Si el escáner estaba abierto sobre el formulario de auditoría, cerramos primero el escáner
         if (isScannerOpenRef.current && isAuditModalOpenRef.current) {
           setIsScannerOpen(false);
           modalHistoryPushedRef.current = true;
-          window.history.pushState({ modal: 'audit', tab: activeTab }, '', window.location.href);
+          window.history.pushState({ modal: 'audit', tab: activeTab, view: auditView, subtab: supportInitialSubTab }, '', window.location.href);
           return;
         }
 
@@ -862,64 +887,138 @@ const MainApp: React.FC = () => {
         setDeviceModalInitialEdit(false);
         setIsAuditModalOpen(false);
         setIsScannerOpen(false);
-        return; // Detener aquí: NO salirse de la aplicación ni cambiar de pestaña
+        return;
       }
 
-      // REGLA 2: No hay ventana abierta -> navegar a la pestaña o página anterior del historial
-      const stateTab = e.state?.tab;
+      // REGLA 2: Navegación multipágina -> restaurar pestaña y sub-apartado exactos del historial
       const urlParams = new URLSearchParams(window.location.search);
+      const stateTab = e.state?.tab;
       const urlTab = urlParams.get('tab') as NavTab;
       const targetTab = (stateTab && VALID_TABS.includes(stateTab))
         ? stateTab
         : (urlTab && VALID_TABS.includes(urlTab))
           ? urlTab
-          : getInitialTab();
+          : 'audit';
+
+      const stateView = e.state?.view as AuditView | undefined;
+      const urlView = urlParams.get('view') as AuditView | null;
+      const targetView: AuditView = (stateView && VALID_AUDIT_VIEWS.includes(stateView))
+        ? stateView
+        : (urlView && VALID_AUDIT_VIEWS.includes(urlView))
+          ? urlView
+          : 'list';
+
+      const stateSubTab = e.state?.subtab as SupportSubTab | undefined;
+      const urlSubTab = urlParams.get('subtab') as SupportSubTab | null;
+      const targetSubTab: SupportSubTab = (stateSubTab && VALID_SUBTABS.includes(stateSubTab))
+        ? stateSubTab
+        : (urlSubTab && VALID_SUBTABS.includes(urlSubTab))
+          ? urlSubTab
+          : 'tickets';
 
       isPopstateNavRef.current = true;
       setActiveTab(targetTab);
-
-      const urlSubTab = urlParams.get('subtab') as any;
-      if (urlSubTab && ['dashboard', 'tickets', 'remote', 'knowledge'].includes(urlSubTab)) {
-        setSupportInitialSubTab(urlSubTab);
-      }
+      setAuditView(targetView);
+      setSupportInitialSubTab(targetSubTab);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [activeTab]);
+  }, [activeTab, auditView, supportInitialSubTab]);
 
-  // Sincronizar URL y localStorage cuando cambia activeTab (soporta historial atrás/adelante en PC)
+  // Sincronizar URL, historial multipágina y localStorage cuando cambia cualquier pestaña o sub-apartado
   useEffect(() => {
-    localStorage.setItem('tay_audit_active_tab', activeTab);
+    const normTab: NavTab = (activeTab === 'dashboard' || activeTab === 'inventory') ? 'audit' : activeTab;
+    localStorage.setItem('tay_audit_active_tab', normTab);
+    localStorage.setItem('tay_audit_audit_view', auditView);
+    localStorage.setItem('tay_audit_support_subtab', supportInitialSubTab);
+
     const params = new URLSearchParams(window.location.search);
     const currentUrlTab = params.get('tab');
-    if (currentUrlTab !== activeTab) {
-      params.set('tab', activeTab);
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      if (isPopstateNavRef.current) {
-        // Provino de un botón Atrás / Adelante del navegador: reemplazar URL sin duplicar entrada
-        isPopstateNavRef.current = false;
-        window.history.replaceState({ tab: activeTab }, '', newUrl);
-      } else {
-        // Clic deliberado en una pestaña: guardar en historial para poder volver atrás con el navegador
-        window.history.pushState({ tab: activeTab }, '', newUrl);
+    const currentUrlView = params.get('view');
+    const currentUrlSubtab = params.get('subtab');
+
+    let changed = false;
+    if (currentUrlTab !== normTab) {
+      params.set('tab', normTab);
+      changed = true;
+    }
+
+    if (normTab === 'audit') {
+      if (currentUrlView !== auditView) {
+        params.set('view', auditView);
+        changed = true;
+      }
+      if (params.has('subtab')) {
+        params.delete('subtab');
+        changed = true;
+      }
+    } else if (normTab === 'support') {
+      if (currentUrlSubtab !== supportInitialSubTab) {
+        params.set('subtab', supportInitialSubTab);
+        changed = true;
+      }
+      if (params.has('view')) {
+        params.delete('view');
+        changed = true;
+      }
+    } else {
+      if (params.has('view') || params.has('subtab')) {
+        params.delete('view');
+        params.delete('subtab');
+        changed = true;
       }
     }
-  }, [activeTab]);
 
-  // Detección de swipe para navegar entre pestañas en móvil (Desactivado cuando hay un modal abierto)
+    if (changed) {
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      const stateObj = { tab: normTab, view: auditView, subtab: supportInitialSubTab };
+      if (isPopstateNavRef.current) {
+        isPopstateNavRef.current = false;
+        window.history.replaceState(stateObj, '', newUrl);
+      } else {
+        window.history.pushState(stateObj, '', newUrl);
+      }
+    } else if (isPopstateNavRef.current) {
+      isPopstateNavRef.current = false;
+    }
+  }, [activeTab, auditView, supportInitialSubTab]);
+
+  // Secuencia completa de todos los apartados de la app para navegación por swipe en medio de la pantalla
+  const APP_SECTIONS_SEQUENCE = useMemo<Array<{
+    tab: NavTab;
+    view?: AuditView;
+    subtab?: SupportSubTab;
+  }>>(() => [
+    { tab: 'audit', view: 'list' },
+    { tab: 'audit', view: 'logs' },
+    { tab: 'audit', view: 'dashboard' },
+    { tab: 'support', subtab: 'tickets' },
+    { tab: 'support', subtab: 'remote' },
+    { tab: 'support', subtab: 'knowledge' },
+    { tab: 'support', subtab: 'dashboard' },
+    { tab: 'agent' },
+  ], []);
+
+  // Detección inteligente de swipe:
+  // - En los extremos laterales (<= 36px del borde): retrocede a la página anterior del historial (multipágina)
+  // - En medio de la pantalla: pasa secuencialmente de apartado en apartado
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    // Si hay un modal abierto, no registrar swipe para evitar cambiar de pestaña accidentalmente
     if (modalHistoryPushedRef.current || selectedDevice || isAuditModalOpen || isScannerOpen) return;
+    const targetEl = e.target as HTMLElement | null;
+    if (targetEl && targetEl.closest('input, textarea, select, [data-no-swipe="true"]')) {
+      setTouchStartX(null);
+      setTouchStartY(null);
+      return;
+    }
     setTouchStartX(e.touches[0].clientX);
     setTouchStartY(e.touches[0].clientY);
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    // Si hay un modal abierto, ignorar gestos de navegación
     if (modalHistoryPushedRef.current || selectedDevice || isAuditModalOpen || isScannerOpen) {
       setTouchStartX(null);
       setTouchStartY(null);
@@ -931,15 +1030,41 @@ const MainApp: React.FC = () => {
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
 
-    // Solo considerar swipe horizontal si es más pronunciado que vertical
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-      const currentIndex = VALID_TABS.indexOf(activeTab);
-      if (diffX > 0 && currentIndex > 0) {
-        // Swipe derecha -> pestaña anterior
-        setActiveTab(VALID_TABS[currentIndex - 1]);
-      } else if (diffX < 0 && currentIndex < VALID_TABS.length - 1) {
-        // Swipe izquierda -> pestaña siguiente
-        setActiveTab(VALID_TABS[currentIndex + 1]);
+    // Solo considerar swipe horizontal claro
+    if (Math.abs(diffX) > Math.abs(diffY) * 1.25 && Math.abs(diffX) > 48) {
+      const viewportW = document.documentElement.clientWidth || window.innerWidth;
+      const EDGE_ZONE = 36;
+      const isLeftEdge = touchStartX <= EDGE_ZONE;
+      const isRightEdge = touchStartX >= viewportW - EDGE_ZONE;
+
+      if (isLeftEdge || isRightEdge) {
+        // Swipe desde los extremos laterales -> retroceder en el historial multipágina
+        if ((isLeftEdge && diffX > 48) || (isRightEdge && diffX < -48)) {
+          if (window.history.length > 1) {
+            window.history.back();
+          }
+        }
+      } else {
+        // Swipe en medio de la pantalla -> pasar de apartado en apartado
+        const normTab: NavTab = (activeTab === 'dashboard' || activeTab === 'inventory') ? 'audit' : activeTab;
+        const currentIndex = APP_SECTIONS_SEQUENCE.findIndex((item) => {
+          if (item.tab !== normTab) return false;
+          if (normTab === 'audit') return item.view === auditView;
+          if (normTab === 'support') return item.subtab === supportInitialSubTab;
+          return true;
+        });
+
+        const idx = currentIndex >= 0 ? currentIndex : 0;
+        const nextItem = diffX < 0
+          ? (idx < APP_SECTIONS_SEQUENCE.length - 1 ? APP_SECTIONS_SEQUENCE[idx + 1] : null)
+          : (idx > 0 ? APP_SECTIONS_SEQUENCE[idx - 1] : null);
+
+        if (nextItem) {
+          if (nextItem.view) setAuditView(nextItem.view);
+          if (nextItem.subtab) setSupportInitialSubTab(nextItem.subtab);
+          if (nextItem.tab !== normTab) setActiveTab(nextItem.tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       }
     }
     setTouchStartX(null);
@@ -1090,7 +1215,15 @@ exit
         <Navbar
           currentTab={activeTab}
           onChangeTab={(tab: NavTab) => {
-            setActiveTab(tab);
+            if (tab === 'audit' || tab === 'inventory' || tab === 'dashboard') {
+              setAuditView('list');
+              setActiveTab('audit');
+            } else if (tab === 'support') {
+              setSupportInitialSubTab('tickets');
+              setActiveTab('support');
+            } else {
+              setActiveTab(tab);
+            }
           }}
           onGoHome={handleGoHome}
           onOpenScanner={handleOpenGeneralScanner}
@@ -1131,9 +1264,20 @@ exit
           padding: '16px 16px 120px 16px',
           overflowX: 'clip'
         }}>
+        <div
+          className="section-fade-content"
+          style={{
+            opacity: isTabFading ? 0 : 1,
+            transition: 'opacity 0.20s cubic-bezier(0.16, 1, 0.3, 1)',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            width: '100%'
+          }}
+        >
         <ErrorBoundary>
           {/* DIVISION INDEPENDIENTE 1: AUDITORIA E INVENTARIO */}
-          {(activeTab === 'audit' || activeTab === 'dashboard' || activeTab === 'inventory') && (
+          {(displayedTab === 'audit' || displayedTab === 'dashboard' || displayedTab === 'inventory') && (
             <AuditSection
               devices={devices}
               stats={stats}
@@ -1148,21 +1292,27 @@ exit
               onExportExcel={handleExportExcel}
               onDeviceUpdated={loadData}
               resetViewTrigger={resetViewTrigger}
+              activeViewProp={auditView}
+              onViewChange={setAuditView}
             />
           )}
 
           {/* DIVISION INDEPENDIENTE 2: SOPORTE TI */}
-          {activeTab === 'support' && (
+          {displayedTab === 'support' && (
             <SupportSection
               tickets={tickets}
               knowledgeList={knowledgeList}
               devices={devices}
               onRefresh={loadData}
               onSelectDevice={(d) => handleOpenDeviceModal(d)}
-              onSwitchToAudit={() => setActiveTab('audit')}
+              onSwitchToAudit={() => {
+                setAuditView('list');
+                setActiveTab('audit');
+              }}
               serverInfo={serverInfo}
               effectiveServerUrl={effectiveServerUrl}
               initialSubTab={supportInitialSubTab}
+              onSubTabChange={setSupportInitialSubTab}
               targetTicketId={targetTicketId}
               onClearTargetTicket={() => setTargetTicketId(null)}
               ticketsNavTrigger={ticketsNavTrigger}
@@ -1171,7 +1321,7 @@ exit
         </ErrorBoundary>
 
         {/* TAB 5: AUTOMATED SCRIPT DEPLOYMENT & STIVIE AGENT */}
-        {activeTab === 'agent' && (
+        {displayedTab === 'agent' && (
           <div className="acrylic-panel" style={{ padding: '30px', maxWidth: '920px', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
               <div style={{
@@ -1497,6 +1647,7 @@ exit
 
         {/* Firma del Desarrollador (Pie de Página Institucional) */}
         <DeveloperFooter />
+        </div>
       </main>
       </div>
 

@@ -36,16 +36,18 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const closeDropdown = () => {
     if (isClosing || !isOpen) return;
     setIsClosing(true);
+    setIsVisible(false);
     setTimeout(() => {
       setIsClosing(false);
       setIsOpen(false);
-    }, 180);
+    }, 200);
   };
 
   // Close on outside click / touch - checks both trigger button and portaled popover
@@ -107,7 +109,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       closeDropdown();
     } else {
       updatePosition();
+      setIsVisible(false);
       setIsOpen(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
+      });
     }
   };
 
@@ -242,13 +250,15 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               zIndex: 1100,
               display: 'flex',
               flexDirection: 'column',
+              opacity: isVisible && !isClosing ? 1 : 0,
+              transition: 'opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
               WebkitBackdropFilter: 'blur(32px) saturate(200%)',
               backdropFilter: 'blur(32px) saturate(200%)',
               WebkitTransform: 'translate3d(0, 0, 0)',
               transform: 'translate3d(0, 0, 0)',
               WebkitBackfaceVisibility: 'hidden',
               backfaceVisibility: 'hidden',
-              willChange: 'transform'
+              willChange: 'transform, opacity'
             }}
           >
           <div

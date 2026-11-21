@@ -19,20 +19,20 @@ interface AuditSectionProps {
   onExportExcel: () => void;
   onDeviceUpdated: () => void;
   resetViewTrigger?: number;
+  activeViewProp?: AuditView;
+  onViewChange?: (view: AuditView) => void;
 }
 
-const VALID_AUDIT_VIEWS = ['dashboard', 'list', 'logs'] as const;
-type AuditView = typeof VALID_AUDIT_VIEWS[number];
+export const VALID_AUDIT_VIEWS = ['list', 'logs', 'dashboard'] as const;
+export type AuditView = typeof VALID_AUDIT_VIEWS[number];
 
-const getInitialAuditView = (): AuditView => {
+export const getInitialAuditView = (): AuditView => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('view') as AuditView;
     if (VALID_AUDIT_VIEWS.includes(fromUrl)) return fromUrl;
-    const fromStorage = localStorage.getItem('tay_audit_audit_view') as AuditView;
-    if (VALID_AUDIT_VIEWS.includes(fromStorage)) return fromStorage;
   }
-  return 'dashboard';
+  return 'list';
 };
 
 export const AuditSection: React.FC<AuditSectionProps> = ({
@@ -44,28 +44,51 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
   onOpenScanner,
   onExportExcel,
   onDeviceUpdated,
-  resetViewTrigger
+  resetViewTrigger,
+  activeViewProp,
+  onViewChange
 }) => {
-  // Vista activa: 'dashboard' (Métricas por Tipo de Equipo) | 'list' | 'logs'
-  const [activeView, setActiveView] = useState<AuditView>(() => getInitialAuditView());
+  // Vista activa por defecto: 'list' (Equipos a la izquierda) | 'logs' (Bitácora) | 'dashboard' (Extremo derecho)
+  const [activeView, setActiveView] = useState<AuditView>(() => activeViewProp || getInitialAuditView());
+  const [displayedView, setDisplayedView] = useState<AuditView>(() => activeViewProp || getInitialAuditView());
+  const [isViewFading, setIsViewFading] = useState<boolean>(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
 
-  // Si se presiona el botón de Ir al Inicio, resetea a la vista principal del dashboard
+  const selectAuditView = (nextView: AuditView) => {
+    setActiveView(nextView);
+    onViewChange?.(nextView);
+  };
+
+  // Sincronizar cuando cambia desde el padre (multipágina / botón atrás / swipe)
+  useEffect(() => {
+    if (activeViewProp && activeViewProp !== activeView) {
+      setActiveView(activeViewProp);
+    }
+  }, [activeViewProp]);
+
+  // Transición suave de Fade al desaparecer y aparecer entre apartados
+  useEffect(() => {
+    if (activeView === displayedView) return;
+    setIsViewFading(true);
+    const timer = setTimeout(() => {
+      setDisplayedView(activeView);
+      requestAnimationFrame(() => {
+        setIsViewFading(false);
+      });
+    }, 140);
+    return () => clearTimeout(timer);
+  }, [activeView, displayedView]);
+
+  // Si se presiona el botón de Ir al Inicio, resetea a la vista principal de Equipos ('list')
   useEffect(() => {
     if (resetViewTrigger && resetViewTrigger > 0) {
-      setActiveView('dashboard');
+      selectAuditView('list');
       setSelectedCategoryFilter('all');
     }
   }, [resetViewTrigger]);
 
   useEffect(() => {
     localStorage.setItem('tay_audit_audit_view', activeView);
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('view') !== activeView) {
-      params.set('view', activeView);
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({ path: newUrl }, '', newUrl);
-    }
   }, [activeView]);
 
   return (
@@ -103,26 +126,14 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', flex: '1 1 auto' }}>
           <div className="audit-tabs-pill-container">
-            {/* Sub-pestaña 1: Dashboard de Inventario */}
-            <button
-              type="button"
-              onClick={() => setActiveView('dashboard')}
-              className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
-              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-            >
-              <BarChart3 size={13} style={{ flexShrink: 0 }} />
-              <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
-              <span className="audit-tab-mobile-only">Dashboard</span>
-            </button>
-
-            {/* Sub-pestaña 2: Lista de Equipos */}
+            {/* Sub-pestaña 1 (Izquierda - Por Defecto): Lista de Equipos */}
             <button
               type="button"
               onClick={() => {
                 setSelectedCategoryFilter('all');
-                setActiveView('list');
+                selectAuditView('list');
               }}
               className={`nav-tab-btn ${activeView === 'list' ? 'nav-tab-active' : ''}`}
               style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
@@ -132,19 +143,31 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
               <span className="audit-tab-mobile-only">Equipos</span>
             </button>
 
-            {/* Sub-pestaña 3: Bitácora */}
+            {/* Sub-pestaña 2 (Centro): Bitácora */}
             <button
               type="button"
-              onClick={() => setActiveView('logs')}
+              onClick={() => selectAuditView('logs')}
               className={`nav-tab-btn ${activeView === 'logs' ? 'nav-tab-active' : ''}`}
               style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
             >
               <Clock size={13} style={{ flexShrink: 0 }} />
               <span>Bitácora ({logs.length})</span>
             </button>
+
+            {/* Sub-pestaña 3 (Extremo Derecho): Dashboard de Inventario */}
+            <button
+              type="button"
+              onClick={() => selectAuditView('dashboard')}
+              className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
+              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+            >
+              <BarChart3 size={13} style={{ flexShrink: 0 }} />
+              <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
+              <span className="audit-tab-mobile-only">Dashboard</span>
+            </button>
           </div>
 
-          {/* Botón Registrar: Ubicado abajo fuera del encabezado y alineado a la derecha */}
+          {/* Botón Registrar: Siempre alineado al extremo derecho */}
           <button
             type="button"
             onClick={onOpenAuditModal}
@@ -158,7 +181,8 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               boxShadow: '0 2px 8px var(--accent-glow)',
-              flexShrink: 0
+              flexShrink: 0,
+              marginLeft: 'auto'
             }}
             title="Registrar nuevo equipo en inventario"
           >
@@ -168,20 +192,32 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
         </div>
       </div>
 
-      {/* 3. VISTA 1: DASHBOARD DE MÉTRICAS & CENSO POR TIPO DE EQUIPO */}
-      {activeView === 'dashboard' && (
+      {/* CONTENEDOR CON TRANSICIÓN SUAVE DE FADE AL APARECER Y DESAPARECER */}
+      <div
+        className="section-fade-content"
+        style={{
+          opacity: isViewFading ? 0 : 1,
+          transition: 'opacity 0.20s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          width: '100%'
+        }}
+      >
+      {/* 3. VISTA: DASHBOARD DE MÉTRICAS & CENSO POR TIPO DE EQUIPO */}
+      {displayedView === 'dashboard' && (
         <InventoryDashboardView
           devices={devices}
           stats={stats}
           onFilterByType={(typeId) => {
             setSelectedCategoryFilter(typeId);
-            setActiveView('list');
+            selectAuditView('list');
           }}
         />
       )}
 
-      {/* 4. VISTA 2: LISTA DE EQUIPOS MULTICOLUMNA ORDENADA */}
-      {activeView === 'list' && (
+      {/* 4. VISTA POR DEFECTO: LISTA DE EQUIPOS MULTICOLUMNA ORDENADA */}
+      {displayedView === 'list' && (
         <AuditListView
           devices={devices}
           onSelectDevice={onSelectDevice}
@@ -193,8 +229,8 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
         />
       )}
 
-      {/* 4. VISTA 2: BITÁCORA DE MOVIMIENTOS (Organizada, limpia y espaciosa) */}
-      {activeView === 'logs' && (
+      {/* 5. VISTA: BITÁCORA DE MOVIMIENTOS */}
+      {displayedView === 'logs' && (
         <div className="acrylic-card" style={{ padding: 'clamp(14px, 3vw, 24px)', borderRadius: '16px', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -311,6 +347,7 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

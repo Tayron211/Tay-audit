@@ -1,18 +1,22 @@
 {
-  "version": "1.0.24",
-  "versionCode": 25,
+  "version": "1.0.25",
+  "versionCode": 26,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado bajado a 62px de margen superior con altura de 54px para mayor despeje bajo la barra de estado.",
+  "notes": "Transición suave fade en todos los apartados y notificaciones, Equipos y Tickets por defecto a la izquierda, botones Registrar a la derecha, navegación multipágina y cámara de escáner directa.",
   "features": [
     {
-      "title": "Encabezado Calibrado a 62px",
-      "desc": "Se bajó el encabezado a 62px de padding superior (y 54px de altura interior) para darle mayor distancia respecto al status bar."
+      "title": "Transición Suave Fade en Apartados y Notificaciones",
+      "desc": "Efecto fade al aparecer y desaparecer en cada apartado y al abrir o cerrar la ventana de notificaciones."
     },
     {
-      "title": "Notificaciones Frosted Glass Blur 32px",
-      "desc": "Desenfoque acrílico real e integrado con los colores institucionales de la aplicación."
+      "title": "Orden de Apartados y Botones Registrar a la Derecha",
+      "desc": "Equipos por defecto a la izquierda y Dashboard a la derecha en Inventario; Tickets primero en Asistencia TI y botones Registrar a la derecha."
+    },
+    {
+      "title": "Navegación Multipágina y Cámara Directa",
+      "desc": "Swipe en medio para pasar de apartado en apartado, swipe en los extremos o botón Atrás para retroceder en el historial, y cámara del escáner directa."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.24",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.25",
   "forceUpdate": true
 }

@@ -85,23 +85,22 @@ interface SupportSectionProps {
   } | null;
   effectiveServerUrl?: string;
   initialSubTab?: SupportSubTab;
+  onSubTabChange?: (subtab: SupportSubTab) => void;
   targetTicketId?: string | null;
   onClearTargetTicket?: () => void;
   ticketsNavTrigger?: number;
 }
 
-const VALID_SUBTABS = ['dashboard', 'tickets', 'remote', 'knowledge'] as const;
-type SupportSubTab = typeof VALID_SUBTABS[number];
+export const VALID_SUBTABS = ['tickets', 'remote', 'knowledge', 'dashboard'] as const;
+export type SupportSubTab = typeof VALID_SUBTABS[number];
 
-const getInitialSupportSubTab = (): SupportSubTab => {
+export const getInitialSupportSubTab = (): SupportSubTab => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('subtab') as SupportSubTab;
     if (VALID_SUBTABS.includes(fromUrl)) return fromUrl;
-    const fromStorage = localStorage.getItem('tay_audit_support_subtab') as SupportSubTab;
-    if (VALID_SUBTABS.includes(fromStorage)) return fromStorage;
   }
-  return 'dashboard';
+  return 'tickets';
 };
 
 export const SupportSection: React.FC<SupportSectionProps> = ({
@@ -114,37 +113,52 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   serverInfo,
   effectiveServerUrl,
   initialSubTab,
+  onSubTabChange,
   targetTicketId,
   onClearTargetTicket,
   ticketsNavTrigger
 }) => {
   const [supportSubTab, setSupportSubTab] = useState<SupportSubTab>(() => initialSubTab || getInitialSupportSubTab());
+  const [displayedSubTab, setDisplayedSubTab] = useState<SupportSubTab>(() => initialSubTab || getInitialSupportSubTab());
+  const [isSubTabFading, setIsSubTabFading] = useState<boolean>(false);
 
-  // Sincronizar subtab cuando cambia externamente (ej: clic en "Ver todas" o al llegar de una notificación)
+  const selectSupportSubTab = useCallback((nextTab: SupportSubTab) => {
+    setSupportSubTab(nextTab);
+    onSubTabChange?.(nextTab);
+  }, [onSubTabChange]);
+
+  // Sincronizar subtab cuando cambia externamente (ej: clic en "Ver todas", notificación, botón atrás o swipe)
   useEffect(() => {
-    if (initialSubTab) {
+    if (initialSubTab && initialSubTab !== supportSubTab) {
       setSupportSubTab(initialSubTab);
     }
   }, [initialSubTab]);
 
+  // Transición suave de Fade al desaparecer y aparecer entre apartados de Asistencia TI
+  useEffect(() => {
+    if (supportSubTab === displayedSubTab) return;
+    setIsSubTabFading(true);
+    const timer = setTimeout(() => {
+      setDisplayedSubTab(supportSubTab);
+      requestAnimationFrame(() => {
+        setIsSubTabFading(false);
+      });
+    }, 140);
+    return () => clearTimeout(timer);
+  }, [supportSubTab, displayedSubTab]);
+
   // Forzar cambio directo a subpestaña de tickets al presionar "Ver todos los tickets"
   useEffect(() => {
     if (ticketsNavTrigger && ticketsNavTrigger > 0) {
-      setSupportSubTab('tickets');
+      selectSupportSubTab('tickets');
       setStatusFilter('all');
       setTicketSearchQuery('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [ticketsNavTrigger]);
+  }, [ticketsNavTrigger, selectSupportSubTab]);
 
   useEffect(() => {
     localStorage.setItem('tay_audit_support_subtab', supportSubTab);
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('subtab') !== supportSubTab) {
-      params.set('subtab', supportSubTab);
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({ path: newUrl }, '', newUrl);
-    }
   }, [supportSubTab]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'abierto' | 'en_progreso' | 'resuelto'>('all');
   const [ticketSearchQuery, setTicketSearchQuery] = useState('');
@@ -743,22 +757,11 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           gap: '10px'
         }}
       >
-        {/* Sub-Tabs: Dashboard vs Tickets vs STIVIE */}
+        {/* Sub-Tabs: Tickets (Primero) -> Control Remoto -> Base STIVIE -> Dashboard (Extremo) */}
         <div className="support-subtabs-container">
           <button
             type="button"
-            onClick={() => setSupportSubTab('dashboard')}
-            className={`nav-tab-btn ${supportSubTab === 'dashboard' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
-          >
-            <LayoutDashboard size={14} style={{ flexShrink: 0 }} />
-            <span className="support-tab-desktop-text">Dashboard</span>
-            <span className="support-tab-mobile-text">Dashboard</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSupportSubTab('tickets')}
+            onClick={() => selectSupportSubTab('tickets')}
             className={`nav-tab-btn ${supportSubTab === 'tickets' ? 'nav-tab-active' : ''}`}
             style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', position: 'relative' }}
           >
@@ -779,7 +782,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
           <button
             type="button"
-            onClick={() => setSupportSubTab('remote')}
+            onClick={() => selectSupportSubTab('remote')}
             className={`nav-tab-btn ${supportSubTab === 'remote' ? 'nav-tab-active' : ''}`}
             style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
           >
@@ -790,7 +793,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
           <button
             type="button"
-            onClick={() => setSupportSubTab('knowledge')}
+            onClick={() => selectSupportSubTab('knowledge')}
             className={`nav-tab-btn ${supportSubTab === 'knowledge' ? 'nav-tab-active' : ''}`}
             style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
           >
@@ -798,7 +801,47 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             <span className="support-tab-desktop-text">Base STIVIE ({knowledgeList.length})</span>
             <span className="support-tab-mobile-text">STIVIE ({knowledgeList.length})</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => selectSupportSubTab('dashboard')}
+            className={`nav-tab-btn ${supportSubTab === 'dashboard' ? 'nav-tab-active' : ''}`}
+            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
+          >
+            <LayoutDashboard size={14} style={{ flexShrink: 0 }} />
+            <span className="support-tab-desktop-text">Dashboard</span>
+            <span className="support-tab-mobile-text">Dashboard</span>
+          </button>
         </div>
+
+        {/* Botón Registrar siempre a la derecha en Asistencia TI */}
+        <button
+          type="button"
+          onClick={() => {
+            if (supportSubTab === 'knowledge') {
+              setIsTeaching(true);
+            } else {
+              setIsCreatingTicket(true);
+            }
+          }}
+          className="btn-flat btn-primary"
+          style={{
+            padding: '5px 12px',
+            fontSize: '0.76rem',
+            fontWeight: 800,
+            gap: '6px',
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            boxShadow: '0 2px 8px var(--accent-glow)',
+            flexShrink: 0,
+            marginLeft: 'auto'
+          }}
+          title={supportSubTab === 'knowledge' ? 'Registrar nueva solución en STIVIE' : 'Registrar un nuevo ticket de atención'}
+        >
+          <Plus size={14} />
+          <span>Registrar</span>
+        </button>
       </div>
 
       {/* Floating feedback message */}
@@ -825,8 +868,19 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         </div>
       )}
 
+      {/* CONTENEDOR CON TRANSICIÓN SUAVE DE FADE AL APARECER Y DESAPARECER */}
+      <div
+        className="section-fade-content"
+        style={{
+          opacity: isSubTabFading ? 0 : 1,
+          transition: 'opacity 0.20s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px'
+        }}
+      >
       {/* VIEW 1: DEDICATED SUPPORT TI DASHBOARD */}
-      {supportSubTab === 'dashboard' && (
+      {displayedSubTab === 'dashboard' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           {/* TOP 3 SUPPORT METRIC CARDS (Zero Empty Space on Tablet) */}
@@ -1293,7 +1347,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       )}
 
       {/* VIEW 2: TICKET STREAM & RESOLUTION DESK */}
-      {supportSubTab === 'tickets' && (
+      {displayedSubTab === 'tickets' && (
         <div id="support-tickets-top" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Search & Filter Bar */}
           <div className="acrylic-panel" style={{
@@ -1386,7 +1440,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
                   onClick={() => window.open(api.getSupportExcelDownloadUrl(), '_blank')}
@@ -1418,11 +1472,11 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   type="button"
                   onClick={() => setIsCreatingTicket(true)}
                   className="btn-flat btn-primary"
-                  style={{ padding: '6px 14px', fontSize: '0.74rem', fontWeight: 700, gap: '6px' }}
+                  style={{ padding: '6px 14px', fontSize: '0.74rem', fontWeight: 700, gap: '6px', marginLeft: 'auto' }}
                   title="Registrar un nuevo ticket de atención al usuario"
                 >
                   <Plus size={14} />
-                  <span>Crear Ticket de Atención</span>
+                  <span>Registrar Ticket</span>
                 </button>
               </div>
             </div>
@@ -1709,7 +1763,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       )}
 
       {/* VIEW: CONSOLA UNIFICADA DE SOPORTE Y CONTROL REMOTO TI (1-CLIC) */}
-      {supportSubTab === 'remote' && (
+      {displayedSubTab === 'remote' && (
         <div className="acrylic-panel remote-console-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
           {/* Header Bar (100% Responsive on Mobile and Tablets) */}
@@ -2415,7 +2469,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       )}
 
       {/* VIEW 3: STIVIE KNOWLEDGE BASE & ACTIVE AI LEARNING */}
-      {supportSubTab === 'knowledge' && (
+      {displayedSubTab === 'knowledge' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           
           {/* Header & Teach Rule Button */}
@@ -2439,7 +2493,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             <button
               onClick={() => setIsTeaching(!isTeaching)}
               className="btn-flat btn-primary"
-              style={{ padding: '8px 16px', fontSize: '0.78rem' }}
+              style={{ padding: '8px 16px', fontSize: '0.78rem', marginLeft: 'auto' }}
             >
               <Plus size={15} />
               <span>Enseñar Nueva Solución Manualmente</span>
@@ -2822,6 +2876,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
