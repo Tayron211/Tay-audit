@@ -1498,6 +1498,23 @@ select,
   }
 }
 
+.support-feedback-toast {
+  top: 76px;
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .support-feedback-toast {
+    top: 124px;
+    right: 12px;
+  }
+}
+
+.is-capacitor .support-feedback-toast {
+  top: 124px;
+  right: 12px;
+}
+
 .live-toast-notification.closing {
   animation: slideOutRight 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   pointer-events: none !important;

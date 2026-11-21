@@ -895,26 +895,25 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         </button>
       </div>
 
-      {/* Anuncio flotante compacto rojo con transición Fade de apertura y cierre */}
-      {actionFeedback && (
+      {/* Anuncio flotante compacto rojo portaleado al frente de toda la interfaz */}
+      {actionFeedback && typeof document !== 'undefined' && createPortal(
         <div
+          className="support-feedback-toast"
           style={{
             position: 'fixed',
-            top: '76px',
-            right: '20px',
             background: '#ef4444',
             color: '#ffffff',
             padding: '7px 13px',
             borderRadius: '8px',
             fontWeight: 700,
             fontSize: '0.75rem',
-            boxShadow: '0 4px 16px rgba(239, 68, 68, 0.38)',
-            border: '1px solid rgba(255, 255, 255, 0.24)',
-            zIndex: 9999,
+            boxShadow: '0 6px 20px rgba(239, 68, 68, 0.42)',
+            border: '1px solid rgba(255, 255, 255, 0.28)',
+            zIndex: 10120,
             display: 'inline-flex',
             alignItems: 'center',
             gap: '7px',
-            maxWidth: '320px',
+            maxWidth: 'min(320px, calc(100vw - 24px))',
             pointerEvents: 'none',
             opacity: isFeedbackVisible ? 1 : 0,
             transform: isFeedbackVisible ? 'translateY(0)' : 'translateY(-6px)',
@@ -925,7 +924,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           <span style={{ color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {actionFeedback}
           </span>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* CONTENEDOR CON TRANSICIÓN SUAVE DE FADE AL APARECER Y DESAPARECER */}

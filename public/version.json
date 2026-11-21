@@ -1,14 +1,14 @@
 {
-  "version": "1.0.47",
-  "versionCode": 48,
+  "version": "1.0.48",
+  "versionCode": 49,
   "releaseDate": "2026-11-21",
-  "notes": "Animación de giro y estado visual en el botón Actualizar de Tickets.",
+  "notes": "Anuncios flotantes rojos portaleados al frente de toda la interfaz (nunca detrás ni borrosos en móvil/APK).",
   "features": [
     {
-      "title": "Botón Actualizar Animado",
-      "desc": "Al presionar Actualizar en Asistencia TI, el icono gira suavemente con indicador de carga 'Actualizando...'."
+      "title": "Avisos Flotantes Siempre Nítidos al Frente",
+      "desc": "Los anuncios rojos ahora se renderizan sobre toda la interfaz y debajo del encabezado móvil sin quedar ocultos ni desenfocados."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.47",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.48",
   "forceUpdate": true
 }
