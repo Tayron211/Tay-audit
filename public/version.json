@@ -1,18 +1,18 @@
 {
-  "version": "1.0.26",
-  "versionCode": 27,
-  "releaseDate": "2026-11-20",
-  "notes": "Activación instantánea de cámara QR sin pantalla negra previa, transición suave fade en todos los apartados y navegación multipágina.",
+  "version": "1.0.27",
+  "versionCode": 28,
+  "releaseDate": "2026-11-21",
+  "notes": "Bordes laterales de tarjetas más delgados (2px) y apertura instantánea de la ventana y cámara del escáner QR.",
   "features": [
     {
-      "title": "Cámara QR Directa sin Pantalla Negra",
-      "desc": "El visor del escáner aparece directamente en el primer frame activo del lente trasero, eliminando cualquier recuadro o fondo negro previo."
+      "title": "Bordes de Tarjetas Más Delgados (2px)",
+      "desc": "Se estilizó la franja lateral de color de todas las tarjetas de equipos de 5px a 2px para un acabado fino y elegante."
     },
     {
-      "title": "Transición Suave Fade y Orden de Apartados",
-      "desc": "Efecto fade al aparecer y desaparecer en cada apartado y notificaciones, con Equipos y Tickets por defecto a la izquierda y botones Registrar a la derecha."
+      "title": "Apertura Instantánea del Escáner QR",
+      "desc": "La ventana del escáner abre al instante (0ms) con inicialización rápida del lente trasero en 720p y sin fondo negro."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.26",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.27",
   "forceUpdate": true
 }

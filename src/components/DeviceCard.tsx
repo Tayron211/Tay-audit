@@ -95,7 +95,7 @@ export const DeviceCard: React.FC<DeviceCardProps> = ({ device, onSelect }) => {
         justifyContent: 'space-between',
         cursor: 'pointer',
         position: 'relative',
-        borderLeft: `5px solid ${categoryColor || '#f97316'}`,
+        borderLeft: `2px solid ${categoryColor || '#f97316'}`,
         minHeight: '225px'
       }}
     >
