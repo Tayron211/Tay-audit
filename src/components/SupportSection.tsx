@@ -1467,14 +1467,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             </div>
 
             {/* Controles de Filtros de Estado y Acciones */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '10px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div className="support-tickets-controls-row">
+              <div className="support-tickets-status-grid">
                 {[
                   { id: 'all', label: `Todos (${supportMetrics.total})` },
                   { id: 'abierto', label: `Abiertos (${supportMetrics.abiertos})` },
@@ -1500,13 +1494,13 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 ))}
 
                 {ticketSearchQuery.trim() && (
-                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 600, marginLeft: '6px' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 600, marginLeft: '6px', gridColumn: '1 / -1' }}>
                     {filteredTickets.length} {filteredTickets.length === 1 ? 'coincidencia' : 'coincidencias'}
                   </span>
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
+              <div className="support-tickets-actions-row">
                 <button
                   onClick={onRefresh}
                   className="btn-flat"
@@ -1521,7 +1515,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                   type="button"
                   onClick={() => setIsCreatingTicket(true)}
                   className="btn-flat btn-primary"
-                  style={{ padding: '6px 14px', fontSize: '0.74rem', fontWeight: 700, gap: '6px', marginLeft: 'auto' }}
+                  style={{ padding: '6px 14px', fontSize: '0.74rem', fontWeight: 700, gap: '6px' }}
                   title="Registrar un nuevo ticket de atención al usuario"
                 >
                   <Plus size={14} />
@@ -2746,7 +2740,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
           {/* Knowledge Cards Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
             gap: '16px',
             alignItems: 'start',
             paddingBottom: knowledgeList.some(k => expandedKnowledgeIds.has(k.id)) ? '540px' : '90px'

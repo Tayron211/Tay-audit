@@ -1,14 +1,14 @@
 {
-  "version": "1.0.44",
-  "versionCode": 45,
+  "version": "1.0.45",
+  "versionCode": 46,
   "releaseDate": "2026-11-21",
-  "notes": "Reorganización ergonómica de la barra de filtros y búsqueda de Inventario para móviles (cuadrícula 2x2 de estados, categorías libres de recortes e icono Excel junto al buscador).",
+  "notes": "Adaptación integral para pantallas móviles pequeñas y APK: botones, barra inferior, encabezados, filtros de tickets en 2x2 y paginación sin recortes.",
   "features": [
     {
-      "title": "Filtros Móviles Ergonómicos en Inventario",
-      "desc": "Los estados se organizan en cuadrícula 2x2 táctil, las categorías ocupan todo el ancho sin chocarse con botones y el botón de Excel pasa junto al buscador en móviles."
+      "title": "Adaptación Total a Pantallas Móviles Pequeñas",
+      "desc": "Ajuste fino de encabezados, barra inferior, cápsula de usuario, filtros de tickets en cuadrícula 2x2 y tarjetas responsivas sin texto ni botones cortados."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.44",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.45",
   "forceUpdate": true
 }

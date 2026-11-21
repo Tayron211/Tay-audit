@@ -5294,6 +5294,180 @@ body.splash-active::-webkit-scrollbar,
   .inventory-view-switcher {
     display: none !important;
   }
+
+  /* Controles de Tickets de Asistencia TI organizados en cuadrícula cómoda en móvil */
+  .support-tickets-controls-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .support-tickets-status-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .support-tickets-status-grid .btn-flat {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 7px 6px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .support-tickets-actions-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .support-tickets-actions-row .btn-flat {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 7px 6px !important;
+    font-size: 0.72rem !important;
+    margin-left: 0 !important;
+  }
+
+  .agent-hub-panel {
+    padding: 16px 12px !important;
+  }
+}
+
+.support-tickets-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.support-tickets-status-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.support-tickets-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+/* Adaptación fina para pantallas móviles pequeñas (<= 420px) y APK en teléfonos compactos */
+@media (max-width: 420px) {
+  main,
+  .main-app-container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .acrylic-nav-inner {
+    padding: 0 10px !important;
+  }
+
+  .nav-brand-container {
+    gap: 6px !important;
+  }
+
+  .nav-brand-logo-box {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .nav-brand-title {
+    font-size: 0.90rem !important;
+  }
+
+  .nav-brand-badge {
+    font-size: 0.52rem !important;
+    padding: 1px 4px !important;
+  }
+
+  .nav-controls-container {
+    gap: 5px !important;
+  }
+
+  .user-capsule-btn {
+    padding: 4px 8px !important;
+    height: 32px !important;
+    gap: 5px !important;
+  }
+
+  .user-capsule-name {
+    font-size: 11px !important;
+    max-width: 80px !important;
+  }
+
+  .mobile-bottom-bar {
+    padding: 0 2px !important;
+    height: 58px !important;
+  }
+
+  .mobile-bottom-btn {
+    font-size: 0.59rem !important;
+    padding: 4px 2px !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+  }
+
+  .mobile-bottom-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .mobile-center-spacer {
+    width: 46px !important;
+  }
+
+  .mobile-center-action-btn {
+    width: 46px !important;
+    height: 46px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+  }
+
+  .audit-header-title-group h2 {
+    font-size: 0.84rem !important;
+  }
+
+  .audit-register-btn {
+    padding: 5px 9px !important;
+    font-size: 0.70rem !important;
+    gap: 4px !important;
+  }
+
+  .audit-tabs-pill-container .nav-tab-btn,
+  .support-subtabs-container .nav-tab-btn {
+    font-size: 0.64rem !important;
+    padding: 6px 2px !important;
+    gap: 3px !important;
+  }
+
+  .inventory-filter-pill {
+    padding: 6px 6px !important;
+    font-size: 0.69rem !important;
+  }
+
+  .support-tickets-status-grid .btn-flat,
+  .support-tickets-actions-row .btn-flat {
+    padding: 7px 4px !important;
+    font-size: 0.69rem !important;
+  }
+
+  .pagination-nav-btn,
+  .pagination-num-btn {
+    min-width: 30px !important;
+    width: 30px !important;
+    height: 32px !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* ==================================================================== */

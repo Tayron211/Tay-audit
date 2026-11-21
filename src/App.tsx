@@ -1289,7 +1289,7 @@ exit
 
         {/* TAB 5: AUTOMATED SCRIPT DEPLOYMENT & STIVIE AGENT */}
         {displayedTab === 'agent' && (
-          <div className="acrylic-panel" style={{ padding: '24px 26px', width: '100%', maxWidth: '1480px', margin: '0 auto', boxSizing: 'border-box' }}>
+          <div className="acrylic-panel agent-hub-panel" style={{ padding: '24px 26px', width: '100%', maxWidth: '1480px', margin: '0 auto', boxSizing: 'border-box' }}>
             {/* Cabecera Compacta + Barra de Servidor Central Integrada */}
             <div style={{
               display: 'flex',
@@ -1352,8 +1352,9 @@ exit
                 padding: '7px 11px',
                 borderRadius: '11px',
                 border: '1px solid var(--border-acrylic)',
-                flex: '1 1 420px',
-                maxWidth: '620px'
+                flex: '1 1 min(100%, 420px)',
+                maxWidth: '620px',
+                minWidth: 0
               }}>
                 <span style={{ fontSize: '0.70rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                   Destino:
