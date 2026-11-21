@@ -346,14 +346,31 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
     setIsThinking(true);
 
     const qLower = userText.toLowerCase();
-    const qNorm = qLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const qNorm = qLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[¿?¡!.,;:]/g, '').replace(/\s+/g, ' ').trim();
 
     // Respuestas directas de identidad de STIVIE y su desarrollador (sin generar ticket de soporte)
-    if (
+    const isRealStivieQuery =
       qNorm.includes('quien es stivie en la realidad') ||
       qNorm.includes('quien es stivie en realidad') ||
-      (qNorm.includes('stivie') && qNorm.includes('realidad'))
-    ) {
+      qNorm.includes('quien es stivie realmente') ||
+      qNorm.includes('quien es realmente stivie') ||
+      qNorm.includes('quien eres realmente') ||
+      qNorm.includes('quien eres en la realidad') ||
+      qNorm.includes('quien eres en realidad') ||
+      qNorm.includes('verdadero stivie') ||
+      qNorm.includes('verdadera identidad') ||
+      qNorm.includes('identidad real') ||
+      qNorm.includes('nombre real de stivie') ||
+      qNorm.includes('por que te llamas stivie') ||
+      qNorm.includes('porque te llamas stivie') ||
+      qNorm.includes('de donde viene el nombre stivie') ||
+      qNorm.includes('de donde sale stivie') ||
+      qNorm.includes('significado de stivie') ||
+      qNorm.includes('quien es tayron') ||
+      qNorm.includes('stiven') ||
+      ((qNorm.includes('stivie') || qNorm.includes('quien eres')) && (qNorm.includes('realidad') || qNorm.includes('realmente') || qNorm.includes('de verdad')));
+
+    if (isRealStivieQuery) {
       setMessages(prev => [
         ...prev,
         {
@@ -368,20 +385,36 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
       return;
     }
 
-    if (
+    const isDevQuery =
       qNorm.includes('quien te desarrollo') ||
       qNorm.includes('quien desarrollo') ||
       qNorm.includes('quien te creo') ||
       qNorm.includes('quien creo') ||
+      qNorm.includes('quien te program') ||
+      qNorm.includes('quien program') ||
+      qNorm.includes('quien te disen') ||
+      qNorm.includes('quien te hizo') ||
+      qNorm.includes('quien hizo a stivie') ||
+      qNorm.includes('quien es tu creador') ||
+      qNorm.includes('quien es tu desarrollador') ||
+      qNorm.includes('quien es tu autor') ||
+      qNorm.includes('quien es tu padre') ||
+      qNorm.includes('quien te invento') ||
+      qNorm.includes('quien te construyo') ||
+      qNorm.includes('quien te armo') ||
+      qNorm.includes('quien te dio vida') ||
+      qNorm.includes('por quien fuiste') ||
       qNorm.includes('desarrollador de stivie') ||
-      qNorm.includes('quien te hizo')
-    ) {
+      qNorm.includes('creador de stivie') ||
+      qNorm.includes('autor de stivie');
+
+    if (isDevQuery) {
       setMessages(prev => [
         ...prev,
         {
           id: `stivie-${Date.now()}`,
           sender: 'stivie',
-          text: 'fui desarrollado por Tayron Salinas',
+          text: 'Fui desarrollado por Tayron Salinas para ustedes con mucho amor! <3',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);

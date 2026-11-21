@@ -1,14 +1,14 @@
 {
-  "version": "1.0.48",
-  "versionCode": 49,
+  "version": "1.0.50",
+  "versionCode": 51,
   "releaseDate": "2026-11-21",
-  "notes": "Anuncios flotantes rojos portaleados al frente de toda la interfaz (nunca detrás ni borrosos en móvil/APK).",
+  "notes": "Detección exacta en tiempo real de equipos STIVIE conectados sincronizada con el reloj del servidor Cloud (inmune a desfases horarios del navegador o PC).",
   "features": [
     {
-      "title": "Avisos Flotantes Siempre Nítidos al Frente",
-      "desc": "Los anuncios rojos ahora se renderizan sobre toda la interfaz y debajo del encabezado móvil sin quedar ocultos ni desenfocados."
+      "title": "Detección Precisa de STIVIE En Línea",
+      "desc": "Sincroniza automáticamente el cálculo de latidos con la hora del servidor para no marcar como inactivos a equipos con STIVIE funcionando."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.48",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.50",
   "forceUpdate": true
 }

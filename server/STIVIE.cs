@@ -1140,11 +1140,31 @@ namespace StivieDesktop {
             // Respuestas directas sobre quién es STIVIE en la realidad y quién lo desarrolló
             string qLowerNorm = q.ToLowerInvariant()
                 .Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
-                .Replace("?", "").Replace("¿", "").Trim();
+                .Replace("?", "").Replace("¿", "").Replace("!", "").Replace("¡", "").Replace(".", "").Replace(",", "").Trim();
 
-            if (qLowerNorm.Contains("quien es stivie en la realidad") ||
+            bool isRealStivieQuery =
+                qLowerNorm.Contains("quien es stivie en la realidad") ||
                 qLowerNorm.Contains("quien es stivie en realidad") ||
-                (qLowerNorm.Contains("stivie") && qLowerNorm.Contains("realidad"))) {
+                qLowerNorm.Contains("quien es stivie realmente") ||
+                qLowerNorm.Contains("quien es realmente stivie") ||
+                qLowerNorm.Contains("quien eres realmente") ||
+                qLowerNorm.Contains("quien eres en la realidad") ||
+                qLowerNorm.Contains("quien eres en realidad") ||
+                qLowerNorm.Contains("verdadero stivie") ||
+                qLowerNorm.Contains("verdadera identidad") ||
+                qLowerNorm.Contains("identidad real") ||
+                qLowerNorm.Contains("nombre real de stivie") ||
+                qLowerNorm.Contains("por que te llamas stivie") ||
+                qLowerNorm.Contains("porque te llamas stivie") ||
+                qLowerNorm.Contains("de donde viene el nombre stivie") ||
+                qLowerNorm.Contains("de donde sale stivie") ||
+                qLowerNorm.Contains("significado de stivie") ||
+                qLowerNorm.Contains("quien es tayron") ||
+                qLowerNorm.Contains("stiven") ||
+                ((qLowerNorm.Contains("stivie") || qLowerNorm.Contains("quien eres")) &&
+                 (qLowerNorm.Contains("realidad") || qLowerNorm.Contains("realmente") || qLowerNorm.Contains("de verdad")));
+
+            if (isRealStivieQuery) {
                 btnSend.IsEnabled = true;
                 txtFeedback.Text = "";
                 txtSpeech.Text = "Stivie es Tayron Salinas llamado Stivie por su Madre de cariño por su segundo nombre Stiven";
@@ -1152,15 +1172,33 @@ namespace StivieDesktop {
                 return;
             }
 
-            if (qLowerNorm.Contains("quien te desarrollo") ||
+            bool isDevQuery =
+                qLowerNorm.Contains("quien te desarrollo") ||
                 qLowerNorm.Contains("quien desarrollo") ||
                 qLowerNorm.Contains("quien te creo") ||
                 qLowerNorm.Contains("quien creo") ||
+                qLowerNorm.Contains("quien te program") ||
+                qLowerNorm.Contains("quien program") ||
+                qLowerNorm.Contains("quien te disen") ||
+                qLowerNorm.Contains("quien te hizo") ||
+                qLowerNorm.Contains("quien hizo a stivie") ||
+                qLowerNorm.Contains("quien es tu creador") ||
+                qLowerNorm.Contains("quien es tu desarrollador") ||
+                qLowerNorm.Contains("quien es tu autor") ||
+                qLowerNorm.Contains("quien es tu padre") ||
+                qLowerNorm.Contains("quien te invento") ||
+                qLowerNorm.Contains("quien te construyo") ||
+                qLowerNorm.Contains("quien te armo") ||
+                qLowerNorm.Contains("quien te dio vida") ||
+                qLowerNorm.Contains("por quien fuiste") ||
                 qLowerNorm.Contains("desarrollador de stivie") ||
-                qLowerNorm.Contains("quien te hizo")) {
+                qLowerNorm.Contains("creador de stivie") ||
+                qLowerNorm.Contains("autor de stivie");
+
+            if (isDevQuery) {
                 btnSend.IsEnabled = true;
                 txtFeedback.Text = "";
-                txtSpeech.Text = "fui desarrollado por Tayron Salinas";
+                txtSpeech.Text = "Fui desarrollado por Tayron Salinas para ustedes con mucho amor! <3";
                 speechScroll.ScrollToTop();
                 return;
             }

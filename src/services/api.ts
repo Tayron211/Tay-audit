@@ -84,12 +84,23 @@ export function notifyLocalAndTabsDataChanged() {
   }
 }
 
+let serverClockOffsetMs = 0;
+
+export function getServerClockOffsetMs(): number {
+  return serverClockOffsetMs;
+}
+
 export const api = {
   // Lightweight real-time sync state check (Cloudflare D1 + local compatible)
   async getSyncState(): Promise<{ ok: boolean; version: string; serverTime?: string }> {
     const res = await fetch(`${API_BASE}/api/sync-state`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Error al consultar estado de sincronización');
-    return res.json();
+    const data = await res.json();
+    if (data?.serverTime) {
+      const parsed = Date.parse(data.serverTime);
+      if (!isNaN(parsed)) serverClockOffsetMs = parsed - Date.now();
+    }
+    return data;
   },
 
   // Get Server Network & Remote Access IP details
@@ -101,9 +112,20 @@ export const api = {
 
   // Fetch all devices
   async getDevices(): Promise<Device[]> {
-    const res = await fetch(`${API_BASE}/api/devices`);
+    const res = await fetch(`${API_BASE}/api/devices`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Error al obtener equipos');
-    return res.json();
+    const list = await res.json();
+    if (Array.isArray(list) && list.length > 0 && list[0]?.serverNow) {
+      const parsed = Date.parse(list[0].serverNow);
+      if (!isNaN(parsed)) serverClockOffsetMs = parsed - Date.now();
+    } else {
+      const dateHeader = res.headers.get('date');
+      if (dateHeader) {
+        const parsed = Date.parse(dateHeader);
+        if (!isNaN(parsed)) serverClockOffsetMs = parsed - Date.now();
+      }
+    }
+    return list;
   },
 
   // Get single device

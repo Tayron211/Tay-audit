@@ -32,7 +32,7 @@ import {
   Terminal
 } from 'lucide-react';
 import type { SupportTicket, StivieKnowledge, Device } from '../types';
-import { api, API_BASE, CLOUD_DEFAULT_URL } from '../services/api';
+import { api, API_BASE, CLOUD_DEFAULT_URL, getServerClockOffsetMs } from '../services/api';
 import { CompactReportCard } from './CompactReportCard';
 import { OverlayCard } from './OverlayCard';
 import { scrollElementIntoView } from '../utils/autoScroll';
@@ -587,14 +587,15 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     return () => clearInterval(pollTimer);
   }, [supportSubTab]);
 
-  // Detección PRECISA y resiliente de presencia en línea mediante heartbeat de STIVIE (latidos activos en vivo)
+  // Detección PRECISA de presencia en línea sincronizada con el reloj del servidor (inmune a desfase de reloj del cliente)
   const isDeviceOnline = useCallback((d: Device | null | undefined): boolean => {
     if (!d || !d.stivieInstalled || !d.lastAgentPing) return false;
     const pingTime = new Date(d.lastAgentPing).getTime();
     if (isNaN(pingTime)) return false;
-    const diffSeconds = (clockTick - pingTime) / 1000;
-    // Tolerar desfase horario cliente-servidor (-45s) y considerar en línea si transmitió en los últimos 120s
-    return diffSeconds >= -45 && diffSeconds <= 120;
+    const serverNowMs = clockTick + getServerClockOffsetMs();
+    const diffSeconds = (serverNowMs - pingTime) / 1000;
+    // Considerar en línea si transmitió en los últimos 180s (tolerando hasta -180s si el reloj local está desfasado)
+    return diffSeconds >= -180 && diffSeconds <= 180;
   }, [clockTick]);
 
   const activeRemoteDevice = useMemo(() => {
@@ -2249,10 +2250,11 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                           <span>Última Señal: <strong style={{ color: isDeviceOnline(activeRemoteDevice) ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
                             {(() => {
                               const pingMs = new Date(activeRemoteDevice.lastAgentPing).getTime();
-                              const sec = Math.round((clockTick - pingMs) / 1000);
+                              const serverNowMs = clockTick + getServerClockOffsetMs();
+                              const sec = Math.max(0, Math.round((serverNowMs - pingMs) / 1000));
                               if (sec <= 10) return 'Hace unos segundos (En vivo)';
-                              if (sec <= 60) return `Hace ${Math.max(0, sec)}s (En vivo)`;
-                              if (sec <= 120) return `Hace ${sec}s (Activo)`;
+                              if (sec <= 60) return `Hace ${sec}s (En vivo)`;
+                              if (sec <= 180) return `Hace ${sec}s (Activo)`;
                               const min = Math.round(sec / 60);
                               return `Hace ${min} min (Desconectado)`;
                             })()}
