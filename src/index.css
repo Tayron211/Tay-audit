@@ -3675,9 +3675,9 @@ textarea:focus {
 
   main,
   .main-app-container {
-    padding-top: 2px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    padding-top: 16px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
     padding-bottom: calc(108px + env(safe-area-inset-bottom, 24px)) !important;
     overflow-x: clip !important;
     max-width: 100% !important;
@@ -3797,8 +3797,9 @@ textarea:focus {
     gap: 3px;
     font-size: 0.65rem;
     font-weight: 700;
+    white-space: nowrap;
     cursor: pointer;
-    padding: 6px 10px;
+    padding: 6px 6px;
     border-radius: 14px !important;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease !important;
     flex: 1;
@@ -5031,6 +5032,23 @@ body.splash-active::-webkit-scrollbar,
 }
 
 @media (max-width: 640px) {
+  .audit-header-title-group {
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .audit-header-title-group h2 {
+    font-size: 0.90rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .audit-register-btn {
+    padding: 5px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
   .audit-tab-desktop-only,
   .support-tab-desktop-text {
     display: none !important;

@@ -1,14 +1,14 @@
 {
-  "version": "1.0.42",
-  "versionCode": 43,
+  "version": "1.0.43",
+  "versionCode": 44,
   "releaseDate": "2026-11-21",
-  "notes": "Cápsula de usuario compacta con solo el primer nombre (ej: TAYRON) y login institucional con usuario corto (ej: tsalinas).",
+  "notes": "Separación superior del contenido respecto al encabezado fijo y alineación en una sola línea del título con el botón Registrar en móviles.",
   "features": [
     {
-      "title": "Cápsula de Usuario Compacta (Solo Nombre)",
-      "desc": "El botón de perfil en la barra superior ahora muestra únicamente el primer nombre para ganar espacio, mientras que el login usa formato de usuario institucional (ej: tsalinas)."
+      "title": "Espaciado Bajo el Encabezado Superior",
+      "desc": "Se incrementó el margen superior del contenedor principal para separar cómodamente el contenido del encabezado fijo."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.42",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.43",
   "forceUpdate": true
 }
