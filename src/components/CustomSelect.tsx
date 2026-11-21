@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
 export interface SelectOption<T = string> {
@@ -31,9 +32,51 @@ export function CustomSelect<T extends string = string>({
 }: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [popoverCoords, setPopoverCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+    openUpward: boolean;
+  }>({ top: 0, left: 0, width: 200, maxHeight: 240, openUpward: false });
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+
+  const updatePopoverPosition = useCallback(() => {
+    if (!triggerRef.current || typeof window === 'undefined') return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const viewportW = window.innerWidth;
+    const estimatedHeight = Math.min(240, options.length * 36 + 10);
+    const spaceBelow = viewportH - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+    const openUpward = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+    const maxWidth = viewportW - 16;
+    const width = Math.min(Math.max(rect.width, 140), maxWidth);
+    const left = Math.min(Math.max(8, rect.left), viewportW - width - 8);
+
+    if (openUpward) {
+      setPopoverCoords({
+        bottom: viewportH - rect.top + 5,
+        left,
+        width,
+        maxHeight: Math.min(240, Math.max(110, spaceAbove)),
+        openUpward: true
+      });
+    } else {
+      setPopoverCoords({
+        top: rect.bottom + 5,
+        left,
+        width,
+        maxHeight: Math.min(240, Math.max(110, spaceBelow)),
+        openUpward: false
+      });
+    }
+  }, [options.length]);
 
   const closeSelect = () => {
     if (isClosing || !isOpen) return;
@@ -48,13 +91,23 @@ export function CustomSelect<T extends string = string>({
     if (isOpen) {
       closeSelect();
     } else {
+      updatePopoverPosition();
       setIsOpen(true);
     }
   };
 
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePopoverPosition();
+    }
+  }, [isOpen, updatePopoverPosition]);
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      const inTrigger = containerRef.current && containerRef.current.contains(target);
+      const inPopover = popoverRef.current && popoverRef.current.contains(target);
+      if (!inTrigger && !inPopover) {
         closeSelect();
       }
     };
@@ -67,14 +120,20 @@ export function CustomSelect<T extends string = string>({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside, { passive: true });
       document.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('resize', updatePopoverPosition);
+      window.addEventListener('scroll', updatePopoverPosition, true);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', updatePopoverPosition);
+      window.removeEventListener('scroll', updatePopoverPosition, true);
     };
-  }, [isOpen, isClosing]);
+  }, [isOpen, isClosing, updatePopoverPosition]);
 
   const handleSelect = (val: T, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,6 +148,7 @@ export function CustomSelect<T extends string = string>({
       style={style}
     >
       <button
+        ref={triggerRef}
         id={id}
         type="button"
         disabled={disabled}
@@ -140,10 +200,22 @@ export function CustomSelect<T extends string = string>({
         />
       </button>
 
-      {(isOpen || isClosing) && (
+      {(isOpen || isClosing) && typeof document !== 'undefined' && createPortal(
         <div
+          ref={popoverRef}
           role="listbox"
           className={`acrylic-select-popover ${isClosing ? 'closing' : ''}`}
+          style={{
+            position: 'fixed',
+            top: popoverCoords.top !== undefined ? `${popoverCoords.top}px` : 'auto',
+            bottom: popoverCoords.bottom !== undefined ? `${popoverCoords.bottom}px` : 'auto',
+            left: `${popoverCoords.left}px`,
+            right: 'auto',
+            width: `${popoverCoords.width}px`,
+            maxHeight: `${popoverCoords.maxHeight}px`,
+            zIndex: 10090,
+            transformOrigin: popoverCoords.openUpward ? 'bottom center' : 'top center'
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {options.map((opt) => {
@@ -191,7 +263,8 @@ export function CustomSelect<T extends string = string>({
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

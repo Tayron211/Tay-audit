@@ -1,14 +1,14 @@
 {
-  "version": "1.0.45",
-  "versionCode": 46,
+  "version": "1.0.46",
+  "versionCode": 47,
   "releaseDate": "2026-11-21",
-  "notes": "Adaptación integral para pantallas móviles pequeñas y APK: botones, barra inferior, encabezados, filtros de tickets en 2x2 y paginación sin recortes.",
+  "notes": "Sin botones redundantes en Asistencia TI, menús desplegables portaleados con efecto blur real sin recortes y filtros móviles más compactos y limpios.",
   "features": [
     {
-      "title": "Adaptación Total a Pantallas Móviles Pequeñas",
-      "desc": "Ajuste fino de encabezados, barra inferior, cápsula de usuario, filtros de tickets en cuadrícula 2x2 y tarjetas responsivas sin texto ni botones cortados."
+      "title": "Sin Botones Redundantes en Asistencia TI",
+      "desc": "Se retiraron los botones duplicados 'Registrar Ticket' y 'Enseñar Nueva Solución Manualmente', centralizando la acción en el botón '+ Registrar' superior."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.45",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.46",
   "forceUpdate": true
 }

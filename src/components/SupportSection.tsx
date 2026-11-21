@@ -1502,6 +1502,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
               <div className="support-tickets-actions-row">
                 <button
+                  type="button"
                   onClick={onRefresh}
                   className="btn-flat"
                   style={{ padding: '6px 12px', fontSize: '0.74rem' }}
@@ -1509,17 +1510,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 >
                   <RefreshCw size={14} />
                   <span>Actualizar</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingTicket(true)}
-                  className="btn-flat btn-primary"
-                  style={{ padding: '6px 14px', fontSize: '0.74rem', fontWeight: 700, gap: '6px' }}
-                  title="Registrar un nuevo ticket de atención al usuario"
-                >
-                  <Plus size={14} />
-                  <span>Registrar Ticket</span>
                 </button>
               </div>
             </div>
@@ -2535,7 +2525,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       {displayedSubTab === 'knowledge' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           
-          {/* Header & Teach Rule Button */}
+          {/* Header Base de Conocimiento */}
           <div className="acrylic-panel" style={{
             padding: '16px 20px',
             display: 'flex',
@@ -2552,15 +2542,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                 STIVIE se alimenta de los tickets resueltos por el equipo de TI y responde autónomamente en las terminales
               </p>
             </div>
-
-            <button
-              onClick={() => setIsTeaching(!isTeaching)}
-              className="btn-flat btn-primary"
-              style={{ padding: '8px 16px', fontSize: '0.78rem', marginLeft: 'auto' }}
-            >
-              <Plus size={15} />
-              <span>Enseñar Nueva Solución Manualmente</span>
-            </button>
           </div>
 
           {/* MODAL WINDOW: ENSEÑAR NUEVA SOLUCION A STIVIE */}

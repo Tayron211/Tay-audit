@@ -342,7 +342,9 @@ body {
 }
 
 /* Micro-interacciones táctiles suaves estilo Apple (steel-pro1) */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   -webkit-tap-highlight-color: transparent !important;
   -webkit-touch-callout: none !important;
 }
@@ -358,11 +360,19 @@ textarea,
   outline: none !important;
 }
 
-button:focus, button:focus-visible, button:active,
-a:focus, a:focus-visible, a:active,
-[role="button"]:focus, [role="button"]:focus-visible, [role="button"]:active,
-input:focus, input:focus-visible,
-select:focus, select:focus-visible {
+button:focus,
+button:focus-visible,
+button:active,
+a:focus,
+a:focus-visible,
+a:active,
+[role="button"]:focus,
+[role="button"]:focus-visible,
+[role="button"]:active,
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible {
   outline: none !important;
 }
 
@@ -1277,6 +1287,7 @@ html:not(.dark) .modal-window-acrylic {
     opacity: 0;
     transform: translateY(-8px) scale(0.96);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -1288,6 +1299,7 @@ html:not(.dark) .modal-window-acrylic {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   100% {
     opacity: 0;
     transform: translateY(-6px) scale(0.96);
@@ -2089,13 +2101,15 @@ pre {
   right: 0;
   max-height: 240px;
   overflow-y: auto;
-  background: var(--bg-modal-window, var(--bg-acrylic-elevated)) !important;
-  border: 1px solid var(--border-acrylic-active, var(--border-acrylic)) !important;
-  border-radius: 10px !important;
-  padding: 4px !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2) !important;
-  z-index: 10050 !important;
-  animation: dropdownSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  background: rgba(18, 19, 26, 0.78) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 12px !important;
+  padding: 5px !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+  z-index: 10090 !important;
+  animation: dropdownSlideDown 0.20s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   transform-origin: top center;
   will-change: transform, opacity;
 }
@@ -2141,9 +2155,11 @@ pre {
 }
 
 [data-mode="light"] .acrylic-select-popover {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(203, 213, 225, 0.90) !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.08) !important;
 }
 
 [data-mode="light"] .acrylic-select-option.is-selected {
@@ -5072,6 +5088,7 @@ body.splash-active::-webkit-scrollbar,
 }
 
 @media (min-width: 641px) {
+
   .audit-tab-desktop-only,
   .support-tab-desktop-text {
     display: inline !important;
@@ -5212,20 +5229,21 @@ body.splash-active::-webkit-scrollbar,
 
 @media (max-width: 768px) {
   .inventory-toolbar-panel {
-    padding: 10px !important;
-    gap: 8px !important;
+    padding: 8px 9px !important;
+    gap: 6px !important;
   }
 
   .inventory-toolbar-top-row {
     flex-direction: column !important;
     align-items: stretch !important;
-    gap: 8px !important;
+    gap: 6px !important;
   }
 
   .inventory-search-row {
     flex: none !important;
     width: 100% !important;
     min-width: 0 !important;
+    gap: 6px !important;
   }
 
   .inventory-search-box {
@@ -5234,17 +5252,17 @@ body.splash-active::-webkit-scrollbar,
   }
 
   .inventory-search-input {
-    height: 38px !important;
-    font-size: 0.82rem !important;
+    height: 34px !important;
+    font-size: 0.78rem !important;
   }
 
   .inventory-excel-mobile {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
     padding: 0 !important;
     border-radius: 8px !important;
     flex-shrink: 0 !important;
@@ -5264,29 +5282,30 @@ body.splash-active::-webkit-scrollbar,
   .inventory-status-pills {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    gap: 5px !important;
     width: 100% !important;
   }
 
   .inventory-filter-pill {
     width: 100% !important;
     justify-content: center !important;
-    padding: 7px 8px !important;
-    font-size: 0.73rem !important;
-    border-radius: 8px !important;
+    padding: 5px 6px !important;
+    font-size: 0.70rem !important;
+    border-radius: 7px !important;
   }
 
   .inventory-category-strip {
     width: 100% !important;
-    gap: 6px !important;
-    padding: 2px 2px 3px 2px !important;
+    gap: 4px !important;
+    padding: 1px 0 2px 0 !important;
     scroll-snap-type: x proximity;
   }
 
   .inventory-cat-pill {
-    padding: 6px 11px !important;
-    font-size: 0.73rem !important;
-    border-radius: 8px !important;
+    padding: 4px 8px !important;
+    font-size: 0.68rem !important;
+    border-radius: 7px !important;
+    gap: 4px !important;
     scroll-snap-align: start;
   }
 
@@ -5317,9 +5336,7 @@ body.splash-active::-webkit-scrollbar,
   }
 
   .support-tickets-actions-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    display: flex !important;
     width: 100% !important;
     margin-left: 0 !important;
   }
@@ -5327,7 +5344,7 @@ body.splash-active::-webkit-scrollbar,
   .support-tickets-actions-row .btn-flat {
     width: 100% !important;
     justify-content: center !important;
-    padding: 7px 6px !important;
+    padding: 7px 10px !important;
     font-size: 0.72rem !important;
     margin-left: 0 !important;
   }
@@ -5363,6 +5380,7 @@ body.splash-active::-webkit-scrollbar,
 
 /* Adaptación fina para pantallas móviles pequeñas (<= 420px) y APK en teléfonos compactos */
 @media (max-width: 420px) {
+
   main,
   .main-app-container {
     padding-left: 8px !important;
@@ -7056,6 +7074,7 @@ html.dark .user-dropdown-window,
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
