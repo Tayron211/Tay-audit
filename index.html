@@ -30,25 +30,23 @@
       #root {
         opacity: 1 !important;
       }
-      /* Splash Screen adaptativo Institucional UPN (Control Docente steel-pro1) */
+      /* Splash Screen adaptativo Institucional UPN (Geometría fija sin saltos en APK) */
       #upn-boot-splash {
         position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
         z-index: 999999;
         user-select: none;
         -webkit-user-select: none;
         overflow: hidden !important;
         box-sizing: border-box;
-        padding: max(24px, env(safe-area-inset-top, 24px)) 24px max(24px, env(safe-area-inset-bottom, 24px));
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-        transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+        transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+        contain: layout paint size;
       }
       html.dark #upn-boot-splash, [data-mode="dark"] #upn-boot-splash {
         background-color: #000000 !important;
@@ -118,37 +116,37 @@
     </script>
   </head>
   <body class="overscroll-none touch-manipulation">
-    <!-- Sovereign Splash Screen: adaptativo automáticamente a Modo Claro y Oscuro (Control Docente steel-pro1) -->
+    <!-- Sovereign Splash Screen: anclado con coordenadas absolutas inmutables para cero saltos en APK -->
     <div id="upn-boot-splash">
       <!-- Ambient Glow Adaptable -->
-      <div class="splash-glow" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22rem;height:22rem;border-radius:9999px;pointer-events:none;filter:blur(40px);"></div>
+      <div class="splash-glow" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:350px;border-radius:9999px;pointer-events:none;filter:blur(40px);"></div>
       
       <!-- Top Institutional Label -->
-      <div class="splash-text-muted" style="font-size:11px;text-transform:uppercase;font-family:monospace;letter-spacing:0.25em;font-weight:700;position:relative;z-index:2;text-align:center;">
+      <div class="splash-text-muted" style="position:absolute;top:48px;left:0;right:0;font-size:11px;line-height:14px;text-transform:uppercase;font-family:monospace;letter-spacing:0.25em;font-weight:700;z-index:2;text-align:center;">
         Universidad Privada del Norte
       </div>
       
-      <!-- Center Identity Core (Perfectamente Centrado) -->
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0;margin:auto 0;position:relative;z-index:2;">
-        <div class="splash-logo-card" style="width:5rem;height:5rem;border-radius:1.2rem;display:flex;align-items:center;justify-content:center;padding:0.75rem;margin-bottom:1.25rem;">
-          <img src="/icon.svg" alt="UPN" style="width:100%;height:100%;object-fit:contain;" />
+      <!-- Center Identity Core (Bloqueado al 50% exacto sin depender de insets dinámicos ni fuentes) -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center;width:280px;z-index:2;">
+        <div class="splash-logo-card" style="width:80px;height:80px;border-radius:19px;display:flex;align-items:center;justify-content:center;padding:12px;margin-bottom:20px;box-sizing:border-box;">
+          <img src="/icon.svg" alt="UPN" width="56" height="56" style="width:56px;height:56px;object-fit:contain;display:block;" />
         </div>
-        <h1 class="splash-text-title" style="font-size:1.4rem;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif;margin:0;line-height:1.2;">
+        <h1 class="splash-text-title" style="font-size:22px;height:27px;line-height:27px;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;margin:0;white-space:nowrap;">
           TAY<span style="color:#FDBA30;">-AUDIT</span>
         </h1>
-        <div class="splash-text-muted" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:11px;font-family:monospace;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;">
+        <div class="splash-text-muted" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;height:16px;line-height:16px;font-size:11px;font-family:monospace;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;white-space:nowrap;">
           <span>Campus Comas</span>
           <span style="display:inline-block;width:4px;height:4px;border-radius:9999px;background-color:#52525b;"></span>
           <span style="color:#FDBA30;font-weight:700;">Operaciones TI</span>
         </div>
         <!-- Hairline Loader -->
-        <div class="splash-loader-track" style="width:9rem;height:2.5px;border-radius:9999px;margin-top:1.75rem;overflow:hidden;position:relative;">
+        <div class="splash-loader-track" style="width:144px;height:2.5px;border-radius:9999px;margin-top:28px;overflow:hidden;position:relative;">
           <div style="position:absolute;top:0;bottom:0;left:0;background-color:#FDBA30;border-radius:9999px;box-shadow:0 0 10px rgba(253,186,48,0.7);animation:splashProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
         </div>
       </div>
       
       <!-- Footer -->
-      <div class="splash-text-muted" style="font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:0.15em;position:relative;z-index:2;text-align:center;">
+      <div class="splash-text-muted" style="position:absolute;bottom:36px;left:0;right:0;font-size:10px;line-height:14px;font-family:monospace;text-transform:uppercase;letter-spacing:0.15em;z-index:2;text-align:center;">
         <span>Tay-Audit & STIVIE Cloud 24/7</span>
       </div>
     </div>

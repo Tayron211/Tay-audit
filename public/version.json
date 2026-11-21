@@ -1,14 +1,18 @@
 {
-  "version": "1.0.38",
-  "versionCode": 39,
+  "version": "1.0.39",
+  "versionCode": 40,
   "releaseDate": "2026-11-21",
-  "notes": "Reubicación del icono de exportación Excel al extremo derecho inferior del panel de filtros de Inventario.",
+  "notes": "Corrección del escáner QR, avisos flotantes en color rojo y eliminación del salto visual en el Splash Screen del APK.",
   "features": [
     {
-      "title": "Icono Excel en Extremo Inferior Derecho de Filtros",
-      "desc": "Se movió el botón de icono Excel al extremo derecho de la segunda fila de filtros (bajo el selector Fichas/Tabla)."
+      "title": "Corrección del Escáner QR y Avisos Rojos",
+      "desc": "Se resolvió el error de renderizado al abrir el escáner QR y se actualizaron los anuncios flotantes a color rojo."
+    },
+    {
+      "title": "Splash Screen Sin Saltos en APK",
+      "desc": "Geometría central fija inmutable en el Splash Screen para evitar cualquier salto al iniciar el APK."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.38",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.39",
   "forceUpdate": true
 }

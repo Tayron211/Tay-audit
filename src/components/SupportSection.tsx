@@ -878,21 +878,21 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         </button>
       </div>
 
-      {/* Anuncio flotante compacto con transición Fade de apertura y cierre */}
+      {/* Anuncio flotante compacto rojo con transición Fade de apertura y cierre */}
       {actionFeedback && (
         <div
           style={{
             position: 'fixed',
             top: '76px',
             right: '20px',
-            background: 'var(--accent-primary)',
-            color: 'var(--accent-contrast, #000000)',
+            background: '#ef4444',
+            color: '#ffffff',
             padding: '7px 13px',
             borderRadius: '8px',
             fontWeight: 700,
             fontSize: '0.75rem',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.24)',
-            border: '1px solid rgba(0, 0, 0, 0.18)',
+            boxShadow: '0 4px 16px rgba(239, 68, 68, 0.38)',
+            border: '1px solid rgba(255, 255, 255, 0.24)',
             zIndex: 9999,
             display: 'inline-flex',
             alignItems: 'center',
@@ -904,8 +904,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             transition: 'opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
-          <Sparkles size={13} color="var(--accent-contrast, #000000)" style={{ flexShrink: 0 }} />
-          <span style={{ color: 'var(--accent-contrast, #000000)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Sparkles size={13} color="#ffffff" style={{ flexShrink: 0 }} />
+          <span style={{ color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {actionFeedback}
           </span>
         </div>

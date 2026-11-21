@@ -338,8 +338,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     };
   }, [isOpen]);
 
-  if (!isOpen || typeof document === 'undefined') return null;
-
   const isModalVisible = isCameraReady || Boolean(cameraError);
 
   useEffect(() => {
@@ -349,6 +347,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
       document.documentElement.setAttribute('data-modal-open', 'true');
     }
   }, [isOpen, isModalVisible, isClosing]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
