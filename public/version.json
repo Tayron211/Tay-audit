@@ -1,14 +1,18 @@
 {
-  "version": "1.0.50",
-  "versionCode": 51,
+  "version": "1.0.52",
+  "versionCode": 53,
   "releaseDate": "2026-11-21",
-  "notes": "Detección exacta en tiempo real de equipos STIVIE conectados sincronizada con el reloj del servidor Cloud (inmune a desfases horarios del navegador o PC).",
+  "notes": "Tipografía oficial (Space Grotesk y JetBrains Mono) restaurada en la pantalla de bienvenida (Splash Screen) manteniendo alineación exacta, además de encabezados Excel exportados en color institucional #FDBA30.",
   "features": [
     {
-      "title": "Detección Precisa de STIVIE En Línea",
-      "desc": "Sincroniza automáticamente el cálculo de latidos con la hora del servidor para no marcar como inactivos a equipos con STIVIE funcionando."
+      "title": "Tipografía Oficial en Splash Screen",
+      "desc": "La pantalla de inicio usa Space Grotesk para TAY-AUDIT y JetBrains Mono para los textos institucionales sin saltos de carga."
+    },
+    {
+      "title": "Encabezados Excel en Amarillo UPN (#FDBA30)",
+      "desc": "Todos los reportes Excel exportados desde Inventario y Asistencia TI muestran sus encabezados en color #FDBA30 con texto negro de alto contraste."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.50",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.52",
   "forceUpdate": true
 }

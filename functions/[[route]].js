@@ -1131,16 +1131,16 @@ Instrucciones estrictas de respuesta:
 }
 
 // ============================================================================
-// EXCEL EXPORT HELPERS (EXACT GREEN HEADER MULTI-SHEET CORPORATE FORMAT)
+// EXCEL EXPORT HELPERS (UPN LUCUMA YELLOW HEADER MULTI-SHEET CORPORATE FORMAT)
 // ============================================================================
 
-const EXCEL_HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF134E38' } };
-const EXCEL_HEADER_FONT = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+const EXCEL_HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDBA30' } };
+const EXCEL_HEADER_FONT = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF000000' } };
 const EXCEL_HEADER_BORDER = {
-  top: { style: 'thin', color: { argb: 'FF0D3828' } },
-  left: { style: 'thin', color: { argb: 'FF0D3828' } },
-  bottom: { style: 'medium', color: { argb: 'FF082319' } },
-  right: { style: 'thin', color: { argb: 'FF0D3828' } }
+  top: { style: 'thin', color: { argb: 'FFD99B1A' } },
+  left: { style: 'thin', color: { argb: 'FFD99B1A' } },
+  bottom: { style: 'medium', color: { argb: 'FFB47D0E' } },
+  right: { style: 'thin', color: { argb: 'FFD99B1A' } }
 };
 const EXCEL_CELL_BORDER = {
   top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
