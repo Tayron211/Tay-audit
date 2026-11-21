@@ -226,12 +226,14 @@ const MainApp: React.FC = () => {
     const isAnyModalActive = Boolean(selectedDevice || isAuditModalOpen || updateInfo);
     if (typeof document !== 'undefined') {
       if (isAnyModalActive) {
-        document.body.classList.add('modal-backdrop-blur-active');
-        document.body.classList.add('has-active-modal');
-        document.documentElement.setAttribute('data-modal-open', 'true');
+        if (!document.body.classList.contains('modal-backdrop-blur-active')) {
+          document.body.classList.add('modal-backdrop-blur-active');
+          document.body.classList.add('has-active-modal');
+          document.documentElement.setAttribute('data-modal-open', 'true');
+        }
       } else {
         const remaining = document.querySelector('.modal-backdrop-acrylic:not(.closing):not(.scanner-warming), .upn-update-status-backdrop');
-        if (!remaining) {
+        if (!remaining && document.body.classList.contains('modal-backdrop-blur-active')) {
           document.body.classList.remove('modal-backdrop-blur-active');
           document.body.classList.remove('has-active-modal');
           document.documentElement.removeAttribute('data-modal-open');
@@ -273,19 +275,23 @@ const MainApp: React.FC = () => {
         '.modal-backdrop-acrylic:not(.closing):not(.scanner-warming), .upn-update-status-backdrop, [data-modal-backdrop="true"]'
       );
       if (activeModal) {
-        document.body.classList.add('modal-backdrop-blur-active');
-        document.body.classList.add('has-active-modal');
-        document.documentElement.setAttribute('data-modal-open', 'true');
+        if (!document.body.classList.contains('modal-backdrop-blur-active')) {
+          document.body.classList.add('modal-backdrop-blur-active');
+          document.body.classList.add('has-active-modal');
+          document.documentElement.setAttribute('data-modal-open', 'true');
+        }
       } else {
-        document.body.classList.remove('modal-backdrop-blur-active');
-        document.body.classList.remove('has-active-modal');
-        document.documentElement.removeAttribute('data-modal-open');
+        if (document.body.classList.contains('modal-backdrop-blur-active')) {
+          document.body.classList.remove('modal-backdrop-blur-active');
+          document.body.classList.remove('has-active-modal');
+          document.documentElement.removeAttribute('data-modal-open');
+        }
       }
     };
 
     syncModalPresence();
     const observer = new MutationObserver(syncModalPresence);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       observer.disconnect();

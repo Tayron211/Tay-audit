@@ -342,6 +342,14 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   const isModalVisible = isCameraReady || Boolean(cameraError);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isOpen && isModalVisible && !isClosing) {
+      document.body.classList.add('modal-backdrop-blur-active', 'has-active-modal');
+      document.documentElement.setAttribute('data-modal-open', 'true');
+    }
+  }, [isOpen, isModalVisible, isClosing]);
+
   return createPortal(
     <div
       className={`modal-backdrop-acrylic qr-scanner-backdrop ${!isModalVisible ? 'scanner-warming' : ''} ${isClosing ? 'closing' : ''}`}

@@ -1,18 +1,18 @@
 {
-  "version": "1.0.29",
-  "versionCode": 30,
+  "version": "1.0.30",
+  "versionCode": 31,
   "releaseDate": "2026-11-21",
-  "notes": "Splash Screen institucional calibrado a 2.2 segundos con autolimpieza de caché para evitar bloqueos tras actualizar, cámara QR directa y mejoras móviles.",
+  "notes": "Corrección del bloqueo del hilo principal en MutationObserver durante el Splash Screen (2.2s), cámara QR sin pantalla negra y mejoras móviles.",
   "features": [
     {
-      "title": "Splash Screen Fluido sin Bloqueos (2.2s)",
-      "desc": "Se calibró la duración del Splash Screen institucional a 2.2 segundos con transición suave y autolimpieza de caché WebView/SW."
+      "title": "Splash Screen Fluido (2.2s) sin Bloqueo",
+      "desc": "Se eliminó el bucle de microtareas del MutationObserver que congelaba el Splash Screen al iniciar."
     },
     {
       "title": "Interfaz Móvil, Cámara QR Directa y STIVIE",
-      "desc": "Encabezados y filtros optimizados para móviles, círculo rojo de alertas, cámara QR sin pantalla negra previa y respuestas de identidad en STIVIE."
+      "desc": "Encabezados y filtros optimizados para móviles, círculo rojo de alertas, cámara QR directa y respuestas de identidad en STIVIE."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.29",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.30",
   "forceUpdate": true
 }
