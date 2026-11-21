@@ -84,6 +84,7 @@ public class MainActivity extends BridgeActivity {
         try {
             WebView webView = getBridge().getWebView();
             if (webView != null) {
+                webView.clearCache(true);
                 webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 webView.setVerticalScrollBarEnabled(false);
                 webView.setHorizontalScrollBarEnabled(false);
@@ -93,7 +94,7 @@ public class MainActivity extends BridgeActivity {
                 settings.setLoadWithOverviewMode(true);
                 settings.setTextZoom(100);
                 settings.setRenderPriority(WebSettings.RenderPriority.HIGH);
-                settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
                 settings.setDomStorageEnabled(true);
                 settings.setDatabaseEnabled(true);
             }

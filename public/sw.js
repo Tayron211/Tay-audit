@@ -1,8 +1,7 @@
 // Service Worker para Notificaciones Push Nativas y WebAPK en Android / iOS (TAY-AUDIT 24/7)
 
-const CACHE_NAME = 'tay-audit-pwa-v2.7.28';
+const CACHE_NAME = 'tay-audit-pwa-v2.7.29';
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
@@ -32,29 +31,41 @@ self.addEventListener('activate', (event) => {
 
 // Manejador fetch indispensable para habilitar la instalación de WebAPK nativo en Android
 self.addEventListener('fetch', (event) => {
-  // Las llamadas API de sincronización y datos en tiempo real siempre van a la red
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+  // En APK nativo Capacitor (localhost) o llamadas API/version, jamás interceptar con caché vieja
+  if (
+    event.request.method !== 'GET' ||
+    event.request.url.includes('/api/') ||
+    event.request.url.includes('/version.json') ||
+    event.request.url.includes('/TayAudit.apk') ||
+    self.location.hostname === 'localhost'
+  ) {
     return;
   }
 
+  const isNavigation = event.request.mode === 'navigate' || event.request.destination === 'document';
+  const isAsset = event.request.url.includes('/assets/');
+
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, isNavigation ? { cache: 'no-cache' } : undefined)
       .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache).catch(() => { });
-          });
+          const contentType = (networkResponse.headers.get('content-type') || '').toLowerCase();
+          // Jamás guardar en caché un fallback HTML como si fuera un script JS o CSS
+          if (isAsset && contentType.includes('text/html')) {
+            return networkResponse;
+          }
+          if (!isNavigation) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => { });
+            });
+          }
         }
         return networkResponse;
       })
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
-        if (event.request.mode === 'navigate') {
-          const fallback = await caches.match('/');
-          if (fallback) return fallback;
-        }
         return new Response('Modo Offline', { status: 503, statusText: 'Offline' });
       })
   );

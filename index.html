@@ -153,21 +153,76 @@
       </div>
     </div>
 
-    <!-- Safety Fallback: jamás dejar la pantalla bloqueada bajo ninguna circunstancia -->
+    <!-- Safety Fallback & Auto-Heal de Caché: transición suave tras 2.2s y jamás dejar la pantalla bloqueada -->
     <script>
-      setTimeout(function() {
-        var splash = document.getElementById('upn-boot-splash');
-        var root = document.getElementById('root');
-        if (root) root.classList.add('app-ready');
-        if (splash) {
-          splash.style.transition = 'opacity 0.25s ease';
-          splash.style.opacity = '0';
-          splash.style.pointerEvents = 'none';
-          setTimeout(function() {
-            if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-          }, 300);
-        }
-      }, 450);
+      (function() {
+        // 1. Si estamos en APK nativo (localhost) o si un chunk JS viejo falla por actualización, limpiar caché de Service Worker automáticamente
+        try {
+          if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              for (var i = 0; i < regs.length; i++) {
+                regs[i].unregister();
+              }
+            }).catch(function() {});
+            if ('caches' in window) {
+              caches.keys().then(function(keys) {
+                for (var j = 0; j < keys.length; j++) {
+                  caches.delete(keys[j]);
+                }
+              }).catch(function() {});
+            }
+          }
+
+          window.addEventListener('error', function(e) {
+            var t = e && e.target;
+            if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+              var src = t.src || t.href || '';
+              if (src.indexOf('/assets/') !== -1 && !sessionStorage.getItem('tay_asset_healed')) {
+                sessionStorage.setItem('tay_asset_healed', '1');
+                var p = Promise.resolve();
+                if ('serviceWorker' in navigator) {
+                  p = navigator.serviceWorker.getRegistrations().then(function(regs) {
+                    return Promise.all(regs.map(function(r) { return r.unregister(); }));
+                  }).catch(function() {});
+                }
+                p.then(function() {
+                  if ('caches' in window) {
+                    return caches.keys().then(function(keys) {
+                      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+                    });
+                  }
+                }).finally(function() {
+                  window.location.reload();
+                });
+              }
+            }
+          }, true);
+        } catch (err) {}
+
+        // 2. Desvanecimiento garantizado del Splash Screen institucional (~2.2 segundos)
+        window.__dismissUpnSplash = function() {
+          var splash = document.getElementById('upn-boot-splash');
+          var root = document.getElementById('root');
+          if (root) root.classList.add('app-ready');
+          document.documentElement.classList.remove('splash-active');
+          if (document.body) document.body.classList.remove('splash-active');
+          if (splash && !splash.getAttribute('data-dismissing')) {
+            splash.setAttribute('data-dismissing', 'true');
+            splash.style.transition = 'opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+            splash.style.opacity = '0';
+            splash.style.pointerEvents = 'none';
+            setTimeout(function() {
+              if (splash && splash.parentNode) {
+                splash.parentNode.removeChild(splash);
+              }
+            }, 600);
+          }
+        };
+
+        setTimeout(function() {
+          if (window.__dismissUpnSplash) window.__dismissUpnSplash();
+        }, 2350);
+      })();
     </script>
 
     <div id="root"></div>

@@ -1121,7 +1121,7 @@ exit
   if (!currentUser) {
     return (
       <>
-        <SplashScreen minDuration={250} />
+        <SplashScreen minDuration={2200} />
         <LoginScreen onLogin={handleLogin} />
       </>
     );
@@ -1673,7 +1673,7 @@ exit
       />
 
       {/* Pantalla de Carga y Bienvenida Institucional (Splash Screen - Control Docente steel-pro1) */}
-      <SplashScreen minDuration={250} />
+      <SplashScreen minDuration={2200} />
     </div>
   </ErrorBoundary>
 );

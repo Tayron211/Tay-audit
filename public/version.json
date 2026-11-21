@@ -1,18 +1,18 @@
 {
-  "version": "1.0.28",
-  "versionCode": 29,
+  "version": "1.0.29",
+  "versionCode": 30,
   "releaseDate": "2026-11-21",
-  "notes": "Diseño móvil y escritorio optimizado, insignia roja de alertas en Asistencia TI, cámara QR directa sin ventana negra previa y respuestas de identidad en STIVIE.",
+  "notes": "Splash Screen institucional calibrado a 2.2 segundos con autolimpieza de caché para evitar bloqueos tras actualizar, cámara QR directa y mejoras móviles.",
   "features": [
     {
-      "title": "Interfaz Optimizada para Móviles y Escritorio",
-      "desc": "Encabezados y filtros alineados simétricamente, ventana Instalar en iOS rediseñada, insignia roja de alertas y navegación táctil sin cambios accidentales de apartado."
+      "title": "Splash Screen Fluido sin Bloqueos (2.2s)",
+      "desc": "Se calibró la duración del Splash Screen institucional a 2.2 segundos con transición suave y autolimpieza de caché WebView/SW."
     },
     {
-      "title": "Cámara QR Directa y STIVIE Identidad",
-      "desc": "El escáner QR aparece únicamente cuando el fotograma en vivo de la cámara está activo (cero pantalla negra previa) y STIVIE responde sobre su identidad y creador."
+      "title": "Interfaz Móvil, Cámara QR Directa y STIVIE",
+      "desc": "Encabezados y filtros optimizados para móviles, círculo rojo de alertas, cámara QR sin pantalla negra previa y respuestas de identidad en STIVIE."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.28",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.29",
   "forceUpdate": true
 }

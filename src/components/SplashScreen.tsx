@@ -19,14 +19,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   onFinish,
   onFinished
 }) => {
-  const duration = minDuration ?? minDisplayTime ?? 300;
+  const duration = minDuration ?? minDisplayTime ?? 2200;
   const finishCallback = onFinished || onFinish;
 
   useEffect(() => {
     // Si estamos en entorno nativo Capacitor (Android APK), desvanecer el splash nativo suavemente
     try {
       if (typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.SplashScreen) {
-        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => {});
+        (window as any).Capacitor.Plugins.SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => {});
       }
     } catch (_) {}
 
@@ -41,7 +41,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       document.body.classList.remove('splash-active');
     };
 
-    // Liberar visibilidad de la interfaz de inmediato
+    // Liberar visibilidad de la interfaz de inmediato debajo del splash
     makeInterfaceVisible();
 
     if (!splash) {
@@ -49,26 +49,38 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
       return;
     }
 
+    let removeTimer: ReturnType<typeof setTimeout> | null = null;
+
     const timer = setTimeout(() => {
+      const w = window as any;
+      if (typeof w.__dismissUpnSplash === 'function') {
+        w.__dismissUpnSplash();
+        if (finishCallback) {
+          removeTimer = setTimeout(() => finishCallback(), 580);
+        }
+        return;
+      }
+
       // Iniciar desvanecimiento cinematográfico ultra suave 120fps del splash
-      splash.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+      splash.style.transition = 'opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
       splash.style.opacity = '0';
       splash.style.pointerEvents = 'none';
 
       // Una vez completado el fade cruzado, remover el nodo
-      const removeTimer = setTimeout(() => {
+      removeTimer = setTimeout(() => {
         try {
           if (splash && splash.parentNode) {
             splash.parentNode.removeChild(splash);
           }
         } catch (_) {}
         if (finishCallback) finishCallback();
-      }, 350);
-
-      return () => clearTimeout(removeTimer);
+      }, 580);
     }, duration);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (removeTimer) clearTimeout(removeTimer);
+    };
   }, [duration, finishCallback]);
 
   return null;
