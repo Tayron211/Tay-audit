@@ -1,14 +1,14 @@
 {
-  "version": "1.0.43",
-  "versionCode": 44,
+  "version": "1.0.44",
+  "versionCode": 45,
   "releaseDate": "2026-11-21",
-  "notes": "Separación superior del contenido respecto al encabezado fijo y alineación en una sola línea del título con el botón Registrar en móviles.",
+  "notes": "Reorganización ergonómica de la barra de filtros y búsqueda de Inventario para móviles (cuadrícula 2x2 de estados, categorías libres de recortes e icono Excel junto al buscador).",
   "features": [
     {
-      "title": "Espaciado Bajo el Encabezado Superior",
-      "desc": "Se incrementó el margen superior del contenedor principal para separar cómodamente el contenido del encabezado fijo."
+      "title": "Filtros Móviles Ergonómicos en Inventario",
+      "desc": "Los estados se organizan en cuadrícula 2x2 táctil, las categorías ocupan todo el ancho sin chocarse con botones y el botón de Excel pasa junto al buscador en móviles."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.43",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.44",
   "forceUpdate": true
 }

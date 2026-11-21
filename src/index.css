@@ -5107,10 +5107,26 @@ body.splash-active::-webkit-scrollbar,
   width: 100%;
 }
 
-.inventory-search-box {
-  position: relative;
+.inventory-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 1 1 280px;
   min-width: 220px;
+}
+
+.inventory-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.inventory-excel-mobile {
+  display: none !important;
+}
+
+.inventory-excel-desktop {
+  display: inline-flex !important;
 }
 
 .inventory-status-and-actions-row {
@@ -5206,9 +5222,14 @@ body.splash-active::-webkit-scrollbar,
     gap: 8px !important;
   }
 
-  .inventory-search-box {
+  .inventory-search-row {
     flex: none !important;
     width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .inventory-search-box {
+    flex: 1 !important;
     min-width: 0 !important;
   }
 
@@ -5217,26 +5238,56 @@ body.splash-active::-webkit-scrollbar,
     font-size: 0.82rem !important;
   }
 
+  .inventory-excel-mobile {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .inventory-excel-desktop {
+    display: none !important;
+  }
+
   .inventory-status-and-actions-row {
     width: 100% !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    padding-bottom: 1px !important;
-    gap: 6px !important;
+    display: block !important;
+    overflow: visible !important;
+    padding-bottom: 0 !important;
   }
 
   .inventory-status-pills {
-    flex-wrap: nowrap !important;
-    gap: 5px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
   }
 
-  .inventory-filter-pill,
+  .inventory-filter-pill {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 7px 8px !important;
+    font-size: 0.73rem !important;
+    border-radius: 8px !important;
+  }
+
+  .inventory-category-strip {
+    width: 100% !important;
+    gap: 6px !important;
+    padding: 2px 2px 3px 2px !important;
+    scroll-snap-type: x proximity;
+  }
+
   .inventory-cat-pill {
     padding: 6px 11px !important;
     font-size: 0.73rem !important;
     border-radius: 8px !important;
+    scroll-snap-align: start;
   }
 
   /* En móviles pequeños ocultar el selector Fichas/Tabla ya que Fichas es automático y más cómodo */

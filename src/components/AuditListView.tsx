@@ -499,47 +499,59 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
       
       {/* 1. FILTER & SEARCH TOOLBAR (ORDENADO, BALANCEADO & AMIGABLE EN MÓVILES Y ESCRITORIO) */}
       <div className="acrylic-panel inventory-toolbar-panel">
-        {/* FILA SUPERIOR: Buscador + Filtros de Estado + Selector Vista */}
+        {/* FILA SUPERIOR: Buscador (+ Excel en móvil) + Filtros de Estado + Selector Vista */}
         <div className="inventory-toolbar-top-row">
-          {/* Search Input with Scanner Icon Button */}
-          <div className="inventory-search-box">
-            <Search
-              size={14}
-              color="var(--accent-primary)"
-              style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="form-input inventory-search-input"
-              style={{
-                paddingLeft: '33px',
-                paddingRight: '40px',
-                height: '35px',
-                fontSize: '0.79rem',
-                width: '100%',
-                borderRadius: '8px'
-              }}
-            />
+          {/* Search Input with Scanner Icon Button (+ Icon-only Excel button on mobile) */}
+          <div className="inventory-search-row">
+            <div className="inventory-search-box">
+              <Search
+                size={14}
+                color="var(--accent-primary)"
+                style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+              />
+              <input
+                type="text"
+                placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="form-input inventory-search-input"
+                style={{
+                  paddingLeft: '33px',
+                  paddingRight: '40px',
+                  height: '35px',
+                  fontSize: '0.79rem',
+                  width: '100%',
+                  borderRadius: '8px'
+                }}
+              />
+              <button
+                type="button"
+                onClick={onOpenScanner}
+                className="btn-flat"
+                style={{
+                  position: 'absolute',
+                  right: '4px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  padding: '4px 7px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(148, 163, 184, 0.14)'
+                }}
+                title="Escanear Código QR o Código de Barras"
+                aria-label="Escanear código"
+              >
+                <Barcode size={14} color="var(--accent-primary)" />
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={onOpenScanner}
-              className="btn-flat"
-              style={{
-                position: 'absolute',
-                right: '4px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                padding: '4px 7px',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(148, 163, 184, 0.14)'
-              }}
-              title="Escanear Código QR o Código de Barras"
-              aria-label="Escanear código"
+              onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
+              className="btn-flat btn-excel inventory-excel-mobile"
+              title="Exportar inventario consolidado a Excel (.xlsx)"
+              aria-label="Exportar inventario a Excel"
             >
-              <Barcode size={14} color="var(--accent-primary)" />
+              <FileSpreadsheet size={16} />
             </button>
           </div>
 
@@ -709,18 +721,17 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
             })}
           </div>
 
-          {/* Botón Excel Solo Icono ubicado en el extremo derecho de la segunda fila */}
+          {/* Botón Excel Solo Icono ubicado en el extremo derecho de la segunda fila en escritorio */}
           <button
             type="button"
             onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
-            className="btn-flat btn-excel"
+            className="btn-flat btn-excel inventory-excel-desktop"
             style={{
               width: '30px',
               height: '30px',
               minWidth: '30px',
               padding: 0,
               borderRadius: '7px',
-              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
