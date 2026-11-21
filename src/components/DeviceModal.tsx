@@ -531,11 +531,6 @@ export const DeviceModal: React.FC<DeviceModalProps> = ({
   return createPortal(
     <div 
       className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          requestClose();
-        }
-      }}
     >
       <div 
         className={`modal-window-acrylic device-modal-window ${isClosing ? 'closing' : ''}`} 

@@ -448,11 +448,6 @@ export const AuditFormModal: React.FC<AuditFormModalProps> = ({
   return createPortal(
     <div 
       className={`modal-backdrop-acrylic ${isClosing ? 'closing' : ''}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          requestClose();
-        }
-      }}
     >
       <div className={`modal-window-acrylic ${isClosing ? 'closing' : ''}`} style={{
         width: '100%',

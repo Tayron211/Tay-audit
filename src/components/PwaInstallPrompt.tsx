@@ -252,7 +252,6 @@ export const PwaInstallPrompt: React.FC = () => {
             justifyContent: 'center',
             padding: '16px'
           }}
-          onClick={() => setShowIOSModal(false)}
         >
           <div
             className="upn-ios-install-window animate-modal-fade"

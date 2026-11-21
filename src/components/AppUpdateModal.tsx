@@ -92,9 +92,6 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({ updateInfo, onCl
         padding: '16px',
         boxSizing: 'border-box'
       }}
-      onClick={() => {
-        if (!isForceUpdate && !downloading) fade.requestClose();
-      }}
     >
       <div
         className={`acrylic-card border-2 ${fade.modalClass}`}

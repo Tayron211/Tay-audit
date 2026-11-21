@@ -475,7 +475,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       {updateModalFade.shouldRender && typeof document !== 'undefined' && createPortal(
         <div
           className={`upn-update-status-backdrop modal-backdrop-acrylic ${updateModalFade.backdropClass}`}
-          onClick={() => updateModalFade.requestClose()}
         >
           <div
             className={`upn-update-status-window ${updateModalFade.modalClass}`}
@@ -519,7 +518,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       {showIosModal && typeof document !== 'undefined' && createPortal(
         <div 
           className="modal-backdrop-acrylic modal-centered-mobile"
-          onClick={() => setShowIosModal(false)}
           style={{
             position: 'fixed',
             inset: 0,

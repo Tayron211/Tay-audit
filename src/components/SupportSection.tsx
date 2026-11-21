@@ -1545,11 +1545,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             <div 
               className={`modal-backdrop-acrylic ${isClosingTicketModal ? 'closing' : ''}`} 
               style={{ zIndex: 10000, padding: '16px' }}
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  closeCreateTicketModal();
-                }
-              }}
             >
               <div
                 className={`modal-window-acrylic ${isClosingTicketModal ? 'closing' : ''}`}
@@ -2575,11 +2570,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             <div 
               className={`modal-backdrop-acrylic ${isClosingTeachModal ? 'closing' : ''}`} 
               style={{ zIndex: 10000, padding: '16px' }}
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  closeTeachingModal();
-                }
-              }}
             >
               <div
                 className={`modal-window-acrylic ${isClosingTeachModal ? 'closing' : ''}`}

@@ -1,14 +1,14 @@
 {
-  "version": "1.0.53",
-  "versionCode": 54,
+  "version": "1.0.54",
+  "versionCode": 55,
   "releaseDate": "2026-11-21",
-  "notes": "Corrección de diseño en las tarjetas de soluciones aprendidas de STIVIE para evitar el salto de línea en el botón de votos (útil/útiles) y truncar limpiamente textos largos en el encabezado.",
+  "notes": "Las ventanas modales ahora solo se cierran mediante su botón de cerrar para evitar cierres accidentales al tocar fuera.",
   "features": [
     {
-      "title": "Diseño Limpio en Base de Conocimiento",
-      "desc": "El botón de votos útiles ahora se mantiene siempre en una sola línea sin deformarse y el origen de la regla se trunca ordenadamente."
+      "title": "Cierre Seguro de Ventanas",
+      "desc": "Ninguna ventana modal (registro, detalle de equipo, escáner QR, tickets, enseñanza a STIVIE o avisos) se cierra al tocar el fondo oscuro; solo con su botón de cerrar."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.53",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.54",
   "forceUpdate": true
 }

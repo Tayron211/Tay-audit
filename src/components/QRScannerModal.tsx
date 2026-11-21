@@ -330,12 +330,6 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         zIndex: 10060,
         padding: '12px'
       }}
-      onClick={(e) => {
-        // Cerrar al tocar fuera de la ventana del modal
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
     >
       <div className={`modal-window-acrylic qr-scanner-window ${isClosing ? 'closing' : ''}`} style={{
         width: 'calc(100vw - 32px)',
