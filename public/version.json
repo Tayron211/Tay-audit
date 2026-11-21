@@ -1,18 +1,14 @@
 {
-  "version": "1.0.36",
-  "versionCode": 37,
+  "version": "1.0.37",
+  "versionCode": 38,
   "releaseDate": "2026-11-21",
-  "notes": "Rediseño amplio en cuadrícula 2x2 para el Centro de Despliegue STIVIE y firma del desarrollador exclusiva en dicho apartado.",
+  "notes": "Anuncios flotantes compactos con mensaje breve y transición fade de apertura y cierre.",
   "features": [
     {
-      "title": "Centro de Despliegue STIVIE Amplio (Grid 2x2)",
-      "desc": "Se amplió el panel de descargas STIVIE con barra de servidor integrada, tarjetas organizadas en 2 columnas y botones alineados."
-    },
-    {
-      "title": "Firma del Desarrollador Exclusiva en STIVIE",
-      "desc": "La firma 'Desarrollado por Tayron' ahora se muestra únicamente en el apartado de STIVIE."
+      "title": "Avisos Flotantes Compactos con Fade",
+      "desc": "Los anuncios de acciones remotas y tickets ahora son más pequeños, breves y cuentan con transición suave tipo fade al abrir y cerrar."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.36",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.37",
   "forceUpdate": true
 }

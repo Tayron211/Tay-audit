@@ -162,7 +162,33 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   }, [supportSubTab]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'abierto' | 'en_progreso' | 'resuelto'>('all');
   const [ticketSearchQuery, setTicketSearchQuery] = useState('');
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedbackState] = useState<string | null>(null);
+  const [isFeedbackVisible, setIsFeedbackVisible] = useState<boolean>(false);
+  const feedbackFadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const feedbackUnmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setActionFeedback = useCallback((msg: string | null, durationMs = 2400) => {
+    if (!msg) return;
+    if (feedbackFadeOutTimerRef.current) clearTimeout(feedbackFadeOutTimerRef.current);
+    if (feedbackUnmountTimerRef.current) clearTimeout(feedbackUnmountTimerRef.current);
+    setActionFeedbackState(msg);
+    requestAnimationFrame(() => {
+      setIsFeedbackVisible(true);
+    });
+    feedbackFadeOutTimerRef.current = setTimeout(() => {
+      setIsFeedbackVisible(false);
+      feedbackUnmountTimerRef.current = setTimeout(() => {
+        setActionFeedbackState(null);
+      }, 240);
+    }, durationMs);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackFadeOutTimerRef.current) clearTimeout(feedbackFadeOutTimerRef.current);
+      if (feedbackUnmountTimerRef.current) clearTimeout(feedbackUnmountTimerRef.current);
+    };
+  }, []);
 
   // Copia y resolución de IP LAN real para PowerShell en estaciones remotas
   const [copiedRemoteCmd, setCopiedRemoteCmd] = useState(false);
@@ -511,12 +537,10 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   const handleUpdateStatus = async (ticketId: string, status: 'abierto' | 'en_progreso' | 'resuelto', notes?: string) => {
     try {
       await api.updateTicket(ticketId, { status, solutionNotes: notes });
-      setActionFeedback(status === 'resuelto' ? '¡Ticket resuelto y aprendido por STIVIE!' : 'Estado actualizado');
-      setTimeout(() => setActionFeedback(null), 3000);
+      setActionFeedback(status === 'resuelto' ? 'Ticket resuelto' : 'Estado actualizado');
       onRefresh();
     } catch {
-      setActionFeedback('Error al actualizar ticket');
-      setTimeout(() => setActionFeedback(null), 2000);
+      setActionFeedback('Error al actualizar');
     }
   };
 
@@ -572,14 +596,12 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     try {
       await api.toggleStivieStatus(device.id, enable);
       setActionFeedback(enable 
-        ? `¡${device.hostname} vinculada a la Consola Remota con éxito!` 
-        : `¡${device.hostname} retirada de la Consola Remota! (Permanece en el Inventario)`
+        ? `${device.hostname} vinculada` 
+        : `${device.hostname} retirada de consola`
       );
       if (onRefresh) onRefresh();
-      setTimeout(() => setActionFeedback(null), 3500);
     } catch (err: any) {
-      setActionFeedback(err.message || 'Error al actualizar estado de STIVIE');
-      setTimeout(() => setActionFeedback(null), 3500);
+      setActionFeedback(err.message || 'Error al actualizar STIVIE');
     }
   };
 
@@ -589,12 +611,16 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     setCheckingConnection(true);
     try {
       const res = await api.checkConnection(device.id);
-      setActionFeedback(res.statusSummary);
+      if (!device.stivieInstalled) {
+        setActionFeedback(`STIVIE no instalado en ${device.hostname}`);
+      } else if (res.isStivieActive) {
+        setActionFeedback(`${device.hostname} en línea (${res.secondsSinceLastPing ?? 0}s)`);
+      } else {
+        setActionFeedback(`${device.hostname} sin señal activa`);
+      }
       if (onRefresh) onRefresh();
-      setTimeout(() => setActionFeedback(null), 6000);
-    } catch (err: any) {
-      setActionFeedback(err.message || 'Error al diagnosticar conexión');
-      setTimeout(() => setActionFeedback(null), 5000);
+    } catch {
+      setActionFeedback('Error al verificar conexión');
     } finally {
       setCheckingConnection(false);
     }
@@ -602,31 +628,28 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
   const handleExecuteRemoteAction = async (device: Device, action: 'restart' | 'shutdown' | 'screen_assist' | 'display_clone' | 'remote_access' | 'launch_stivie' | 'update_stivie') => {
     if (!device.stivieInstalled && action !== 'remote_access' && action !== 'launch_stivie' && action !== 'update_stivie') {
-      setActionFeedback(`Acción no disponible: STIVIE no está instalado en ${device.hostname}. Ejecuta stivie-installer.bat primero.`);
-      setTimeout(() => setActionFeedback(null), 4500);
+      setActionFeedback(`STIVIE no instalado en ${device.hostname}`);
       return;
     }
     setRemoteLoading(action);
     try {
-      const res = await api.triggerRemoteAction(device.id, action, true);
+      await api.triggerRemoteAction(device.id, action, true);
       if (action === 'screen_assist' || action === 'display_clone') {
-        setActionFeedback(`¡Acción activada: Duplicado de pantalla en ${device.hostname}!`);
+        setActionFeedback(`Pantalla duplicada en ${device.hostname}`);
       } else if (action === 'remote_access') {
         window.open(api.getRdpDownloadUrl(device.id), '_blank');
-        setActionFeedback(`¡Acción activada: Conexión RDP iniciada con ${device.hostname}!`);
+        setActionFeedback(`RDP iniciado con ${device.hostname}`);
       } else if (action === 'restart') {
-        setActionFeedback(`¡Acción activada: Reinicio enviado a ${device.hostname}!`);
+        setActionFeedback(`Reinicio enviado a ${device.hostname}`);
       } else if (action === 'shutdown') {
-        setActionFeedback(`¡Acción activada: Apagado enviado a ${device.hostname}!`);
+        setActionFeedback(`Apagado enviado a ${device.hostname}`);
       } else if (action === 'launch_stivie') {
-        setActionFeedback(res.message || `¡Orden de inicio de STIVIE enviada a ${device.hostname}!`);
+        setActionFeedback(`Iniciando STIVIE en ${device.hostname}`);
       } else if (action === 'update_stivie') {
-        setActionFeedback(res.message || `¡Actualización remota de STIVIE enviada a ${device.hostname}!`);
+        setActionFeedback(`Actualizando STIVIE en ${device.hostname}`);
       }
-      setTimeout(() => setActionFeedback(null), 4000);
-    } catch (err: any) {
-      setActionFeedback(err.message || 'Error al ejecutar acción remota corporativa');
-      setTimeout(() => setActionFeedback(null), 3500);
+    } catch {
+      setActionFeedback('Error en acción remota');
     } finally {
       setRemoteLoading(null);
     }
@@ -635,10 +658,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   const handleDuplicateScreen = async (hostname: string) => {
     try {
       await api.stivieSolveScreen(hostname);
-      setActionFeedback(`¡Comando de duplicación nativa enviado a ${hostname}!`);
-      setTimeout(() => setActionFeedback(null), 3500);
+      setActionFeedback(`Duplicación enviada a ${hostname}`);
     } catch {
-      setActionFeedback('Error al emitir orden de duplicación');
+      setActionFeedback('Error al duplicar pantalla');
     }
   };
 
@@ -646,8 +668,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     e.preventDefault();
     try {
       await api.teachStivie(newRule);
-      setActionFeedback('¡STIVIE aprendió la nueva respuesta exitosamente!');
-      setTimeout(() => setActionFeedback(null), 3000);
+      setActionFeedback('Solución guardada en STIVIE');
       closeTeachingModal();
       setNewRule({
         triggerKeywords: '',
@@ -659,15 +680,14 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
       });
       onRefresh();
     } catch {
-      setActionFeedback('Error al registrar conocimiento en STIVIE');
+      setActionFeedback('Error al guardar solución');
     }
   };
 
   const handleVoteKnowledge = async (id: string) => {
     try {
       await api.stivieFeedback(id, true);
-      setActionFeedback('¡Voto registrado en el cerebro de STIVIE!');
-      setTimeout(() => setActionFeedback(null), 2500);
+      setActionFeedback('Voto registrado');
       onRefresh();
     } catch {
       // ignore
@@ -689,8 +709,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         urgency: createForm.urgency
       });
 
-      setActionFeedback('Ticket Creado');
-      setTimeout(() => setActionFeedback(null), 2500);
+      setActionFeedback('Ticket registrado');
       closeCreateTicketModal();
       setCreateForm({ deviceId: '', hostname: '', userName: '', category: 'General', description: '', urgency: 'media' });
       onRefresh();
@@ -859,27 +878,36 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         </button>
       </div>
 
-      {/* Floating feedback message */}
+      {/* Anuncio flotante compacto con transición Fade de apertura y cierre */}
       {actionFeedback && (
-        <div style={{
-          position: 'fixed',
-          top: '80px',
-          right: '24px',
-          background: 'var(--accent-primary)',
-          color: 'var(--accent-contrast, #000000)',
-          padding: '12px 20px',
-          borderRadius: '10px',
-          fontWeight: 800,
-          fontSize: '0.86rem',
-          boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
-          border: '1.5px solid rgba(0, 0, 0, 0.25)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <Sparkles size={18} color="var(--accent-contrast, #000000)" />
-          <span style={{ color: 'var(--accent-contrast, #000000)' }}>{actionFeedback}</span>
+        <div
+          style={{
+            position: 'fixed',
+            top: '76px',
+            right: '20px',
+            background: 'var(--accent-primary)',
+            color: 'var(--accent-contrast, #000000)',
+            padding: '7px 13px',
+            borderRadius: '8px',
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.24)',
+            border: '1px solid rgba(0, 0, 0, 0.18)',
+            zIndex: 9999,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            maxWidth: '320px',
+            pointerEvents: 'none',
+            opacity: isFeedbackVisible ? 1 : 0,
+            transform: isFeedbackVisible ? 'translateY(0)' : 'translateY(-6px)',
+            transition: 'opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
+          <Sparkles size={13} color="var(--accent-contrast, #000000)" style={{ flexShrink: 0 }} />
+          <span style={{ color: 'var(--accent-contrast, #000000)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {actionFeedback}
+          </span>
         </div>
       )}
 
