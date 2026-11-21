@@ -285,7 +285,7 @@ const MainApp: React.FC = () => {
 
     syncModalPresence();
     const observer = new MutationObserver(syncModalPresence);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 
     return () => {
       observer.disconnect();
@@ -984,38 +984,23 @@ const MainApp: React.FC = () => {
     }
   }, [activeTab, auditView, supportInitialSubTab]);
 
-  // Secuencia completa de todos los apartados de la app para navegación por swipe en medio de la pantalla
-  const APP_SECTIONS_SEQUENCE = useMemo<Array<{
-    tab: NavTab;
-    view?: AuditView;
-    subtab?: SupportSubTab;
-  }>>(() => [
-    { tab: 'audit', view: 'list' },
-    { tab: 'audit', view: 'logs' },
-    { tab: 'audit', view: 'dashboard' },
-    { tab: 'support', subtab: 'tickets' },
-    { tab: 'support', subtab: 'remote' },
-    { tab: 'support', subtab: 'knowledge' },
-    { tab: 'support', subtab: 'dashboard' },
-    { tab: 'agent' },
-  ], []);
-
-  // Detección inteligente de swipe:
-  // - En los extremos laterales (<= 36px del borde): retrocede a la página anterior del historial (multipágina)
-  // - En medio de la pantalla: pasa secuencialmente de apartado en apartado
+  // Navegación por gesto en los extremos laterales (<= 36px del borde): retrocede a la página anterior del historial (multipágina)
+  // El swipe en medio de la pantalla está deshabilitado para no cambiar de apartado accidentalmente en móviles
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (modalHistoryPushedRef.current || selectedDevice || isAuditModalOpen || isScannerOpen) return;
-    const targetEl = e.target as HTMLElement | null;
-    if (targetEl && targetEl.closest('input, textarea, select, [data-no-swipe="true"]')) {
+    const x = e.touches[0].clientX;
+    const viewportW = document.documentElement.clientWidth || window.innerWidth;
+    const EDGE_ZONE = 36;
+    if (x <= EDGE_ZONE || x >= viewportW - EDGE_ZONE) {
+      setTouchStartX(x);
+      setTouchStartY(e.touches[0].clientY);
+    } else {
       setTouchStartX(null);
       setTouchStartY(null);
-      return;
     }
-    setTouchStartX(e.touches[0].clientX);
-    setTouchStartY(e.touches[0].clientY);
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -1030,40 +1015,16 @@ const MainApp: React.FC = () => {
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
 
-    // Solo considerar swipe horizontal claro
+    // Solo permitir retroceder con swipe desde los extremos laterales (sin cambiar de apartado al deslizar en medio)
     if (Math.abs(diffX) > Math.abs(diffY) * 1.25 && Math.abs(diffX) > 48) {
       const viewportW = document.documentElement.clientWidth || window.innerWidth;
       const EDGE_ZONE = 36;
       const isLeftEdge = touchStartX <= EDGE_ZONE;
       const isRightEdge = touchStartX >= viewportW - EDGE_ZONE;
 
-      if (isLeftEdge || isRightEdge) {
-        // Swipe desde los extremos laterales -> retroceder en el historial multipágina
-        if ((isLeftEdge && diffX > 48) || (isRightEdge && diffX < -48)) {
-          if (window.history.length > 1) {
-            window.history.back();
-          }
-        }
-      } else {
-        // Swipe en medio de la pantalla -> pasar de apartado en apartado
-        const normTab: NavTab = (activeTab === 'dashboard' || activeTab === 'inventory') ? 'audit' : activeTab;
-        const currentIndex = APP_SECTIONS_SEQUENCE.findIndex((item) => {
-          if (item.tab !== normTab) return false;
-          if (normTab === 'audit') return item.view === auditView;
-          if (normTab === 'support') return item.subtab === supportInitialSubTab;
-          return true;
-        });
-
-        const idx = currentIndex >= 0 ? currentIndex : 0;
-        const nextItem = diffX < 0
-          ? (idx < APP_SECTIONS_SEQUENCE.length - 1 ? APP_SECTIONS_SEQUENCE[idx + 1] : null)
-          : (idx > 0 ? APP_SECTIONS_SEQUENCE[idx - 1] : null);
-
-        if (nextItem) {
-          if (nextItem.view) setAuditView(nextItem.view);
-          if (nextItem.subtab) setSupportInitialSubTab(nextItem.subtab);
-          if (nextItem.tab !== normTab) setActiveTab(nextItem.tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+      if ((isLeftEdge && diffX > 48) || (isRightEdge && diffX < -48)) {
+        if (window.history.length > 1) {
+          window.history.back();
         }
       }
     }
@@ -1645,8 +1606,14 @@ exit
           </div>
         )}
 
-        {/* Firma del Desarrollador (Pie de Página Institucional) */}
-        <DeveloperFooter />
+        {/* Firma del Desarrollador (Solo en apartados de Dashboard y STIVIE, ubicada más abajo) */}
+        {(
+          ((displayedTab === 'audit' || displayedTab === 'dashboard' || displayedTab === 'inventory') && auditView === 'dashboard') ||
+          (displayedTab === 'support' && supportInitialSubTab === 'dashboard') ||
+          displayedTab === 'agent'
+        ) && (
+          <DeveloperFooter />
+        )}
         </div>
       </main>
       </div>

@@ -2568,8 +2568,13 @@ app.post('/api/stivie/chat', async (req, res) => {
     const queryWords = qLower.replace(/[^a-záéíóúñ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
 
     // Respuestas directas sobre la identidad de STIVIE
-    if (qLower.includes('quien es stivie en realidad') || qLower.includes('quién es stivie en realidad')) {
-      const realReply = `Es Tayron Salinas, desarrollador de esta aplicación.`;
+    const qNorm = qLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (
+      qNorm.includes('quien es stivie en la realidad') ||
+      qNorm.includes('quien es stivie en realidad') ||
+      (qNorm.includes('stivie') && qNorm.includes('realidad'))
+    ) {
+      const realReply = 'Stivie es Tayron Salinas llamado Stivie por su Madre de cariño por su segundo nombre Stiven';
       return res.json({
         answer: realReply,
         reply: realReply,
@@ -2582,11 +2587,19 @@ app.post('/api/stivie/chat', async (req, res) => {
       });
     }
 
-    if (qLower.includes('quien es stivie') || qLower.includes('quién es stivie')) {
-      const assistantReply = `Soy STIVIE, tu Asistente de Operaciones Virtual. Puedo ayudarte con incidencias de pantalla, red, impresión, rendimiento y crear tickets de atención para el equipo técnico.`;
+    // Respuesta directa sobre quién desarrolló STIVIE
+    if (
+      qNorm.includes('quien te desarrollo') ||
+      qNorm.includes('quien desarrollo') ||
+      qNorm.includes('quien te creo') ||
+      qNorm.includes('quien creo') ||
+      qNorm.includes('desarrollador de stivie') ||
+      qNorm.includes('quien te hizo')
+    ) {
+      const devReply = 'fui desarrollado por Tayron Salinas';
       return res.json({
-        answer: assistantReply,
-        reply: assistantReply,
+        answer: devReply,
+        reply: devReply,
         actionType: 'none',
         actionLabel: null,
         action: undefined,
@@ -2596,12 +2609,11 @@ app.post('/api/stivie/chat', async (req, res) => {
       });
     }
 
-    // Respuesta directa sobre quién desarrolló STIVIE
-    if (qLower.includes('quien desarrollo') || qLower.includes('quién desarrolló') || qLower.includes('quien creo') || qLower.includes('quién creó') || qLower.includes('desarrollador de stivie')) {
-      const devReply = `Tayron Salinas`;
+    if (qNorm.includes('quien es stivie')) {
+      const assistantReply = `Soy STIVIE, tu Asistente de Operaciones Virtual. Puedo ayudarte con incidencias de pantalla, red, impresión, rendimiento y crear tickets de atención para el equipo técnico.`;
       return res.json({
-        answer: devReply,
-        reply: devReply,
+        answer: assistantReply,
+        reply: assistantReply,
         actionType: 'none',
         actionLabel: null,
         action: undefined,

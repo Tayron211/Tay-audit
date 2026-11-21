@@ -2292,33 +2292,33 @@ pre {
   font-weight: 900 !important;
 }
 
-/* Badge inside an inactive tab (neutral background): vibrant colored circular pill with high contrast number */
+/* Badge inside an inactive tab (neutral background): vibrant red circular alert pill like notification bell */
 .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill,
 [data-mode="light"] .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill,
 [data-mode="dark"] .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill {
-  background: var(--accent-primary) !important;
-  border: none !important;
+  background: #ef4444 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.90) !important;
   border-radius: 50% !important;
-  color: var(--accent-contrast, #000000) !important;
-  box-shadow: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.50) !important;
 }
 
 .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill *,
 .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill span,
 [data-mode="light"] .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill *,
 [data-mode="dark"] .nav-tab-btn:not(.nav-tab-active) .nav-badge-pill * {
-  color: var(--accent-contrast, #000000) !important;
+  color: #ffffff !important;
 }
 
-/* Badge inside an ACTIVE tab: perfectly round high-contrast dark circle with white border & pure white number */
+/* Badge inside an ACTIVE tab: vibrant red circular alert pill with crisp white border & pure white number */
 .nav-tab-active .nav-badge-pill,
 [data-mode="light"] .nav-tab-active .nav-badge-pill,
 [data-mode="dark"] .nav-tab-active .nav-badge-pill {
-  background: rgba(0, 0, 0, 0.35) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  background: #ef4444 !important;
+  border: 1.5px solid #ffffff !important;
   border-radius: 50% !important;
   color: #ffffff !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.55) !important;
 }
 
 .nav-tab-active .nav-badge-pill *,
@@ -4922,8 +4922,27 @@ body.splash-active::-webkit-scrollbar,
 }
 
 /* ==================================================================== */
-/* RESPONSIVE AUDIT & INVENTORY VIEW TABS (MOBILE OPTIMIZED)            */
+/* RESPONSIVE AUDIT & SUPPORT SECTION HEADER (DESKTOP & MOBILE)         */
 /* ==================================================================== */
+.audit-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  padding: 2px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.audit-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
 .audit-tabs-pill-container {
   display: inline-flex;
   align-items: center;
@@ -4934,79 +4953,80 @@ body.splash-active::-webkit-scrollbar,
   border: 1px solid var(--border-acrylic);
   max-width: 100%;
   box-sizing: border-box;
+  margin-left: auto;
 }
 
-@media (max-width: 640px) {
-  .audit-tabs-pill-container {
+.support-subtabs-container {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(148, 163, 184, 0.08);
+  padding: 3px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-acrylic);
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 3px;
+  margin-left: auto;
+}
+
+@media (max-width: 820px) {
+  .audit-section-header {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .audit-header-title-group {
+    order: 1 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .audit-register-btn {
+    order: 2 !important;
+    margin-left: auto !important;
+  }
+
+  .audit-tabs-pill-container,
+  .support-subtabs-container {
+    order: 3 !important;
     width: 100% !important;
+    flex: 0 0 100% !important;
+    margin-left: 0 !important;
     display: flex !important;
     justify-content: space-between !important;
     padding: 3px !important;
     gap: 3px !important;
   }
 
-  .audit-tabs-pill-container .nav-tab-btn {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    justify-content: center !important;
-    padding: 6px 4px !important;
-    font-size: 0.72rem !important;
-    text-align: center !important;
-  }
-
-  .audit-tab-desktop-only {
-    display: none !important;
-  }
-
-  .audit-tab-mobile-only {
-    display: inline !important;
-  }
-}
-
-@media (min-width: 641px) {
-  .audit-tab-desktop-only {
-    display: inline !important;
-  }
-
-  .audit-tab-mobile-only {
-    display: none !important;
-  }
-}
-
-/* ==================================================================== */
-/* RESPONSIVE SUPPORT TI SUB-TABS (MOBILE BALANCED & NO CLIPPING)       */
-/* ==================================================================== */
-.support-subtabs-container {
-  display: flex;
-  align-items: center;
-  background: rgba(148, 163, 184, 0.08);
-  padding: 3px;
-  border-radius: 10px;
-  border: 1px solid var(--border-acrylic);
-  max-width: 100%;
-  box-sizing: border-box;
-  gap: 4px;
-}
-
-@media (max-width: 640px) {
-  .support-subtabs-container {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    padding: 3px 2px !important;
-    gap: 3px !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
+  .audit-tabs-pill-container .nav-tab-btn,
   .support-subtabs-container .nav-tab-btn {
     flex: 1 1 0 !important;
     min-width: 0 !important;
     justify-content: center !important;
-    padding: 6px 3px !important;
-    font-size: 0.69rem !important;
+    padding: 7px 4px !important;
+    font-size: 0.72rem !important;
     text-align: center !important;
     white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .audit-tab-desktop-only,
+  .support-tab-desktop-text {
+    display: none !important;
+  }
+
+  .audit-tab-mobile-only,
+  .support-tab-mobile-text {
+    display: inline !important;
+  }
+
+  .support-subtabs-container .nav-tab-btn {
+    font-size: 0.69rem !important;
+    padding: 7px 3px !important;
   }
 
   .support-subtabs-container .nav-tab-btn svg {
@@ -5014,24 +5034,256 @@ body.splash-active::-webkit-scrollbar,
     height: 12px !important;
     flex-shrink: 0 !important;
   }
-
-  .support-tab-desktop-text {
-    display: none !important;
-  }
-
-  .support-tab-mobile-text {
-    display: inline !important;
-  }
 }
 
 @media (min-width: 641px) {
+  .audit-tab-desktop-only,
   .support-tab-desktop-text {
     display: inline !important;
   }
 
+  .audit-tab-mobile-only,
   .support-tab-mobile-text {
     display: none !important;
   }
+}
+
+/* ==================================================================== */
+/* INVENTORY FILTER & SEARCH TOOLBAR (MOBILE & DESKTOP ERGONOMICS)      */
+/* ==================================================================== */
+.inventory-toolbar-panel {
+  padding: 10px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.inventory-toolbar-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+}
+
+.inventory-search-box {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+.inventory-status-and-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+}
+
+.inventory-status-pills {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.inventory-filter-pill {
+  padding: 5px 10px !important;
+  font-size: 0.70rem !important;
+  font-weight: 700 !important;
+  border-radius: 7px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.inventory-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.inventory-view-switcher {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-canvas-subtle);
+  border-radius: 7px;
+  border: 1px solid var(--border-acrylic);
+  padding: 2px;
+  gap: 2px;
+}
+
+.inventory-category-strip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.inventory-category-strip::-webkit-scrollbar,
+.inventory-status-and-actions-row::-webkit-scrollbar,
+.inventory-status-pills::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.inventory-cat-pill {
+  padding: 5px 10px !important;
+  font-size: 0.71rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  border-radius: 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .inventory-toolbar-panel {
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+
+  .inventory-toolbar-top-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .inventory-search-box {
+    flex: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .inventory-search-input {
+    height: 38px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .inventory-status-and-actions-row {
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 1px !important;
+    gap: 6px !important;
+  }
+
+  .inventory-status-pills {
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+
+  .inventory-filter-pill,
+  .inventory-cat-pill {
+    padding: 6px 11px !important;
+    font-size: 0.73rem !important;
+    border-radius: 8px !important;
+  }
+
+  /* En móviles pequeños ocultar el selector Fichas/Tabla ya que Fichas es automático y más cómodo */
+  .inventory-view-switcher {
+    display: none !important;
+  }
+}
+
+/* ==================================================================== */
+/* MODAL INSTRUCTIVO APPLE iOS (SAFARI PWA INSTALL)                     */
+/* ==================================================================== */
+.upn-ios-install-window {
+  max-width: 390px;
+  width: 100%;
+  padding: 22px !important;
+  border-radius: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  background-color: rgba(18, 18, 22, 0.96) !important;
+  border: 1.5px solid rgba(253, 186, 48, 0.35) !important;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.90), 0 0 35px rgba(253, 186, 48, 0.14) !important;
+  margin: auto !important;
+  box-sizing: border-box !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+}
+
+[data-mode="light"] .upn-ios-install-window,
+html:not(.dark) .upn-ios-install-window {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18), 0 0 30px rgba(253, 186, 48, 0.12) !important;
+}
+
+.upn-ios-install-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-mode="light"] .upn-ios-install-icon-box {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.upn-ios-step-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-sizing: border-box;
+}
+
+[data-mode="light"] .upn-ios-step-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.upn-ios-step-badge {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  background: #FDBA30;
+  color: #000000;
+  font-weight: 900;
+  font-size: 0.74rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(253, 186, 48, 0.35);
 }
 
 /* ==================================================================== */

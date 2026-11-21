@@ -95,17 +95,9 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
     <div className="audit-section-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
       
       {/* 1. SECTION HEADER & VIEW TOGGLE (Centrado, Ordenado, Simétrico y Sin Recortes) */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '10px 14px',
-        padding: '2px 0',
-        width: '100%'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexWrap: 'wrap' }}>
-          <h2 style={{ fontSize: 'clamp(0.98rem, 3.8vw, 1.10rem)', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+      <div className="audit-section-header">
+        <div className="audit-header-title-group">
+          <h2 style={{ fontSize: 'clamp(0.98rem, 3.8vw, 1.12rem)', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
             Inventario de Equipos & Activos
           </h2>
           <span style={{
@@ -126,70 +118,67 @@ export const AuditSection: React.FC<AuditSectionProps> = ({
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', flex: '1 1 auto' }}>
-          <div className="audit-tabs-pill-container">
-            {/* Sub-pestaña 1 (Izquierda - Por Defecto): Lista de Equipos */}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategoryFilter('all');
-                selectAuditView('list');
-              }}
-              className={`nav-tab-btn ${activeView === 'list' ? 'nav-tab-active' : ''}`}
-              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-            >
-              <ClipboardCheck size={13} style={{ flexShrink: 0 }} />
-              <span className="audit-tab-desktop-only">Lista de Equipos</span>
-              <span className="audit-tab-mobile-only">Equipos</span>
-            </button>
-
-            {/* Sub-pestaña 2 (Centro): Bitácora */}
-            <button
-              type="button"
-              onClick={() => selectAuditView('logs')}
-              className={`nav-tab-btn ${activeView === 'logs' ? 'nav-tab-active' : ''}`}
-              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-            >
-              <Clock size={13} style={{ flexShrink: 0 }} />
-              <span>Bitácora ({logs.length})</span>
-            </button>
-
-            {/* Sub-pestaña 3 (Extremo Derecho): Dashboard de Inventario */}
-            <button
-              type="button"
-              onClick={() => selectAuditView('dashboard')}
-              className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
-              style={{ fontSize: '0.74rem', padding: '4px 8px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
-            >
-              <BarChart3 size={13} style={{ flexShrink: 0 }} />
-              <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
-              <span className="audit-tab-mobile-only">Dashboard</span>
-            </button>
-          </div>
-
-          {/* Botón Registrar: Siempre alineado al extremo derecho */}
+        <div className="audit-tabs-pill-container">
+          {/* Sub-pestaña 1 (Izquierda - Por Defecto): Lista de Equipos */}
           <button
             type="button"
-            onClick={onOpenAuditModal}
-            className="btn-flat btn-primary"
-            style={{
-              padding: '5px 12px',
-              fontSize: '0.76rem',
-              fontWeight: 800,
-              gap: '6px',
-              borderRadius: '8px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              boxShadow: '0 2px 8px var(--accent-glow)',
-              flexShrink: 0,
-              marginLeft: 'auto'
+            onClick={() => {
+              setSelectedCategoryFilter('all');
+              selectAuditView('list');
             }}
-            title="Registrar nuevo equipo en inventario"
+            className={`nav-tab-btn ${activeView === 'list' ? 'nav-tab-active' : ''}`}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
           >
-            <Plus size={14} />
-            <span>Registrar</span>
+            <ClipboardCheck size={13} style={{ flexShrink: 0 }} />
+            <span className="audit-tab-desktop-only">Lista de Equipos</span>
+            <span className="audit-tab-mobile-only">Equipos</span>
+          </button>
+
+          {/* Sub-pestaña 2 (Centro): Bitácora */}
+          <button
+            type="button"
+            onClick={() => selectAuditView('logs')}
+            className={`nav-tab-btn ${activeView === 'logs' ? 'nav-tab-active' : ''}`}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+          >
+            <Clock size={13} style={{ flexShrink: 0 }} />
+            <span>Bitácora ({logs.length})</span>
+          </button>
+
+          {/* Sub-pestaña 3 (Extremo Derecho): Dashboard de Inventario */}
+          <button
+            type="button"
+            onClick={() => selectAuditView('dashboard')}
+            className={`nav-tab-btn ${activeView === 'dashboard' ? 'nav-tab-active' : ''}`}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: '6px' }}
+          >
+            <BarChart3 size={13} style={{ flexShrink: 0 }} />
+            <span className="audit-tab-desktop-only">Dashboard por Tipo</span>
+            <span className="audit-tab-mobile-only">Dashboard</span>
           </button>
         </div>
+
+        {/* Botón Registrar: Siempre alineado al extremo derecho */}
+        <button
+          type="button"
+          onClick={onOpenAuditModal}
+          className="btn-flat btn-primary audit-register-btn"
+          style={{
+            padding: '6px 13px',
+            fontSize: '0.76rem',
+            fontWeight: 800,
+            gap: '6px',
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            boxShadow: '0 2px 8px var(--accent-glow)',
+            flexShrink: 0
+          }}
+          title="Registrar nuevo equipo en inventario"
+        >
+          <Plus size={14} />
+          <span>Registrar</span>
+        </button>
       </div>
 
       {/* CONTENEDOR CON TRANSICIÓN SUAVE DE FADE AL APARECER Y DESAPARECER */}

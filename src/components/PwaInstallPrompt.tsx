@@ -255,21 +255,7 @@ export const PwaInstallPrompt: React.FC = () => {
           onClick={() => setShowIOSModal(false)}
         >
           <div
-            className="modal-window-acrylic"
-            style={{
-              width: '100%',
-              maxWidth: '380px',
-              backgroundColor: 'var(--bg-canvas-card, #0B132B)',
-              border: '1px solid var(--border-acrylic, rgba(255, 255, 255, 0.15))',
-              borderRadius: '24px',
-              padding: '24px 20px',
-              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-              color: 'var(--text-primary, #ffffff)',
-              margin: 'auto'
-            }}
+            className="upn-ios-install-window animate-modal-fade"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del Modal */}

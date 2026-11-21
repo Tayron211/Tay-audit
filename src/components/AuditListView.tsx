@@ -497,63 +497,179 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
   return (
     <div id="inventory-list-top" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
       
-      {/* 1. FILTER & SEARCH TOOLBAR (COMPACTO & RESPONSIVO) */}
-      <div className="acrylic-panel" style={{
-        padding: '8px 12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '8px',
-        borderRadius: '10px',
-        width: '100%',
-        maxWidth: '100%',
-        minWidth: 0,
-        boxSizing: 'border-box'
-      }}>
-        {/* Search Input with Scanner Icon Button */}
-        <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
-          <Search
-            size={14}
-            color="var(--accent-primary)"
-            style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}
-          />
-          <input
-            type="text"
-            placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input"
-            style={{
-              paddingLeft: '32px',
-              paddingRight: '38px',
-              height: '32px',
-              fontSize: '0.78rem',
-              width: '100%'
-            }}
-          />
-          <button
-            type="button"
-            onClick={onOpenScanner}
-            className="btn-flat"
-            style={{
-              position: 'absolute',
-              right: '4px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              padding: '3px 6px',
-              borderRadius: '5px',
-              backgroundColor: 'rgba(148, 163, 184, 0.12)'
-            }}
-            title="Escanear Código QR o Código de Barras"
-            aria-label="Escanear código"
-          >
-            <Barcode size={13} color="var(--accent-primary)" />
-          </button>
+      {/* 1. FILTER & SEARCH TOOLBAR (ORDENADO, BALANCEADO & AMIGABLE EN MÓVILES Y ESCRITORIO) */}
+      <div className="acrylic-panel inventory-toolbar-panel">
+        {/* FILA SUPERIOR: Buscador + Filtros de Estado + Acciones Rápidas (Excel / Vista) */}
+        <div className="inventory-toolbar-top-row">
+          {/* Search Input with Scanner Icon Button */}
+          <div className="inventory-search-box">
+            <Search
+              size={14}
+              color="var(--accent-primary)"
+              style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+            />
+            <input
+              type="text"
+              placeholder="Buscar por equipo, usuario, ubicación, S/N o IP..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="form-input inventory-search-input"
+              style={{
+                paddingLeft: '33px',
+                paddingRight: '40px',
+                height: '35px',
+                fontSize: '0.79rem',
+                width: '100%',
+                borderRadius: '8px'
+              }}
+            />
+            <button
+              type="button"
+              onClick={onOpenScanner}
+              className="btn-flat"
+              style={{
+                position: 'absolute',
+                right: '4px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                padding: '4px 7px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(148, 163, 184, 0.14)'
+              }}
+              title="Escanear Código QR o Código de Barras"
+              aria-label="Escanear código"
+            >
+              <Barcode size={14} color="var(--accent-primary)" />
+            </button>
+          </div>
+
+          {/* Status Filters + Actions (Scroll táctil suave en móvil con data-no-swipe) */}
+          <div className="inventory-status-and-actions-row" data-no-swipe="true">
+            <div className="inventory-status-pills" data-no-swipe="true">
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'instalado' ? 'all' : 'instalado')}
+                className={`btn-flat inventory-filter-pill ${statusFilter === 'instalado' ? 'status-instalado' : ''}`}
+                style={{
+                  backgroundColor: statusFilter === 'instalado' ? undefined : 'var(--bg-canvas-subtle)',
+                  borderColor: statusFilter === 'instalado' ? undefined : 'var(--border-acrylic)',
+                  color: statusFilter === 'instalado' ? undefined : 'var(--text-secondary)'
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent-emerald)', display: 'inline-block', flexShrink: 0 }} />
+                <span>Instalados ({counts.instalado})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'custodia' ? 'all' : 'custodia')}
+                className={`btn-flat inventory-filter-pill ${statusFilter === 'custodia' ? 'status-custodia' : ''}`}
+                style={{
+                  backgroundColor: statusFilter === 'custodia' ? undefined : 'var(--bg-canvas-subtle)',
+                  borderColor: statusFilter === 'custodia' ? undefined : 'var(--border-acrylic)',
+                  color: statusFilter === 'custodia' ? undefined : 'var(--text-secondary)'
+                }}
+              >
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent-amber)', display: 'inline-block', flexShrink: 0 }} />
+                <span>Custodia ({counts.custodia})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'maintenance' ? 'all' : 'maintenance')}
+                className={`btn-flat inventory-filter-pill ${statusFilter === 'maintenance' ? 'status-maintenance' : ''}`}
+                style={{
+                  backgroundColor: statusFilter === 'maintenance' ? undefined : 'var(--bg-canvas-subtle)',
+                  borderColor: statusFilter === 'maintenance' ? undefined : 'var(--border-acrylic)',
+                  color: statusFilter === 'maintenance' ? undefined : 'var(--text-secondary)'
+                }}
+                title="Filtrar equipos en mantenimiento técnico o reparación"
+              >
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent-cyan)', display: 'inline-block', flexShrink: 0 }} />
+                <span>Mantenimiento ({counts.maintenance})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter(prev => prev === 'baja' ? 'all' : 'baja')}
+                className={`btn-flat inventory-filter-pill ${statusFilter === 'baja' ? 'status-baja' : ''}`}
+                style={{
+                  backgroundColor: statusFilter === 'baja' ? undefined : 'var(--bg-canvas-subtle)',
+                  borderColor: statusFilter === 'baja' ? undefined : 'var(--border-acrylic)',
+                  color: statusFilter === 'baja' ? undefined : 'var(--text-secondary)'
+                }}
+                title="Filtrar equipos dados de baja u obsoletos"
+              >
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent-rose)', display: 'inline-block', flexShrink: 0 }} />
+                <span>De Baja ({counts.baja})</span>
+              </button>
+            </div>
+
+            {/* Right Actions: Excel + View Switcher */}
+            <div className="inventory-toolbar-actions">
+              <button
+                type="button"
+                onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
+                className="btn-flat btn-excel inventory-filter-pill"
+                title="Exportar inventario consolidado a Excel"
+              >
+                <FileSpreadsheet size={13} />
+                <span>Excel</span>
+              </button>
+
+              <div 
+                className="inventory-view-switcher"
+                title="Cambiar entre Fichas Táctiles (ideal tablets y móviles) o Tabla Columnar"
+              >
+                <button
+                  type="button"
+                  onClick={() => setViewMode(prev => prev === 'cards' ? 'auto' : 'cards')}
+                  className={`btn-flat ${viewMode === 'cards' ? 'btn-primary' : ''}`}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '5px',
+                    border: 'none',
+                    backgroundColor: viewMode === 'cards' ? 'var(--accent-primary)' : 'transparent',
+                    color: viewMode === 'cards' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Vista en Fichas Táctiles fluidas (100% responsiva para cualquier pantalla)"
+                >
+                  <LayoutGrid size={12} />
+                  <span>Fichas</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode(prev => prev === 'table' ? 'auto' : 'table')}
+                  className={`btn-flat ${viewMode === 'table' ? 'btn-primary' : ''}`}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '5px',
+                    border: 'none',
+                    backgroundColor: viewMode === 'table' ? 'var(--accent-primary)' : 'transparent',
+                    color: viewMode === 'table' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Vista en Tabla Columnar completa"
+                >
+                  <List size={12} />
+                  <span>Tabla</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Category Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%', minWidth: 0, paddingBottom: '2px' }}>
+        {/* FILA INFERIOR: Tira de Categorías con Scroll Táctil Fluido (Sin activar swipe de página) */}
+        <div className="inventory-category-strip" data-no-swipe="true">
           {[
             { id: 'all', label: 'Todos', count: counts.total },
             { id: 'pc', label: 'PCs', count: counts.pc },
@@ -567,36 +683,31 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
             { id: 'component', label: 'Hardware', count: counts.component }
           ].map(c => {
             const isSelected = categoryFilter === c.id;
+            const isEmpty = c.id !== 'all' && c.count === 0;
             return (
               <button
                 key={c.id}
+                type="button"
                 onClick={() => setCategoryFilter(c.id)}
-                className={`btn-flat ${isSelected ? 'btn-primary' : ''}`}
+                className={`btn-flat inventory-cat-pill ${isSelected ? 'btn-primary' : ''}`}
                 style={{
-                  padding: '4px 8px',
-                  fontSize: '0.69rem',
-                  fontWeight: 700,
-                  whiteSpace: 'nowrap',
-                  borderRadius: '6px',
                   backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-canvas-subtle)',
                   borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-acrylic)',
                   color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
+                  opacity: !isSelected && isEmpty ? 0.68 : 1,
                   boxShadow: isSelected ? '0 1px 4px var(--accent-glow)' : 'none'
                 }}
               >
                 <span>{c.label}</span>
                 <span style={{
-                  fontSize: '0.62rem',
+                  fontSize: '0.63rem',
                   fontWeight: 900,
-                  backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.15)' : 'rgba(148, 163, 184, 0.18)',
+                  backgroundColor: isSelected ? 'rgba(0, 0, 0, 0.16)' : 'rgba(148, 163, 184, 0.18)',
                   color: isSelected ? 'var(--accent-contrast, #000000)' : 'var(--text-primary)',
-                  padding: '1px 5px',
+                  padding: '1px 5.5px',
                   borderRadius: '9999px',
                   border: isSelected ? '1px solid rgba(0, 0, 0, 0.25)' : '1px solid var(--border-acrylic)',
-                  minWidth: '16px',
+                  minWidth: '17px',
                   textAlign: 'center',
                   lineHeight: '1.2'
                 }}>
@@ -605,176 +716,6 @@ export const AuditListView: React.FC<AuditListViewProps> = ({
               </button>
             );
           })}
-        </div>
-
-        {/* Status Filter & Actions Toolbar */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '8px',
-          width: '100%'
-        }}>
-          {/* Status Filters (Izquierda) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => setStatusFilter(prev => prev === 'instalado' ? 'all' : 'instalado')}
-              className={`btn-flat ${statusFilter === 'instalado' ? 'status-instalado' : ''}`}
-              style={{
-                padding: '4px 8px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                borderRadius: '6px',
-                backgroundColor: statusFilter === 'instalado' ? undefined : 'var(--bg-canvas-subtle)',
-                borderColor: statusFilter === 'instalado' ? undefined : 'var(--border-acrylic)',
-                color: statusFilter === 'instalado' ? undefined : 'var(--text-secondary)'
-              }}
-            >
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-emerald)', display: 'inline-block' }} />
-              <span>Instalados ({counts.instalado})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStatusFilter(prev => prev === 'custodia' ? 'all' : 'custodia')}
-              className={`btn-flat ${statusFilter === 'custodia' ? 'status-custodia' : ''}`}
-              style={{
-                padding: '4px 8px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                borderRadius: '6px',
-                backgroundColor: statusFilter === 'custodia' ? undefined : 'var(--bg-canvas-subtle)',
-                borderColor: statusFilter === 'custodia' ? undefined : 'var(--border-acrylic)',
-                color: statusFilter === 'custodia' ? undefined : 'var(--text-secondary)'
-              }}
-            >
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-amber)', display: 'inline-block' }} />
-              <span>Custodia ({counts.custodia})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStatusFilter(prev => prev === 'maintenance' ? 'all' : 'maintenance')}
-              className={`btn-flat ${statusFilter === 'maintenance' ? 'status-maintenance' : ''}`}
-              style={{
-                padding: '4px 8px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                borderRadius: '6px',
-                backgroundColor: statusFilter === 'maintenance' ? undefined : 'var(--bg-canvas-subtle)',
-                borderColor: statusFilter === 'maintenance' ? undefined : 'var(--border-acrylic)',
-                color: statusFilter === 'maintenance' ? undefined : 'var(--text-secondary)'
-              }}
-              title="Filtrar equipos en mantenimiento técnico o reparación"
-            >
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-cyan)', display: 'inline-block' }} />
-              <span>Mantenimiento ({counts.maintenance})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStatusFilter(prev => prev === 'baja' ? 'all' : 'baja')}
-              className={`btn-flat ${statusFilter === 'baja' ? 'status-baja' : ''}`}
-              style={{
-                padding: '4px 8px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                borderRadius: '6px',
-                backgroundColor: statusFilter === 'baja' ? undefined : 'var(--bg-canvas-subtle)',
-                borderColor: statusFilter === 'baja' ? undefined : 'var(--border-acrylic)',
-                color: statusFilter === 'baja' ? undefined : 'var(--text-secondary)'
-              }}
-              title="Filtrar equipos dados de baja u obsoletos"
-            >
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-rose)', display: 'inline-block' }} />
-              <span>De Baja ({counts.baja})</span>
-            </button>
-          </div>
-
-          {/* Right Actions: Excel + View Switcher (Extremo Derecho Separado) */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginLeft: 'auto',
-            flexWrap: 'wrap'
-          }}>
-            {/* Export Excel Button */}
-            <button
-              type="button"
-              onClick={() => window.open(api.getInventoryExcelDownloadUrl(), '_blank')}
-              className="btn-flat btn-excel"
-              style={{
-                padding: '4px 10px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                borderRadius: '6px'
-              }}
-              title="Exportar inventario consolidado a Excel"
-            >
-              <FileSpreadsheet size={13} />
-              <span>Excel</span>
-            </button>
-
-            {/* Segmented View Mode Switcher: Fichas vs Tabla */}
-            <div 
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                backgroundColor: 'var(--bg-canvas-subtle)',
-                borderRadius: '6px',
-                border: '1px solid var(--border-acrylic)',
-                padding: '2px',
-                gap: '2px'
-              }}
-              title="Cambiar entre Fichas Táctiles (ideal tablets y móviles) o Tabla Columnar"
-            >
-              <button
-                type="button"
-                onClick={() => setViewMode(prev => prev === 'cards' ? 'auto' : 'cards')}
-                className={`btn-flat ${viewMode === 'cards' ? 'btn-primary' : ''}`}
-                style={{
-                  padding: '3px 8px',
-                  fontSize: '0.67rem',
-                  fontWeight: 700,
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: viewMode === 'cards' ? 'var(--accent-primary)' : 'transparent',
-                  color: viewMode === 'cards' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Vista en Fichas Táctiles fluidas (100% responsiva para cualquier pantalla)"
-              >
-                <LayoutGrid size={12} />
-                <span>Fichas</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode(prev => prev === 'table' ? 'auto' : 'table')}
-                className={`btn-flat ${viewMode === 'table' ? 'btn-primary' : ''}`}
-                style={{
-                  padding: '3px 8px',
-                  fontSize: '0.67rem',
-                  fontWeight: 700,
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: viewMode === 'table' ? 'var(--accent-primary)' : 'transparent',
-                  color: viewMode === 'table' ? 'var(--accent-contrast, #000000)' : 'var(--text-secondary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Vista en Tabla Columnar completa"
-              >
-                <List size={12} />
-                <span>Tabla</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

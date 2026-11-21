@@ -1,18 +1,18 @@
 {
-  "version": "1.0.27",
-  "versionCode": 28,
+  "version": "1.0.28",
+  "versionCode": 29,
   "releaseDate": "2026-11-21",
-  "notes": "Bordes laterales de tarjetas más delgados (2px) y apertura instantánea de la ventana y cámara del escáner QR.",
+  "notes": "Diseño móvil y escritorio optimizado, insignia roja de alertas en Asistencia TI, cámara QR directa sin ventana negra previa y respuestas de identidad en STIVIE.",
   "features": [
     {
-      "title": "Bordes de Tarjetas Más Delgados (2px)",
-      "desc": "Se estilizó la franja lateral de color de todas las tarjetas de equipos de 5px a 2px para un acabado fino y elegante."
+      "title": "Interfaz Optimizada para Móviles y Escritorio",
+      "desc": "Encabezados y filtros alineados simétricamente, ventana Instalar en iOS rediseñada, insignia roja de alertas y navegación táctil sin cambios accidentales de apartado."
     },
     {
-      "title": "Apertura Instantánea del Escáner QR",
-      "desc": "La ventana del escáner abre al instante (0ms) con inicialización rápida del lente trasero en 720p y sin fondo negro."
+      "title": "Cámara QR Directa y STIVIE Identidad",
+      "desc": "El escáner QR aparece únicamente cuando el fotograma en vivo de la cámara está activo (cero pantalla negra previa) y STIVIE responde sobre su identidad y creador."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.27",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.28",
   "forceUpdate": true
 }

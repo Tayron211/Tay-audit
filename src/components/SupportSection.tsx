@@ -747,25 +747,39 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Sub-Navigation Strip (Lightweight, no heavy stacked box) */}
-      <div 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '10px'
-        }}
-      >
+      {/* Sub-Navigation Strip (Simétrico y Optimizado para Escritorio y Móvil) */}
+      <div className="audit-section-header">
+        <div className="audit-header-title-group">
+          <h2 style={{ fontSize: 'clamp(0.98rem, 3.8vw, 1.12rem)', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+            Mesa de Ayuda & Asistencia TI
+          </h2>
+          <span style={{
+            fontSize: '0.70rem',
+            padding: '2.5px 8px',
+            borderRadius: '6px',
+            backgroundColor: supportMetrics.abiertos > 0 ? 'rgba(239, 68, 68, 0.14)' : 'rgba(148, 163, 184, 0.12)',
+            border: supportMetrics.abiertos > 0 ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid var(--border-acrylic)',
+            color: supportMetrics.abiertos > 0 ? '#ef4444' : 'var(--text-secondary)',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            lineHeight: 1.2
+          }}>
+            {supportMetrics.abiertos} activos
+          </span>
+        </div>
+
         {/* Sub-Tabs: Tickets (Primero) -> Control Remoto -> Base STIVIE -> Dashboard (Extremo) */}
-        <div className="support-subtabs-container">
+        <div className="support-subtabs-container" data-no-swipe="true">
           <button
             type="button"
             onClick={() => selectSupportSubTab('tickets')}
             className={`nav-tab-btn ${supportSubTab === 'tickets' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', position: 'relative' }}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', position: 'relative', borderRadius: '6px' }}
           >
-            <Ticket size={14} style={{ flexShrink: 0 }} />
+            <Ticket size={13} style={{ flexShrink: 0 }} />
             <span>Tickets ({supportMetrics.abiertos})</span>
             {supportMetrics.abiertos > 0 && (
               <span style={{
@@ -784,9 +798,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             type="button"
             onClick={() => selectSupportSubTab('remote')}
             className={`nav-tab-btn ${supportSubTab === 'remote' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', borderRadius: '6px' }}
           >
-            <Monitor size={14} style={{ flexShrink: 0 }} />
+            <Monitor size={13} style={{ flexShrink: 0 }} />
             <span className="support-tab-desktop-text">Control Remoto</span>
             <span className="support-tab-mobile-text">Remoto</span>
           </button>
@@ -795,9 +809,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             type="button"
             onClick={() => selectSupportSubTab('knowledge')}
             className={`nav-tab-btn ${supportSubTab === 'knowledge' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', borderRadius: '6px' }}
           >
-            <Brain size={14} style={{ flexShrink: 0 }} />
+            <Brain size={13} style={{ flexShrink: 0 }} />
             <span className="support-tab-desktop-text">Base STIVIE ({knowledgeList.length})</span>
             <span className="support-tab-mobile-text">STIVIE ({knowledgeList.length})</span>
           </button>
@@ -806,9 +820,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             type="button"
             onClick={() => selectSupportSubTab('dashboard')}
             className={`nav-tab-btn ${supportSubTab === 'dashboard' ? 'nav-tab-active' : ''}`}
-            style={{ fontSize: '0.78rem', padding: '6px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center' }}
+            style={{ fontSize: '0.74rem', padding: '5px 10px', flexShrink: 0, whiteSpace: 'nowrap', justifyContent: 'center', borderRadius: '6px' }}
           >
-            <LayoutDashboard size={14} style={{ flexShrink: 0 }} />
+            <LayoutDashboard size={13} style={{ flexShrink: 0 }} />
             <span className="support-tab-desktop-text">Dashboard</span>
             <span className="support-tab-mobile-text">Dashboard</span>
           </button>
@@ -824,9 +838,9 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
               setIsCreatingTicket(true);
             }
           }}
-          className="btn-flat btn-primary"
+          className="btn-flat btn-primary audit-register-btn"
           style={{
-            padding: '5px 12px',
+            padding: '6px 13px',
             fontSize: '0.76rem',
             fontWeight: 800,
             gap: '6px',
@@ -834,8 +848,7 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             display: 'inline-flex',
             alignItems: 'center',
             boxShadow: '0 2px 8px var(--accent-glow)',
-            flexShrink: 0,
-            marginLeft: 'auto'
+            flexShrink: 0
           }}
           title={supportSubTab === 'knowledge' ? 'Registrar nueva solución en STIVIE' : 'Registrar un nuevo ticket de atención'}
         >

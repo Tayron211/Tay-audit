@@ -497,16 +497,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
 
       {/* Modal Instructivo para Instalación en Apple iOS (Safari) */}
-      {showIosModal && (
+      {showIosModal && typeof document !== 'undefined' && createPortal(
         <div 
           className="modal-backdrop-acrylic modal-centered-mobile"
           onClick={() => setShowIosModal(false)}
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            background: 'rgba(0, 0, 0, 0.78)',
+            WebkitBackdropFilter: 'blur(14px)',
+            backdropFilter: 'blur(14px)',
             zIndex: 10090,
             display: 'flex',
             alignItems: 'center',
@@ -515,69 +515,81 @@ export const Navbar: React.FC<NavbarProps> = ({
           }}
         >
           <div
-            className="acrylic-panel-elevated modal-window-acrylic"
+            className="upn-ios-install-window animate-modal-fade"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '380px',
-              width: '100%',
-              padding: '22px',
-              borderRadius: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              background: 'var(--bg-popover, #121216)',
-              border: '1px solid var(--border-acrylic-active, rgba(253, 186, 48, 0.3))',
-              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
-              margin: 'auto'
-            }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <AppleIcon size={20} color="var(--text-primary, #ffffff)" />
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="upn-ios-install-icon-box">
+                  <AppleIcon size={22} color="var(--text-primary, #ffffff)" />
                 </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)' }}>Instalar en iOS</h3>
-                  <p style={{ margin: 0, fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>iPhone & iPad (Safari)</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                    Instalar en iOS
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>
+                    iPhone & iPad (Safari)
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowIosModal(false)}
-                className="btn-flat"
-                style={{ padding: '6px', borderRadius: '8px' }}
+                className="modal-close-btn"
+                title="Cerrar"
+                aria-label="Cerrar"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.80rem', color: 'var(--text-secondary)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>1</span>
-                <div>En Safari, pulsa el botón <strong>Compartir</strong> <Share size={13} style={{ display: 'inline', margin: '0 3px', verticalAlign: 'middle', color: '#38bdf8' }} /> en la barra inferior.</div>
+            {/* Steps List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              <div className="upn-ios-step-card">
+                <span className="upn-ios-step-badge">1</span>
+                <div style={{ flex: 1 }}>
+                  En Safari, pulsa el botón <strong style={{ color: 'var(--text-primary)' }}>Compartir</strong>{' '}
+                  <Share size={14} style={{ display: 'inline', margin: '0 3px', verticalAlign: 'text-bottom', color: '#38bdf8' }} /> en la barra inferior.
+                </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>2</span>
-                <div>Desplázate y selecciona <strong>"Añadir a pantalla de inicio"</strong>.</div>
+              <div className="upn-ios-step-card">
+                <span className="upn-ios-step-badge">2</span>
+                <div style={{ flex: 1 }}>
+                  Desplázate y selecciona <strong style={{ color: 'var(--text-primary)' }}>"Añadir a pantalla de inicio"</strong>.
+                </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#FDBA30', color: '#000', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0, marginTop: '2px' }}>3</span>
-                <div>Pulsa <strong>Añadir</strong> en la esquina superior derecha. Se abrirá como app oficial.</div>
+              <div className="upn-ios-step-card">
+                <span className="upn-ios-step-badge">3</span>
+                <div style={{ flex: 1 }}>
+                  Pulsa <strong style={{ color: 'var(--text-primary)' }}>Añadir</strong> en la esquina superior derecha. Se abrirá como app oficial.
+                </div>
               </div>
             </div>
 
+            {/* Action Button */}
             <button
               type="button"
               onClick={() => setShowIosModal(false)}
               className="btn-flat btn-primary"
-              style={{ width: '100%', padding: '10px', fontSize: '0.84rem', fontWeight: 900, justifyContent: 'center', borderRadius: '12px', background: '#FDBA30', color: '#000000' }}
+              style={{
+                width: '100%',
+                height: '42px',
+                padding: '0 16px',
+                fontSize: '0.86rem',
+                fontWeight: 900,
+                justifyContent: 'center',
+                borderRadius: '14px',
+                marginTop: '2px'
+              }}
             >
               Entendido
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
 

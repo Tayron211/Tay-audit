@@ -136,15 +136,41 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   }, [isOpen]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
-  const [pushPermission, setPushPermission] = useState<string>(() => getSystemNotificationPermissionSync());
+  const [pushPermission, setPushPermission] = useState<string>(() => {
+    try {
+      if (localStorage.getItem('tay_push_activated') === '1') return 'granted';
+    } catch {}
+    return getSystemNotificationPermissionSync();
+  });
+  const [pushBannerHidden, setPushBannerHidden] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('tay_push_activated') === '1';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
-    getSystemNotificationPermission().then(setPushPermission);
-  }, []);
+    getSystemNotificationPermission().then((perm) => {
+      if (perm === 'granted') {
+        setPushPermission('granted');
+        setPushBannerHidden(true);
+        try {
+          localStorage.setItem('tay_push_activated', '1');
+        } catch {}
+      } else if (!pushBannerHidden) {
+        setPushPermission(perm);
+      }
+    });
+  }, [pushBannerHidden]);
 
   const handleEnablePush = async () => {
-    const granted = await requestPushNotificationPermission();
-    setPushPermission(granted ? 'granted' : 'denied');
+    setPushBannerHidden(true);
+    setPushPermission('granted');
+    try {
+      localStorage.setItem('tay_push_activated', '1');
+    } catch {}
+    await requestPushNotificationPermission();
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -329,7 +355,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </div>
 
           {/* Banner de Activación de Notificaciones Push (Windows y Móviles) */}
-          {pushPermission !== 'granted' && pushPermission !== 'unsupported' ? (
+          {!pushBannerHidden && pushPermission !== 'granted' && pushPermission !== 'unsupported' ? (
             <div
               style={{
                 padding: '9px 14px',

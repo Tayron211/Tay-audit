@@ -1137,6 +1137,34 @@ namespace StivieDesktop {
             txtFeedback.Text = "STIVIE está procesando tu consulta...";
             btnSend.IsEnabled = false;
 
+            // Respuestas directas sobre quién es STIVIE en la realidad y quién lo desarrolló
+            string qLowerNorm = q.ToLowerInvariant()
+                .Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
+                .Replace("?", "").Replace("¿", "").Trim();
+
+            if (qLowerNorm.Contains("quien es stivie en la realidad") ||
+                qLowerNorm.Contains("quien es stivie en realidad") ||
+                (qLowerNorm.Contains("stivie") && qLowerNorm.Contains("realidad"))) {
+                btnSend.IsEnabled = true;
+                txtFeedback.Text = "";
+                txtSpeech.Text = "Stivie es Tayron Salinas llamado Stivie por su Madre de cariño por su segundo nombre Stiven";
+                speechScroll.ScrollToTop();
+                return;
+            }
+
+            if (qLowerNorm.Contains("quien te desarrollo") ||
+                qLowerNorm.Contains("quien desarrollo") ||
+                qLowerNorm.Contains("quien te creo") ||
+                qLowerNorm.Contains("quien creo") ||
+                qLowerNorm.Contains("desarrollador de stivie") ||
+                qLowerNorm.Contains("quien te hizo")) {
+                btnSend.IsEnabled = true;
+                txtFeedback.Text = "";
+                txtSpeech.Text = "fui desarrollado por Tayron Salinas";
+                speechScroll.ScrollToTop();
+                return;
+            }
+
             // Atajos directos a las opciones predeterminadas
             if (q.IndexOf("proyect", StringComparison.OrdinalIgnoreCase) >= 0 ||
                 q.IndexOf("pantalla", StringComparison.OrdinalIgnoreCase) >= 0 ||

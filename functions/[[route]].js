@@ -2340,16 +2340,29 @@ exit /b 0
       const now = new Date().toISOString();
       const queryWords = qLower.replace(/[^a-záéíóúñ0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
 
-      if (qLower.includes('quien es stivie en realidad') || qLower.includes('quién es stivie en realidad')) {
-        const realReply = 'Es Tayron Salinas, desarrollador de esta aplicación.';
+      const qNorm = qLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (
+        qNorm.includes('quien es stivie en la realidad') ||
+        qNorm.includes('quien es stivie en realidad') ||
+        (qNorm.includes('stivie') && qNorm.includes('realidad'))
+      ) {
+        const realReply = 'Stivie es Tayron Salinas llamado Stivie por su Madre de cariño por su segundo nombre Stiven';
         return jsonResponse({ answer: realReply, reply: realReply, actionType: 'none', actionLabel: null, matchedCategory: 'Identidad STIVIE', knowledgeId: null, learned: true });
       }
-      if (qLower.includes('quien es stivie') || qLower.includes('quién es stivie')) {
+      if (
+        qNorm.includes('quien te desarrollo') ||
+        qNorm.includes('quien desarrollo') ||
+        qNorm.includes('quien te creo') ||
+        qNorm.includes('quien creo') ||
+        qNorm.includes('desarrollador de stivie') ||
+        qNorm.includes('quien te hizo')
+      ) {
+        const devReply = 'fui desarrollado por Tayron Salinas';
+        return jsonResponse({ answer: devReply, reply: devReply, actionType: 'none', actionLabel: null, matchedCategory: 'Identidad STIVIE', knowledgeId: null, learned: true });
+      }
+      if (qNorm.includes('quien es stivie')) {
         const assistantReply = 'Soy STIVIE, tu Asistente de Operaciones Virtual 24/7. Puedo ayudarte con incidencias de pantalla, red, impresión, rendimiento y crear tickets en tiempo real para Soporte TI.';
         return jsonResponse({ answer: assistantReply, reply: assistantReply, actionType: 'none', actionLabel: null, matchedCategory: 'Identidad STIVIE', knowledgeId: null, learned: true });
-      }
-      if (qLower.includes('quien desarrollo') || qLower.includes('quién desarrolló') || qLower.includes('quien creo') || qLower.includes('quién creó') || qLower.includes('desarrollador de stivie')) {
-        return jsonResponse({ answer: 'Tayron Salinas', reply: 'Tayron Salinas', actionType: 'none', actionLabel: null, matchedCategory: 'Identidad STIVIE', knowledgeId: null, learned: true });
       }
 
       let deviceContext = null;

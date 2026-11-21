@@ -209,9 +209,13 @@ export const requestPushNotificationPermission = async (): Promise<boolean> => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      await registerNotificationServiceWorker();
-      const res = await subscribeDeviceToPush();
-      return res.success;
+      try {
+        localStorage.setItem('tay_push_activated', '1');
+      } catch {}
+      registerNotificationServiceWorker()
+        .then(() => subscribeDeviceToPush())
+        .catch(() => {});
+      return true;
     }
     return false;
   } catch (err) {

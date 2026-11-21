@@ -258,24 +258,40 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         return;
       }
 
-      // Mostrar el video inmediatamente en cuanto el stream está activo (sin pantalla negra)
+      // Mostrar la ventana del escáner ÚNICAMENTE cuando el primer fotograma real de la cámara ya está reproduciéndose (CERO ventana negra previa)
       const videoElem = document.querySelector('#tay-qr-reader video') as HTMLVideoElement | null;
       if (videoElem) {
-        if (videoElem.readyState >= 1) {
+        videoElem.style.backgroundColor = 'transparent';
+        let revealed = false;
+        const revealCamera = () => {
+          if (revealed || isCancelledRef.current) return;
+          revealed = true;
+          videoElem.removeEventListener('playing', onFrameReady);
+          videoElem.removeEventListener('timeupdate', onFrameReady);
+          videoElem.removeEventListener('loadeddata', onFrameReady);
           setIsCameraReady(true);
+        };
+
+        const onFrameReady = () => {
+          if (isCancelledRef.current) return;
+          const anyVid = videoElem as any;
+          if (typeof anyVid.requestVideoFrameCallback === 'function') {
+            anyVid.requestVideoFrameCallback(() => {
+              revealCamera();
+            });
+          } else if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
+            requestAnimationFrame(() => {
+              revealCamera();
+            });
+          }
+        };
+
+        if (videoElem.readyState >= 2 && !videoElem.paused && videoElem.videoWidth > 0) {
+          onFrameReady();
         } else {
-          const onReady = () => {
-            videoElem.removeEventListener('loadedmetadata', onReady);
-            videoElem.removeEventListener('loadeddata', onReady);
-            videoElem.removeEventListener('playing', onReady);
-            videoElem.removeEventListener('canplay', onReady);
-            if (!isCancelledRef.current) setIsCameraReady(true);
-          };
-          videoElem.addEventListener('loadedmetadata', onReady, { once: true });
-          videoElem.addEventListener('loadeddata', onReady, { once: true });
-          videoElem.addEventListener('playing', onReady, { once: true });
-          videoElem.addEventListener('canplay', onReady, { once: true });
-          setTimeout(onReady, 120);
+          videoElem.addEventListener('playing', onFrameReady);
+          videoElem.addEventListener('loadeddata', onFrameReady);
+          videoElem.addEventListener('timeupdate', onFrameReady);
         }
       } else {
         setIsCameraReady(true);
@@ -324,12 +340,18 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
 
   if (!isOpen || typeof document === 'undefined') return null;
 
+  const isModalVisible = isCameraReady || Boolean(cameraError);
+
   return createPortal(
     <div
-      className={`modal-backdrop-acrylic qr-scanner-backdrop ${isClosing ? 'closing' : ''}`}
+      className={`modal-backdrop-acrylic qr-scanner-backdrop ${!isModalVisible ? 'scanner-warming' : ''} ${isClosing ? 'closing' : ''}`}
       style={{
         zIndex: 10060,
-        padding: '12px'
+        padding: '12px',
+        opacity: isModalVisible && !isClosing ? 1 : 0,
+        pointerEvents: isModalVisible && !isClosing ? 'auto' : 'none',
+        transition: 'opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
+        animation: 'none'
       }}
       onClick={(e) => {
         // Cerrar al tocar fuera de la ventana del modal
@@ -350,7 +372,10 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
         boxSizing: 'border-box',
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        opacity: isModalVisible && !isClosing ? 1 : 0,
+        transition: 'opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
+        animation: 'none'
       }}>
         {/* Botón Cerrar Superior Derecho (Área táctil optimizada para móviles) */}
         <button

@@ -346,6 +346,49 @@ export const StivieClientApp: React.FC<StivieClientAppProps> = () => {
     setIsThinking(true);
 
     const qLower = userText.toLowerCase();
+    const qNorm = qLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Respuestas directas de identidad de STIVIE y su desarrollador (sin generar ticket de soporte)
+    if (
+      qNorm.includes('quien es stivie en la realidad') ||
+      qNorm.includes('quien es stivie en realidad') ||
+      (qNorm.includes('stivie') && qNorm.includes('realidad'))
+    ) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `stivie-${Date.now()}`,
+          sender: 'stivie',
+          text: 'Stivie es Tayron Salinas llamado Stivie por su Madre de cariño por su segundo nombre Stiven',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      setIsThinking(false);
+      setStep('ongoing');
+      return;
+    }
+
+    if (
+      qNorm.includes('quien te desarrollo') ||
+      qNorm.includes('quien desarrollo') ||
+      qNorm.includes('quien te creo') ||
+      qNorm.includes('quien creo') ||
+      qNorm.includes('desarrollador de stivie') ||
+      qNorm.includes('quien te hizo')
+    ) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `stivie-${Date.now()}`,
+          sender: 'stivie',
+          text: 'fui desarrollado por Tayron Salinas',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      setIsThinking(false);
+      setStep('ongoing');
+      return;
+    }
 
     // Check specifically if user has problems with projector / blue screen / duplication
     const hasProjectorIssue = [
