@@ -1518,6 +1518,16 @@ app.post('/api/devices/:id/remote-action', (req, res) => {
         };
         break;
 
+      case 'update_stivie':
+        logDescription = `Orden remota de ACTUALIZACIÓN DE STIVIE enviada a ${device.hostname}.`;
+        queueAgentCommand(device.hostname, 'update_stivie', { timestamp: now });
+        actionResult = {
+          command: 'update_stivie',
+          status: 'SENT',
+          message: `Orden remota de actualización de STIVIE enviada a ${device.hostname}. El agente descargará la última versión y se reiniciará automáticamente.`
+        };
+        break;
+
       default:
         return res.status(400).json({ error: 'Acción remota no reconocida' });
     }

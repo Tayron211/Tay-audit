@@ -149,7 +149,7 @@ export const api = {
   },
 
   // Trigger remote action (Restart, Shutdown, Screen Mirroring, DisplaySwitch, Remote Desktop)
-  async triggerRemoteAction(id: string, action: 'restart' | 'shutdown' | 'screen_assist' | 'display_clone' | 'display_internal' | 'display_extend' | 'display_external' | 'remote_access' | 'launch_stivie', forced = true) {
+  async triggerRemoteAction(id: string, action: 'restart' | 'shutdown' | 'screen_assist' | 'display_clone' | 'display_internal' | 'display_extend' | 'display_external' | 'remote_access' | 'launch_stivie' | 'update_stivie', forced = true) {
     const res = await fetch(`${API_BASE}/api/devices/${id}/remote-action`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

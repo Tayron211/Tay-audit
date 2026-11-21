@@ -1,18 +1,18 @@
 {
-  "version": "1.0.33",
-  "versionCode": 34,
+  "version": "1.0.35",
+  "versionCode": 36,
   "releaseDate": "2026-11-21",
-  "notes": "Selector de paginación rediseñado con menú desplegable acrílico acorde a la app y fondo Modo Claro en tono perla (#edf0f5).",
+  "notes": "Botón Excel sólo icono ubicado junto al buscador, actualización remota OTA para la mascota STIVIE y fondo Modo Claro (#edf0f5).",
   "features": [
     {
-      "title": "Selector de Paginación Acorde a la App",
-      "desc": "Se reemplazó el select nativo del navegador en la paginación por un menú desplegable acrílico con bordes redondeados y resaltado institucional."
+      "title": "Botón Excel Solo Icono Junto al Buscador",
+      "desc": "El botón de exportación a Excel ahora muestra únicamente el icono y se ubica al costado del buscador para no confundirse con los filtros."
     },
     {
-      "title": "Contraste de Fondo en Modo Claro (#edf0f5)",
-      "desc": "El fondo del Modo Claro usa un tono blanco perla suave (#edf0f5) para distinguir con nitidez las tarjetas, paneles y ventanas en blanco puro (#ffffff)."
+      "title": "Actualización Remota de Mascota STIVIE",
+      "desc": "Se añadió el comando remoto 'Actualizar STIVIE Remoto' desde Control Remoto para actualizar el agente STIVIE.exe en las PCs conectadas."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.33",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.35",
   "forceUpdate": true
 }

@@ -1769,7 +1769,8 @@ exit /b 0
           remote_access: `Archivo de conexión RDP preparado para ${device.hostname}.`,
           remote_desktop: `Archivo de conexión RDP preparado para ${device.hostname}.`,
           launch_stivie: `Señal de sincronización enviada a ${device.hostname}.`,
-          revive_stivie: `Señal de sincronización enviada a ${device.hostname}.`
+          revive_stivie: `Señal de sincronización enviada a ${device.hostname}.`,
+          update_stivie: `Orden remota Cloud 24/7 de ACTUALIZACIÓN DE STIVIE enviada a ${device.hostname}. El agente descargará la última versión y se reiniciará automáticamente.`
         };
 
         if (!actionMessages[action]) {

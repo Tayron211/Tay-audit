@@ -600,8 +600,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
     }
   };
 
-  const handleExecuteRemoteAction = async (device: Device, action: 'restart' | 'shutdown' | 'screen_assist' | 'display_clone' | 'remote_access' | 'launch_stivie') => {
-    if (!device.stivieInstalled && action !== 'remote_access' && action !== 'launch_stivie') {
+  const handleExecuteRemoteAction = async (device: Device, action: 'restart' | 'shutdown' | 'screen_assist' | 'display_clone' | 'remote_access' | 'launch_stivie' | 'update_stivie') => {
+    if (!device.stivieInstalled && action !== 'remote_access' && action !== 'launch_stivie' && action !== 'update_stivie') {
       setActionFeedback(`Acción no disponible: STIVIE no está instalado en ${device.hostname}. Ejecuta stivie-installer.bat primero.`);
       setTimeout(() => setActionFeedback(null), 4500);
       return;
@@ -620,6 +620,8 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
         setActionFeedback(`¡Acción activada: Apagado enviado a ${device.hostname}!`);
       } else if (action === 'launch_stivie') {
         setActionFeedback(res.message || `¡Orden de inicio de STIVIE enviada a ${device.hostname}!`);
+      } else if (action === 'update_stivie') {
+        setActionFeedback(res.message || `¡Actualización remota de STIVIE enviada a ${device.hostname}!`);
       }
       setTimeout(() => setActionFeedback(null), 4000);
     } catch (err: any) {
@@ -1369,48 +1371,71 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
             flexDirection: 'column',
             gap: '12px'
           }}>
-            {/* Buscador de Tickets en Tiempo Real */}
-            <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
-              <Search
-                size={15}
-                color="var(--accent-primary)"
-                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-              />
-              <input
-                type="text"
-                placeholder="Buscar ticket por equipo, usuario reportante, categoría, problema o ID..."
-                value={ticketSearchQuery}
-                onChange={(e) => setTicketSearchQuery(e.target.value)}
-                className="form-input"
-                style={{
-                  paddingLeft: '36px',
-                  paddingRight: ticketSearchQuery ? '38px' : '14px',
-                  height: '36px',
-                  fontSize: '0.80rem',
-                  width: '100%',
-                  borderRadius: '8px'
-                }}
-              />
-              {ticketSearchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setTicketSearchQuery('')}
-                  className="btn-flat"
+            {/* Buscador de Tickets en Tiempo Real + Botón Icono Excel Aislado */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
+                <Search
+                  size={15}
+                  color="var(--accent-primary)"
+                  style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Buscar ticket por equipo, usuario reportante, categoría, problema o ID..."
+                  value={ticketSearchQuery}
+                  onChange={(e) => setTicketSearchQuery(e.target.value)}
+                  className="form-input"
                   style={{
-                    position: 'absolute',
-                    right: '6px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    padding: '3px 8px',
-                    fontSize: '0.72rem',
-                    borderRadius: '5px',
-                    color: 'var(--text-muted)'
+                    paddingLeft: '36px',
+                    paddingRight: ticketSearchQuery ? '38px' : '14px',
+                    height: '36px',
+                    fontSize: '0.80rem',
+                    width: '100%',
+                    borderRadius: '8px'
                   }}
-                  title="Limpiar búsqueda"
-                >
-                  <X size={13} />
-                </button>
-              )}
+                />
+                {ticketSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setTicketSearchQuery('')}
+                    className="btn-flat"
+                    style={{
+                      position: 'absolute',
+                      right: '6px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      padding: '3px 8px',
+                      fontSize: '0.72rem',
+                      borderRadius: '5px',
+                      color: 'var(--text-muted)'
+                    }}
+                    title="Limpiar búsqueda"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => window.open(api.getSupportExcelDownloadUrl(), '_blank')}
+                className="btn-flat btn-excel"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  minWidth: '36px',
+                  padding: 0,
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+                title="Exportar base completa de reportes y tickets a Excel (.xlsx)"
+                aria-label="Exportar reportes a Excel"
+              >
+                <FileSpreadsheet size={16} />
+              </button>
             </div>
 
             {/* Controles de Filtros de Estado y Acciones */}
@@ -1454,23 +1479,6 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => window.open(api.getSupportExcelDownloadUrl(), '_blank')}
-                  className="btn-flat btn-excel"
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    gap: '6px',
-                    borderRadius: '8px'
-                  }}
-                  title="Exportar base completa de reportes y tickets a Excel"
-                >
-                  <FileSpreadsheet size={14} />
-                  <span>Exportar Reportes (Excel)</span>
-                </button>
-
                 <button
                   onClick={onRefresh}
                   className="btn-flat"
@@ -2240,6 +2248,26 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
                     <Activity size={13} />
                     <span>{checkingConnection ? 'Diagnosticando red...' : 'Verificar Conexión Real'}</span>
                   </button>
+
+                  {activeRemoteDevice.stivieInstalled && (
+                    <button
+                      type="button"
+                      disabled={remoteLoading !== null}
+                      onClick={() => handleExecuteRemoteAction(activeRemoteDevice, 'update_stivie')}
+                      className="btn-flat"
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '6px 12px',
+                        color: 'var(--accent-primary)',
+                        borderColor: 'rgba(253, 186, 48, 0.45)',
+                        background: 'rgba(253, 186, 48, 0.08)'
+                      }}
+                      title="Enviar orden remota para que STIVIE descargue la última versión desde la nube y se reinicie automáticamente"
+                    >
+                      <RefreshCw size={13} className={remoteLoading === 'update_stivie' ? 'spin-fast' : ''} />
+                      <span>{remoteLoading === 'update_stivie' ? 'Actualizando...' : 'Actualizar STIVIE Remoto'}</span>
+                    </button>
+                  )}
 
                   {activeRemoteDevice.stivieInstalled ? (
                     <button

@@ -1333,6 +1333,16 @@ namespace StivieDesktop {
                                 try { Process.Start(new ProcessStartInfo("shutdown.exe", "/r /t 5 /f /c \"Reinicio corporativo Tay-Audit ejecutado desde la central\"") { CreateNoWindow = true, UseShellExecute = false }); } catch { }
                             } else if (text.Contains("\"shutdown\"")) {
                                 try { Process.Start(new ProcessStartInfo("shutdown.exe", "/s /t 5 /f /c \"Apagado corporativo Tay-Audit ejecutado desde la central\"") { CreateNoWindow = true, UseShellExecute = false }); } catch { }
+                            } else if (text.Contains("update_stivie")) {
+                                try {
+                                    string appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "STIVIE");
+                                    string exePath = Path.Combine(appDir, "STIVIE.exe");
+                                    string cmdArgs = string.Format("/c timeout /t 2 /nobreak >nul & curl.exe -s -f -L -o \"{0}\" \"{1}/STIVIE.exe\" & start \"\" \"{0}\" \"{1}\"", exePath, apiBase);
+                                    Process.Start(new ProcessStartInfo("cmd.exe", cmdArgs) { CreateNoWindow = true, UseShellExecute = false, WindowStyle = ProcessWindowStyle.Hidden });
+                                    Dispatcher.Invoke((Action)(() => {
+                                        Application.Current.Shutdown();
+                                    }));
+                                } catch { }
                             }
                         }
                     } catch { }
