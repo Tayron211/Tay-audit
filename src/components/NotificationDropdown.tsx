@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Bell, 
   CheckCheck, 
@@ -36,6 +37,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   const closeDropdown = () => {
     if (isClosing || !isOpen) return;
@@ -46,10 +48,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     }, 180);
   };
 
-  // Close on outside click / touch
+  // Close on outside click / touch - checks both trigger button and portaled popover
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const clickedTrigger = containerRef.current && containerRef.current.contains(e.target as Node);
+      const clickedPopover = popoverRef.current && popoverRef.current.contains(e.target as Node);
+      if (!clickedTrigger && !clickedPopover) {
         closeDropdown();
       }
     };
@@ -63,9 +67,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     };
   }, [isOpen, isClosing]);
 
-  // Posicionamiento lateral y despliegue anclado al botón en pantallas móviles y de escritorio
-  const [popoverPos, setPopoverPos] = useState<{ right: string; width: string; maxWidth: string }>({
-    right: '0',
+  // Posicionamiento lateral y despliegue anclado al botón mediante Portal a document.body
+  const [popoverPos, setPopoverPos] = useState<{ top: string; right: string; width: string; maxWidth: string }>({
+    top: '64px',
+    right: '14px',
     width: '360px',
     maxWidth: '92vw'
   });
@@ -73,29 +78,25 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   const updatePosition = () => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    // Usar clientWidth para medir el viewport real visible libre de barras o seguros
     const viewportW = document.documentElement.clientWidth || window.innerWidth;
 
     if (viewportW <= 820) {
-      // Margen de seguridad amplio de 18px en el lateral derecho para asegurar que nunca se corte
-      const rightMargin = 18;
+      // Margen lateral seguro de 12px en móvil
+      const rightMargin = 12;
       const leftMargin = 12;
-      const popoverW = Math.min(335, Math.max(250, viewportW - rightMargin - leftMargin));
-
-      // Coordenada deseada del borde derecho en pantalla (exactamente a 18px del borde derecho)
-      const targetRightOnScreen = viewportW - rightMargin;
-      // Offset CSS 'right' exacto relativo al contenedor:
-      const rightOffset = rect.right - targetRightOnScreen;
+      const popoverW = Math.min(360, Math.max(260, viewportW - rightMargin - leftMargin));
 
       setPopoverPos({
-        right: `${rightOffset}px`,
+        top: `${Math.round(rect.bottom + 8)}px`,
+        right: `${rightMargin}px`,
         width: `${popoverW}px`,
-        maxWidth: `calc(100vw - 28px)`
+        maxWidth: `calc(100vw - 24px)`
       });
     } else {
       setPopoverPos({
-        right: '0',
-        width: '360px',
+        top: `${Math.round(rect.bottom + 8)}px`,
+        right: `${Math.max(16, Math.round(viewportW - rect.right))}px`,
+        width: '380px',
         maxWidth: '92vw'
       });
     }
@@ -221,18 +222,19 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         )}
       </button>
 
-      {/* Menú Desplegable Estilo Facebook (Máximo 5 notificaciones) */}
-      {(isOpen || isClosing) && (
+      {/* Menú Desplegable Estilo Facebook Portaled a document.body para Frosted Glass Blur Real */}
+      {(isOpen || isClosing) && typeof document !== 'undefined' && createPortal(
         <>
           <div
             className={`notification-backdrop-mobile ${isClosing ? 'closing' : ''}`}
             onClick={closeDropdown}
           />
           <div
+            ref={popoverRef}
             className={`acrylic-popover notification-popover ${isClosing ? 'closing' : ''}`}
             style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
+              position: 'fixed',
+              top: popoverPos.top,
               right: popoverPos.right,
               width: popoverPos.width,
               maxWidth: popoverPos.maxWidth,
@@ -385,19 +387,19 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                         cursor: 'pointer',
                         borderBottom: '1px solid var(--border-acrylic)',
                         backgroundColor: !n.read 
-                          ? 'rgba(99, 102, 241, 0.08)' 
+                          ? 'rgba(253, 186, 48, 0.08)' 
                           : 'transparent',
                         transition: 'background-color 0.15s ease',
                         position: 'relative'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = !n.read 
-                          ? 'rgba(99, 102, 241, 0.14)' 
+                          ? 'rgba(253, 186, 48, 0.14)' 
                           : 'rgba(148, 163, 184, 0.06)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = !n.read 
-                          ? 'rgba(99, 102, 241, 0.08)' 
+                          ? 'rgba(253, 186, 48, 0.08)' 
                           : 'transparent';
                       }}
                     >
@@ -482,7 +484,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                         </div>
                       </div>
 
-                      {/* Indicador azul de no leída estilo FB + Botón Descartar */}
+                      {/* Indicador dorado de no leída + Botón Descartar */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                         {!n.read && (
                           <span
@@ -490,8 +492,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                               width: '9px',
                               height: '9px',
                               borderRadius: '50%',
-                              backgroundColor: '#2563eb',
-                              boxShadow: '0 0 8px rgba(37, 99, 235, 0.8)',
+                              backgroundColor: 'var(--accent-primary)',
+                              boxShadow: '0 0 8px rgba(253, 186, 48, 0.75)',
                               display: 'inline-block'
                             }}
                             title="No leída"
@@ -564,7 +566,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             </button>
           </div>
         </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

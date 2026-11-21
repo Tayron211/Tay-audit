@@ -1,20 +1,20 @@
 {
-  "version": "1.0.18",
-  "versionCode": 19,
+  "version": "1.0.19",
+  "versionCode": 20,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado calibrado inmediatamente bajo los iconos del status bar y menú de notificaciones con efecto blur frosted glass 32px idéntico a la barra superior.",
+  "notes": "Menú de notificaciones portaled a body con efecto blur frosted glass 36px y status bar despejado con padding exacto de 28px.",
   "features": [
     {
-      "title": "Encabezado Alineado con Status Bar",
-      "desc": "Posición superior exacta a 16px con altura de 44px, situando el logo directamente bajo la línea de los iconos del sistema sin cubrirlos."
+      "title": "Despeje Óptimo de Status Bar",
+      "desc": "Padding superior calibrado exactamente a 28px, garantizando que el reloj, iconos de conectividad y batería queden completamente libres."
     },
     {
-      "title": "Notificaciones Frosted Glass Blur 32px",
-      "desc": "Panel de notificaciones con efecto blur acrílico traslúcido idéntico al encabezado y fondo adaptable al modo claro y oscuro."
+      "title": "Notificaciones Frosted Glass Blur 36px Real",
+      "desc": "Menú desplegable portaled fuera del nav acrílico con efecto blur 36px nativo, fondo oscuro traslúcido y tonalidad dorada acorde a la app."
     },
     {
-      "title": "Botón Flotante 100% Circular",
-      "desc": "Posicionamiento independiente fuera de la barra de navegación que elimina cualquier corte horizontal por filtro GPU."
+      "title": "Backdrop Blur Móvil",
+      "desc": "Fondo difuminado de pantalla completa con blur 16px al abrir el menú de notificaciones en smartphones."
     }
   ],
   "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
