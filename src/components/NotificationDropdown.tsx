@@ -231,7 +231,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           />
           <div
             ref={popoverRef}
-            className={`acrylic-popover notification-popover ${isClosing ? 'closing' : ''}`}
+            className={`notification-popover ${isClosing ? 'closing' : ''}`}
             style={{
               position: 'fixed',
               top: popoverPos.top,
@@ -242,6 +242,21 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               zIndex: 1100,
               display: 'flex',
               flexDirection: 'column',
+              WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+              backdropFilter: 'blur(32px) saturate(200%)',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              transform: 'translate3d(0, 0, 0)',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
+              willChange: 'transform'
+            }}
+          >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              borderRadius: '20px',
               overflow: 'hidden'
             }}
           >
@@ -564,6 +579,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               <span>Ver todos los tickets de soporte ({openTicketsCount} abiertos)</span>
               <ChevronRight size={13} />
             </button>
+          </div>
           </div>
         </div>
         </>,

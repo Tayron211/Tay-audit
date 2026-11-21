@@ -1,18 +1,18 @@
 {
-  "version": "1.0.20",
-  "versionCode": 21,
+  "version": "1.0.21",
+  "versionCode": 22,
   "releaseDate": "2026-11-20",
-  "notes": "Encabezado calibrado a 33px bajo el status bar con distancia visual óptima y proporción balanceada.",
+  "notes": "Encabezado bajado a 40px con altura interior de 50px y menú de notificaciones con efecto blur frosted glass 32px real.",
   "features": [
     {
-      "title": "Calibración Suave de Encabezado (33px)",
-      "desc": "Se bajó ligeramente el padding superior a 33px para dar mayor margen visual con los iconos del status bar sin alejarlo en exceso."
+      "title": "Encabezado Bajado a 40px",
+      "desc": "Padding superior de 40px con contenedor de 50px para situar el encabezado más abajo con separación amplia respecto al status bar."
     },
     {
-      "title": "Notificaciones Frosted Glass Blur 36px",
-      "desc": "Menú desplegable portaled fuera del nav con efecto blur acrílico nativo y fondo traslúcido oscuro."
+      "title": "Notificaciones Frosted Glass Blur 32px Real",
+      "desc": "Corregida la compilación CSS de LightningCSS que eliminaba backdrop-filter y aplicado blur directo en línea idéntico a la barra superior."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.21",
   "forceUpdate": true
 }

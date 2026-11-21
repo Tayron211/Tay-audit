@@ -11,6 +11,12 @@
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
 
+/version.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/TayAudit.apk
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /*
   # Prevención estricta de Clickjacking (Nadie puede incrustar la app en iframes maliciosos)
   X-Frame-Options: DENY

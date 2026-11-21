@@ -116,9 +116,13 @@ public class AppInstallerPlugin extends Plugin {
 
                 URL url = new URL(apkUrl);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setUseCaches(false);
+                connection.setDefaultUseCaches(false);
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(30000);
                 connection.setRequestProperty("User-Agent", "Mozilla/5.0 TayAudit Native Android OTA");
+                connection.setRequestProperty("Cache-Control", "no-cache, no-store, must-revalidate");
+                connection.setRequestProperty("Pragma", "no-cache");
                 connection.connect();
 
                 int fileLength = connection.getContentLength();
