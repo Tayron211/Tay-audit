@@ -1,18 +1,18 @@
 {
-  "version": "1.0.39",
-  "versionCode": 40,
+  "version": "1.0.40",
+  "versionCode": 41,
   "releaseDate": "2026-11-21",
-  "notes": "Corrección del escáner QR, avisos flotantes en color rojo y eliminación del salto visual en el Splash Screen del APK.",
+  "notes": "Apertura instantánea al tocar el escáner QR y eliminación del salto del icono nativo en el Splash Screen del APK.",
   "features": [
     {
-      "title": "Corrección del Escáner QR y Avisos Rojos",
-      "desc": "Se resolvió el error de renderizado al abrir el escáner QR y se actualizaron los anuncios flotantes a color rojo."
+      "title": "Apertura Instantánea del Escáner QR",
+      "desc": "El visor del escáner se abre al instante al tocar el botón y activa la lente sin demoras de negociación de resolución."
     },
     {
-      "title": "Splash Screen Sin Saltos en APK",
-      "desc": "Geometría central fija inmutable en el Splash Screen para evitar cualquier salto al iniciar el APK."
+      "title": "Splash Screen Sin Salto de Logo en APK",
+      "desc": "Se eliminó el icono nativo duplicado de Android 12+ y el cambio de flags de ventana que desplazaba el logo al iniciar."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.39",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.40",
   "forceUpdate": true
 }

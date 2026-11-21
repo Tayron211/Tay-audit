@@ -126,10 +126,15 @@
         Universidad Privada del Norte
       </div>
       
-      <!-- Center Identity Core (Bloqueado al 50% exacto sin depender de insets dinámicos ni fuentes) -->
+      <!-- Center Identity Core (Bloqueado al 50% exacto con SVG inline sincrónico para cero saltos en APK) -->
       <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center;width:280px;z-index:2;">
         <div class="splash-logo-card" style="width:80px;height:80px;border-radius:19px;display:flex;align-items:center;justify-content:center;padding:12px;margin-bottom:20px;box-sizing:border-box;">
-          <img src="/icon.svg" alt="UPN" width="56" height="56" style="width:56px;height:56px;object-fit:contain;display:block;" />
+          <svg width="56" height="56" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:56px;height:56px;display:block;flex-shrink:0;">
+            <g transform="translate(-124.05, -26.6)">
+              <path d="M277.3 62.4001V310.8H241V128.8L240 129.7C224 144.8 206.2 158.1 187.2 169.3V128.2C197.2 121.2 206.7 113.5 215.6 105.2C229.4 92.3 241.9 77.9 252.7 62.3H277.3V62.4001Z" fill="black" />
+              <path d="M380.9 128.3V169.4C361.8 158.2 344.1 144.8 328.1 129.8L327.1 128.9V310.9H290.8V62.3999H315.5C326.3 77.9999 338.7 92.3999 352.6 105.3C361.4 113.6 370.9 121.3 380.9 128.3Z" fill="black" />
+            </g>
+          </svg>
         </div>
         <h1 class="splash-text-title" style="font-size:22px;height:27px;line-height:27px;font-weight:800;letter-spacing:0.20em;text-transform:uppercase;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;margin:0;white-space:nowrap;">
           TAY<span style="color:#FDBA30;">-AUDIT</span>

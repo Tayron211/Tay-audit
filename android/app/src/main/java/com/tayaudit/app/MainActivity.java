@@ -13,71 +13,15 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(AppInstallerPlugin.class);
-
-        // Status bar transparente e inmersiva de inmediato desde el primer frame (sin barra gris superior)
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                getWindow().getAttributes().layoutInDisplayCutoutMode = 
-                    android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                getWindow().setStatusBarContrastEnforced(false);
-                getWindow().setNavigationBarContrastEnforced(false);
-            }
-            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
-            getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
-            getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            );
-        } catch (Exception ignored) {}
-
         super.onCreate(savedInstanceState);
 
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                getWindow().setStatusBarContrastEnforced(false);
-                getWindow().setNavigationBarContrastEnforced(false);
-            }
-            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
-            getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
-            getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            );
-        } catch (Exception ignored) {}
-
-        // Eliminar ActionBar nativa bajo cualquier circunstancia
+        // Eliminar ActionBar nativa bajo cualquier circunstancia (sin alterar flags de pantalla completa que provocan saltos)
         try {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().hide();
             }
             if (getActionBar() != null) {
                 getActionBar().hide();
-            }
-        } catch (Exception ignored) {}
-
-        // Aceleración de Hardware GPU a 120 FPS, refresco de pantalla fluido y viewport optimizado
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                try {
-                    android.view.Display display = getWindowManager().getDefaultDisplay();
-                    android.view.Display.Mode[] modes = display.getSupportedModes();
-                    android.view.Display.Mode bestMode = null;
-                    for (android.view.Display.Mode mode : modes) {
-                        if (bestMode == null || mode.getRefreshRate() > bestMode.getRefreshRate()) {
-                            bestMode = mode;
-                        }
-                    }
-                    if (bestMode != null && bestMode.getRefreshRate() > 60.0f) {
-                        android.view.WindowManager.LayoutParams params = getWindow().getAttributes();
-                        params.preferredDisplayModeId = bestMode.getModeId();
-                        params.preferredRefreshRate = bestMode.getRefreshRate();
-                        getWindow().setAttributes(params);
-                    }
-                } catch (Exception ignoredMode) {}
             }
         } catch (Exception ignored) {}
 
@@ -92,7 +36,6 @@ public class MainActivity extends BridgeActivity {
                 settings.setUseWideViewPort(true);
                 settings.setLoadWithOverviewMode(true);
                 settings.setTextZoom(100);
-                settings.setRenderPriority(WebSettings.RenderPriority.HIGH);
                 settings.setDomStorageEnabled(true);
                 settings.setDatabaseEnabled(true);
             }
