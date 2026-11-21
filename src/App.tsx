@@ -1289,335 +1289,481 @@ exit
 
         {/* TAB 5: AUTOMATED SCRIPT DEPLOYMENT & STIVIE AGENT */}
         {displayedTab === 'agent' && (
-          <div className="acrylic-panel" style={{ padding: '30px', maxWidth: '920px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
-              <div style={{
-                width: '46px',
-                height: '46px',
-                borderRadius: '12px',
-                background: 'var(--accent-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 18px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.3)',
-                flexShrink: 0
-              }}>
-                <Terminal size={22} color="var(--accent-contrast, #000000)" />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Centro de Descargas y Despliegue de Agentes
-                </h2>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-                  Despliega STIVIE en cada puesto de trabajo o ejecuta el comando rápido de inventario en equipos ajenos
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Panel de Conexión de Red para Equipos Ajenos y Remotos */}
-              <div className="acrylic-card" style={{
-                padding: '20px 22px',
-                border: '1.5px solid var(--accent-primary)',
-                background: 'rgba(255, 184, 0, 0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '10px',
-                      background: 'var(--accent-primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--accent-contrast, #000000)',
-                      flexShrink: 0
-                    }}>
-                      <Globe size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Destino de Conexión para Equipos Ajenos y Remotos
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                        Este comando se ejecutará en equipos ajenos fuera de este host y transmitirá la información de manera inmediata.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Badge de Estado del Servidor */}
-                  <div style={{
-                    fontSize: '0.74rem',
-                    fontWeight: 800,
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#10b981',
-                    border: '1px solid rgba(16, 185, 129, 0.4)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-                    <span>Servidor En Línea</span>
-                  </div>
-                </div>
-
-                {/* Selector / Campo de IP o Dominio */}
+          <div className="acrylic-panel" style={{ padding: '24px 26px', width: '100%', maxWidth: '1480px', margin: '0 auto', boxSizing: 'border-box' }}>
+            {/* Cabecera Compacta + Barra de Servidor Central Integrada */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px',
+              paddingBottom: '18px',
+              marginBottom: '20px',
+              borderBottom: '1px solid var(--border-acrylic)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--accent-primary)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  flexWrap: 'wrap',
-                  background: 'rgba(148, 163, 184, 0.08)',
-                  padding: '8px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-acrylic)'
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.3)',
+                  flexShrink: 0
                 }}>
-                  <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Servidor Central:
-                  </span>
-                  
-                  {serverInfo.primaryUrl && (
+                  <Terminal size={21} color="var(--accent-contrast, #000000)" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <h2 style={{ fontSize: '1.28rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+                      Centro de Despliegue y Descargas
+                    </h2>
+                    <div style={{
+                      fontSize: '0.70rem',
+                      fontWeight: 800,
+                      padding: '3px 9px',
+                      borderRadius: '999px',
+                      background: 'rgba(16, 185, 129, 0.14)',
+                      color: '#10b981',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+                      <span>Servidor En Línea</span>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', margin: '3px 0 0 0' }}>
+                    Instaladores de escritorio STIVIE, auditoría rápida de hardware y aplicación móvil
+                  </p>
+                </div>
+              </div>
+
+              {/* Selector Compacto de Servidor Destino */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                background: 'var(--bg-elevated, rgba(148, 163, 184, 0.08))',
+                padding: '7px 11px',
+                borderRadius: '11px',
+                border: '1px solid var(--border-acrylic)',
+                flex: '1 1 420px',
+                maxWidth: '620px'
+              }}>
+                <span style={{ fontSize: '0.70rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                  Destino:
+                </span>
+
+                {serverInfo.primaryUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomServerHost('');
+                      localStorage.removeItem('tay_audit_custom_server_host');
+                    }}
+                    className={`btn-flat ${!customServerHost ? 'btn-primary' : ''}`}
+                    style={{ padding: '4px 10px', fontSize: '0.73rem', height: '30px', flexShrink: 0 }}
+                    title={serverInfo.isCloud ? 'Conectado al Dominio Cloud' : 'Usar la IP de red local detectada'}
+                  >
+                    {serverInfo.isCloud ? <Globe size={13} /> : <Wifi size={13} />}
+                    <span>
+                      {serverInfo.isCloud || serverInfo.primaryUrl.startsWith('https://')
+                        ? (serverInfo.hostname || 'tay-audit.pages.dev')
+                        : `${serverInfo.primaryIp}:3001`}
+                    </span>
+                  </button>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: '180px' }}>
+                  <input
+                    type="text"
+                    placeholder="IP o dominio alternativo (opcional)..."
+                    value={customServerHost}
+                    onChange={(e) => {
+                      setCustomServerHost(e.target.value);
+                      localStorage.setItem('tay_audit_custom_server_host', e.target.value);
+                    }}
+                    className="form-input"
+                    style={{ flex: 1, height: '30px', fontSize: '0.74rem', padding: '4px 10px' }}
+                  />
+                  {customServerHost && (
                     <button
                       type="button"
                       onClick={() => {
                         setCustomServerHost('');
                         localStorage.removeItem('tay_audit_custom_server_host');
                       }}
-                      className={`btn-flat ${!customServerHost ? 'btn-primary' : ''}`}
-                      style={{ padding: '4px 10px', fontSize: '0.74rem' }}
-                      title={serverInfo.isCloud ? 'Conectado al Dominio Cloud' : 'Usar la IP de red local Wi-Fi / LAN detectada en esta máquina'}
+                      className="btn-flat"
+                      style={{ padding: '4px 8px', fontSize: '0.70rem', height: '30px' }}
+                      title="Restablecer servidor predeterminado"
                     >
-                      {serverInfo.isCloud ? <Globe size={13} /> : <Wifi size={13} />}
-                      <span>
-                        {serverInfo.isCloud || serverInfo.primaryUrl.startsWith('https://')
-                          ? (serverInfo.hostname || 'tay-audit.pages.dev')
-                          : `Red Local (${serverInfo.primaryIp}:3001)`}
-                      </span>
+                      Reset
                     </button>
                   )}
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: '240px' }}>
-                    <input
-                      type="text"
-                      placeholder="Escribe IP pública, dominio o túnel (ej: http://192.168.1.50:3001 o https://audit.upn.edu.pe)"
-                      value={customServerHost}
-                      onChange={(e) => {
-                        setCustomServerHost(e.target.value);
-                        localStorage.setItem('tay_audit_custom_server_host', e.target.value);
-                      }}
-                      className="form-input"
-                      style={{ flex: 1, height: '32px', fontSize: '0.76rem', padding: '4px 10px' }}
-                    />
-                    {customServerHost && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomServerHost('');
-                          localStorage.removeItem('tay_audit_custom_server_host');
-                        }}
-                        className="btn-flat"
-                        style={{ padding: '4px 8px', fontSize: '0.72rem' }}
-                        title="Restablecer a IP de Red Local"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Opción 1: Instalador Oficial STIVIE en el Endpoint */}
-              <div className="acrylic-card" style={{ padding: '22px', border: '1px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
+            {/* Cuadrícula 2x2 de Tarjetas de Despliegue */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))',
+              gap: '16px',
+              alignItems: 'stretch'
+            }}>
+              {/* Tarjeta 1: Instalador Oficial STIVIE */}
+              <div className="acrylic-card" style={{
+                padding: '20px 22px',
+                border: '1.5px solid var(--accent-primary)',
+                background: 'rgba(255, 184, 0, 0.03)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(255, 184, 0, 0.16)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-primary)',
+                        flexShrink: 0
+                      }}>
+                        <Bot size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          Instalador STIVIE para PC (.BAT)
+                        </div>
+                        <div style={{ fontSize: '0.73rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                          Asistente Virtual con IA + Inventario + Control Remoto
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
                       background: 'rgba(255, 184, 0, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--accent-primary)'
+                      color: 'var(--accent-primary)',
+                      border: '1px solid rgba(255, 184, 0, 0.3)'
                     }}>
-                      <Bot size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Instalador de STIVIE para la PC Cliente (.BAT)
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
-                        Asistente de Operaciones Virtual con IA
-                      </div>
-                    </div>
+                      RECOMENDADO
+                    </span>
                   </div>
 
-                  <button 
+                  <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    Registra el hardware automáticamente e instala la mascota interactiva <strong>STIVIE.exe</strong> con inicio automático, soporte remoto y acciones rápidas.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {['Inventario Automático', 'Asistente IA', 'Control Remoto', 'Auto-inicio Windows'].map((tag) => (
+                      <span key={tag} style={{
+                        fontSize: '0.70rem',
+                        fontWeight: 600,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: 'rgba(148, 163, 184, 0.1)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-acrylic)'
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  <button
                     type="button"
-                    onClick={handleDownloadStivieInstaller} 
+                    onClick={handleDownloadStivieInstaller}
                     className="btn-flat btn-primary"
-                    style={{ padding: '8px 16px' }}
+                    style={{ width: '100%', justifyContent: 'center', padding: '9px 16px', fontWeight: 800 }}
                   >
                     <Download size={15} />
                     <span>Descargar Instalador STIVIE.bat</span>
                   </button>
                 </div>
-
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                  <p style={{ margin: '0 0 8px 0' }}>
-                    Descarga y ejecuta este instalador en cualquier computadora para vincularla al inventario y desplegar la mascota asistente STIVIE:
-                  </p>
-                  <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <li><strong>Inventario automático:</strong> CPU, RAM, placa madre, número de serie, IP y SO al panel central.</li>
-                    <li><strong>Asistente de Operaciones Virtual:</strong> STIVIE.exe con IA, soporte y diagnóstico en tiempo real.</li>
-                    <li><strong>Auto-inicio y acciones rápidas:</strong> Se inicia con Windows, duplicador de proyector y limpieza de cola de impresión.</li>
-                  </ul>
-                </div>
               </div>
 
-              {/* Opción 2: Script Independiente de Levantamiento Rápido */}
-              <div className="acrylic-card" style={{ padding: '22px', border: '1px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: 'rgba(16, 185, 129, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#10b981'
+              {/* Tarjeta 2: Script Independiente Portable */}
+              <div className="acrylic-card" style={{
+                padding: '20px 22px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#10b981',
+                        flexShrink: 0
+                      }}>
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          Auditoría Rápida Portable (.BAT)
+                        </div>
+                        <div style={{ fontSize: '0.73rem', color: '#10b981', fontWeight: 700 }}>
+                          100% Portable • Sin Instalación • Registro en 2s
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      color: '#10b981',
+                      border: '1px solid rgba(16, 185, 129, 0.3)'
                     }}>
-                      <ShieldCheck size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Opción 2: Script Independiente de Levantamiento (Sin Instalación)
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700 }}>
-                        100% Portable • No instala ningún archivo • Registro rápido de inventario en 2 segundos
-                      </div>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="button"
-                    onClick={handleDownloadBatch} 
-                    className="btn-flat"
-                    style={{ padding: '8px 16px', borderColor: 'rgba(16, 185, 129, 0.4)' }}
-                  >
-                    <Download size={15} color="#10b981" />
-                    <span>Descargar tay-inventory-agent.bat</span>
-                  </button>
-                </div>
-
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                  Ideal para técnicos que llevan un pendrive/USB o realizan inventarios masivos temporales. Extrae todas las características de hardware y red, las transmite a la central (<code>{effectiveServerUrl}</code>) y finaliza sin dejar software instalado en el equipo.
-                </p>
-              </div>
-
-              {/* Opción 3: Comando Rápido de PowerShell */}
-              <div className="acrylic-card" style={{ padding: '22px', border: '1.5px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Terminal size={17} color="var(--accent-primary)" />
-                    <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-                      Opción 3: Comando One-Liner PowerShell (Ejecución Directa en Equipo Remoto)
+                      USB / PORTABLE
                     </span>
                   </div>
-                  <button type="button" onClick={() => copyToClipboard(psOneLiner)} className="btn-flat btn-primary">
-                    {copiedPs ? <Check size={14} /> : <Copy size={14} />}
-                    <span>{copiedPs ? '¡Copiado!' : 'Copiar Comando'}</span>
+
+                  <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    Ideal para auditorías rápidas por USB. Extrae CPU, RAM, placa, serie, IP y SO hacia el panel central y finaliza sin dejar archivos instalados.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {['Sin Instalación', 'Ejecución por USB', 'Hardware + Red', 'Cierre Automático'].map((tag) => (
+                      <span key={tag} style={{
+                        fontSize: '0.70rem',
+                        fontWeight: 600,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: 'rgba(148, 163, 184, 0.1)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-acrylic)'
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  <button
+                    type="button"
+                    onClick={handleDownloadBatch}
+                    className="btn-flat"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      padding: '9px 16px',
+                      fontWeight: 700,
+                      borderColor: 'rgba(16, 185, 129, 0.45)',
+                      background: 'rgba(16, 185, 129, 0.08)'
+                    }}
+                  >
+                    <Download size={15} color="#10b981" />
+                    <span>Descargar tay-audit-agent.bat</span>
                   </button>
                 </div>
-                
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 10px 0' }}>
-                  Pega este comando en la consola de PowerShell (o CMD) de cualquier equipo ajeno en la red. Recolectará el hardware y lo subirá de inmediato a este panel:
-                </p>
-
-                <pre style={{
-                  backgroundColor: 'var(--input-bg)',
-                  padding: '14px',
-                  borderRadius: '8px',
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  color: 'var(--accent-primary)',
-                  overflowX: 'auto',
-                  border: '1px solid var(--border-acrylic)',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                  fontFamily: 'monospace',
-                  margin: 0
-                }}>
-                  {psOneLiner}
-                </pre>
               </div>
 
-              {/* Opción 4: App Nativa Móvil Android (.APK) */}
-              <div className="acrylic-card" style={{ padding: '22px', border: '1px solid var(--border-acrylic)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: 'rgba(56, 189, 248, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#38bdf8'
+              {/* Tarjeta 3: Comando Rápido PowerShell */}
+              <div className="acrylic-card" style={{
+                padding: '20px 22px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(255, 184, 0, 0.14)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-primary)',
+                        flexShrink: 0
+                      }}>
+                        <Terminal size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          Comando Directo PowerShell
+                        </div>
+                        <div style={{ fontSize: '0.73rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                          Ejecución en Consola • Sin Descargar Archivos
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(148, 163, 184, 0.14)',
+                      color: 'var(--text-secondary)',
+                      border: '1px solid var(--border-acrylic)'
                     }}>
-                      <Smartphone size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Opción 4: App Nativa Móvil Android (.APK)
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 700 }}>
-                        Instalador Oficial Android
-                      </div>
-                    </div>
+                      ONE-LINER
+                    </span>
                   </div>
 
-                  <a 
-                    href="/TayAudit.apk" 
-                    download="TayAudit.apk"
-                    className="btn-flat btn-primary"
-                    style={{ padding: '8px 16px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Download size={15} />
-                    <span>Descargar TayAudit.apk (5.1 MB)</span>
-                  </a>
+                  <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    Pega este comando en PowerShell o CMD de cualquier PC para auditar y subir su inventario al instante:
+                  </p>
+
+                  <pre style={{
+                    backgroundColor: 'var(--input-bg)',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    fontSize: '0.76rem',
+                    fontWeight: 700,
+                    color: 'var(--accent-primary)',
+                    overflowX: 'auto',
+                    border: '1px solid var(--border-acrylic)',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'monospace',
+                    margin: 0
+                  }}>
+                    {psOneLiner}
+                  </pre>
                 </div>
 
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                  <p style={{ margin: '0 0 8px 0' }}>
-                    Instala TayAudit de forma 100% nativa en teléfonos y tablets Android:
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(psOneLiner)}
+                    className="btn-flat btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', padding: '9px 16px', fontWeight: 800 }}
+                  >
+                    {copiedPs ? <Check size={15} /> : <Copy size={15} />}
+                    <span>{copiedPs ? '¡Comando Copiado!' : 'Copiar Comando PowerShell'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tarjeta 4: App Nativa Móvil Android (.APK) */}
+              <div className="acrylic-card" style={{
+                padding: '20px 22px',
+                border: '1px solid var(--border-acrylic)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '14px'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(56, 189, 248, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#38bdf8',
+                        flexShrink: 0
+                      }}>
+                        <Smartphone size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          App Móvil Android (.APK)
+                        </div>
+                        <div style={{ fontSize: '0.73rem', color: '#38bdf8', fontWeight: 700 }}>
+                          Aplicación Nativa • Escáner QR y Alertas Push
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(56, 189, 248, 0.14)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.3)'
+                    }}>
+                      ANDROID
+                    </span>
+                  </div>
+
+                  <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    Gestiona el inventario desde teléfonos o tablets con acceso directo a la cámara para lectura de códigos QR y notificaciones sonoras en vivo.
                   </p>
-                  <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <li><strong>Escáner QR Nativo:</strong> Acceso directo a la cámara para escaneo rápido de hardware.</li>
-                    <li><strong>Notificaciones y Alertas:</strong> Sonido nativo en tiempo real para tickets y reportes urgentes.</li>
-                    <li><strong>Independiente:</strong> Funciona como aplicación propia del sistema operativo Android.</li>
-                  </ul>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {['Escáner QR Cámara', 'Alertas en Tiempo Real', 'Actualización OTA'].map((tag) => (
+                      <span key={tag} style={{
+                        fontSize: '0.70rem',
+                        fontWeight: 600,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: 'rgba(148, 163, 184, 0.1)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-acrylic)'
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-acrylic)' }}>
+                  <a
+                    href="/TayAudit.apk"
+                    download="TayAudit.apk"
+                    className="btn-flat"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      padding: '9px 16px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      borderColor: 'rgba(56, 189, 248, 0.45)',
+                      background: 'rgba(56, 189, 248, 0.08)'
+                    }}
+                  >
+                    <Download size={15} color="#38bdf8" />
+                    <span>Descargar TayAudit.apk (5.1 MB)</span>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Firma del Desarrollador (Solo en apartados de Dashboard y STIVIE, ubicada más abajo) */}
-        {(
-          ((displayedTab === 'audit' || displayedTab === 'dashboard' || displayedTab === 'inventory') && auditView === 'dashboard') ||
-          (displayedTab === 'support' && supportInitialSubTab === 'dashboard') ||
-          displayedTab === 'agent'
-        ) && (
+        {/* Firma del Desarrollador (Exclusivamente en el apartado de STIVIE) */}
+        {displayedTab === 'agent' && (
           <DeveloperFooter />
         )}
         </div>
