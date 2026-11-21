@@ -1,18 +1,18 @@
 {
-  "version": "1.0.40",
-  "versionCode": 41,
+  "version": "1.0.41",
+  "versionCode": 42,
   "releaseDate": "2026-11-21",
-  "notes": "Apertura instantánea al tocar el escáner QR y eliminación del salto del icono nativo en el Splash Screen del APK.",
+  "notes": "Contador de notificaciones en rojo en la barra móvil inferior, texto superior del Splash Screen ligeramente más bajo y desactivación del reajuste de SystemBars en Capacitor 8 que provocaba el salto del Splash en APK.",
   "features": [
     {
-      "title": "Apertura Instantánea del Escáner QR",
-      "desc": "El visor del escáner se abre al instante al tocar el botón y activa la lente sin demoras de negociación de resolución."
+      "title": "Badge de Notificaciones en Rojo (Barra Móvil)",
+      "desc": "El globo contador de Asistencia TI en la barra inferior móvil ahora se muestra en color rojo alerta (#ef4444) con texto blanco."
     },
     {
-      "title": "Splash Screen Sin Salto de Logo en APK",
-      "desc": "Se eliminó el icono nativo duplicado de Android 12+ y el cambio de flags de ventana que desplazaba el logo al iniciar."
+      "title": "Splash Screen Sin Salto de Insets en APK",
+      "desc": "Se desactivó el reajuste asíncrono de padding de SystemBars en Capacitor 8 al cargar el viewport y se ubicó ligeramente más bajo el título superior."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.40",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.41",
   "forceUpdate": true
 }

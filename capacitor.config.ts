@@ -15,6 +15,10 @@ const config: CapacitorConfig = {
     ]
   },
   plugins: {
+    SystemBars: {
+      insetsHandling: "disable",
+      initialViewportFitValueHint: "cover"
+    },
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: true,
