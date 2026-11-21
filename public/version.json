@@ -1,18 +1,18 @@
 {
-  "version": "1.0.30",
-  "versionCode": 31,
+  "version": "1.0.31",
+  "versionCode": 32,
   "releaseDate": "2026-11-21",
-  "notes": "Corrección del bloqueo del hilo principal en MutationObserver durante el Splash Screen (2.2s), cámara QR sin pantalla negra y mejoras móviles.",
+  "notes": "Eliminación del temblor al pasar el cursor por los bordes de las filas del inventario, Splash Screen fluido (2.2s) y mejoras móviles.",
   "features": [
     {
-      "title": "Splash Screen Fluido (2.2s) sin Bloqueo",
-      "desc": "Se eliminó el bucle de microtareas del MutationObserver que congelaba el Splash Screen al iniciar."
+      "title": "Hover de Filas 100% Estable sin Temblor",
+      "desc": "Se eliminó el desplazamiento vertical (translateY) en hover de las filas y tarjetas de inventario para que no tiemblen al pasar el cursor por sus bordes."
     },
     {
-      "title": "Interfaz Móvil, Cámara QR Directa y STIVIE",
+      "title": "Splash Screen Fluido (2.2s) y Mejoras Móviles",
       "desc": "Encabezados y filtros optimizados para móviles, círculo rojo de alertas, cámara QR directa y respuestas de identidad en STIVIE."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.30",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.31",
   "forceUpdate": true
 }
