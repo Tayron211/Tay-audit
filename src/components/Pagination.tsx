@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
   ChevronsLeft, 
-  ChevronsRight 
+  ChevronsRight,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 
 export interface PaginationProps {
@@ -27,6 +29,24 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const [isPageSizeOpen, setIsPageSizeOpen] = useState(false);
+  const pageSizeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isPageSizeOpen) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (pageSizeRef.current && !pageSizeRef.current.contains(e.target as Node)) {
+        setIsPageSizeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isPageSizeOpen]);
 
   const startItem = totalItems === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1;
   const endItem = Math.min(safeCurrentPage * pageSize, totalItems);
@@ -107,30 +127,98 @@ export const Pagination: React.FC<PaginationProps> = ({
           </span>
 
           {onPageSizeChange && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Ver:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="form-input"
-                style={{
-                  height: '26px',
-                  padding: '2px 6px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  borderRadius: '6px',
-                  background: 'var(--bg-acrylic-card)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-acrylic)',
-                  cursor: 'pointer'
-                }}
-              >
-                {pageSizeOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} ref={pageSizeRef}>
+              <span style={{ fontSize: '0.70rem', fontWeight: 600, color: 'var(--text-muted)' }}>Ver:</span>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsPageSizeOpen(prev => !prev)}
+                  className="btn-flat"
+                  style={{
+                    height: '28px',
+                    minWidth: '54px',
+                    padding: '0 8px 0 10px',
+                    fontSize: '0.74rem',
+                    fontWeight: 800,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    borderRadius: '8px',
+                    background: 'var(--bg-acrylic-card)',
+                    color: 'var(--text-primary)',
+                    border: isPageSizeOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-acrylic)',
+                    boxShadow: isPageSizeOpen ? '0 0 0 2px var(--accent-glow)' : 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '5px',
+                    cursor: 'pointer'
+                  }}
+                  title="Cantidad de elementos por página"
+                  aria-haspopup="listbox"
+                  aria-expanded={isPageSizeOpen}
+                >
+                  <span>{pageSize}</span>
+                  <ChevronDown
+                    size={13}
+                    style={{
+                      color: isPageSizeOpen ? 'var(--accent-primary)' : 'var(--text-muted)',
+                      transform: isPageSizeOpen ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }}
+                  />
+                </button>
+
+                {isPageSizeOpen && (
+                  <div
+                    role="listbox"
+                    className="acrylic-select-popover"
+                    style={{
+                      position: 'absolute',
+                      bottom: 'calc(100% + 6px)',
+                      top: 'auto',
+                      right: 0,
+                      left: 'auto',
+                      minWidth: '76px',
+                      padding: '4px',
+                      borderRadius: '11px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                      zIndex: 10050
+                    }}
+                  >
+                    {pageSizeOptions.map((opt) => {
+                      const isSelected = opt === pageSize;
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => {
+                            onPageSizeChange(opt);
+                            setIsPageSizeOpen(false);
+                          }}
+                          className={`acrylic-select-option ${isSelected ? 'is-selected' : ''}`}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '7px',
+                            fontSize: '0.75rem',
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: isSelected ? 800 : 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '8px'
+                          }}
+                        >
+                          <span>{opt}</span>
+                          {isSelected && <Check size={12} strokeWidth={2.8} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

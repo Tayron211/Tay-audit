@@ -1,18 +1,18 @@
 {
-  "version": "1.0.31",
-  "versionCode": 32,
+  "version": "1.0.33",
+  "versionCode": 34,
   "releaseDate": "2026-11-21",
-  "notes": "Eliminación del temblor al pasar el cursor por los bordes de las filas del inventario, Splash Screen fluido (2.2s) y mejoras móviles.",
+  "notes": "Selector de paginación rediseñado con menú desplegable acrílico acorde a la app y fondo Modo Claro en tono perla (#edf0f5).",
   "features": [
     {
-      "title": "Hover de Filas 100% Estable sin Temblor",
-      "desc": "Se eliminó el desplazamiento vertical (translateY) en hover de las filas y tarjetas de inventario para que no tiemblen al pasar el cursor por sus bordes."
+      "title": "Selector de Paginación Acorde a la App",
+      "desc": "Se reemplazó el select nativo del navegador en la paginación por un menú desplegable acrílico con bordes redondeados y resaltado institucional."
     },
     {
-      "title": "Splash Screen Fluido (2.2s) y Mejoras Móviles",
-      "desc": "Encabezados y filtros optimizados para móviles, círculo rojo de alertas, cámara QR directa y respuestas de identidad en STIVIE."
+      "title": "Contraste de Fondo en Modo Claro (#edf0f5)",
+      "desc": "El fondo del Modo Claro usa un tono blanco perla suave (#edf0f5) para distinguir con nitidez las tarjetas, paneles y ventanas en blanco puro (#ffffff)."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.31",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.33",
   "forceUpdate": true
 }

@@ -55,7 +55,7 @@
         color-scheme: dark;
       }
       html:not(.dark) #upn-boot-splash, [data-mode="light"] #upn-boot-splash {
-        background-color: #f8fafc !important;
+        background-color: #edf0f5 !important;
         color-scheme: light;
       }
       html.dark .splash-text-title, [data-mode="dark"] .splash-text-title { color: #ffffff !important; }
@@ -93,7 +93,7 @@
             document.documentElement.classList.remove('dark');
           }
 
-          var themeColor = mode === 'light' ? '#f8fafc' : '#000000';
+          var themeColor = mode === 'light' ? '#edf0f5' : '#000000';
           var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
           for (var i = 0; i < themeMetas.length; i++) {
             themeMetas[i].setAttribute('content', themeColor);

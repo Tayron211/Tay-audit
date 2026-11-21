@@ -194,9 +194,9 @@
 /* ==================================================================== */
 [data-mode="light"] {
   color-scheme: light;
-  --bg-canvas: #ffffff;
-  /* Pure Radiant Crisp White (Sin tonos grisáceos ni oscuros) */
-  --bg-canvas-subtle: #f8fafc;
+  --bg-canvas: #edf0f5;
+  /* Soft Pearl Slate (Contraste nítido con tarjetas, paneles y ventanas blancas #ffffff) */
+  --bg-canvas-subtle: #f1f5f9;
   --bg-acrylic: #ffffff;
   --bg-acrylic-hover: #f8fafc;
   --bg-acrylic-elevated: #ffffff;
@@ -204,17 +204,17 @@
 
   --modal-backdrop-bg: rgba(15, 23, 42, 0.45);
   --modal-glass-bg: #ffffff;
-  --modal-glass-border: rgba(226, 232, 240, 0.95);
+  --modal-glass-border: rgba(203, 213, 225, 0.95);
   --bg-modal-window: #ffffff;
-  --border-modal-window: rgba(226, 232, 240, 0.95);
+  --border-modal-window: rgba(203, 213, 225, 0.95);
   --bg-modal-header: transparent;
   --bg-modal-footer: transparent;
-  --bg-modal-card: #f8fafc;
-  --border-modal-card: rgba(226, 232, 240, 0.90);
-  --border-modal-subtle: rgba(0, 0, 0, 0.07);
+  --bg-modal-card: #f1f5f9;
+  --border-modal-card: rgba(203, 213, 225, 0.90);
+  --border-modal-subtle: rgba(0, 0, 0, 0.08);
 
-  --border-acrylic: rgba(226, 232, 240, 0.95);
-  --border-acrylic-hover: rgba(203, 213, 225, 0.95);
+  --border-acrylic: rgba(203, 213, 225, 0.92);
+  --border-acrylic-hover: rgba(148, 163, 184, 0.95);
   --border-acrylic-active: var(--accent-primary);
 
   --glass-sheen: none;
@@ -312,7 +312,7 @@ html {
 [data-mode="light"],
 [data-mode="light"] body,
 [data-mode="light"] #root {
-  background-color: #ffffff !important;
+  background-color: #edf0f5 !important;
   background-image: none !important;
   color: #0f172a;
 }
@@ -4966,6 +4966,14 @@ body.splash-active::-webkit-scrollbar,
   box-sizing: border-box;
   gap: 3px;
   margin-left: auto;
+}
+
+[data-mode="light"] .audit-tabs-pill-container,
+[data-mode="light"] .support-subtabs-container,
+[data-mode="light"] .report-subtabs-container {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 @media (max-width: 820px) {
