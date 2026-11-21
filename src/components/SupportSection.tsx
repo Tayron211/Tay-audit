@@ -162,6 +162,23 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
   }, [supportSubTab]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'abierto' | 'en_progreso' | 'resuelto'>('all');
   const [ticketSearchQuery, setTicketSearchQuery] = useState('');
+  const [isRefreshingTickets, setIsRefreshingTickets] = useState(false);
+
+  const handleRefreshTickets = useCallback(async () => {
+    if (isRefreshingTickets) return;
+    setIsRefreshingTickets(true);
+    const minSpinPromise = new Promise(resolve => setTimeout(resolve, 650));
+    try {
+      await Promise.all([
+        Promise.resolve(onRefresh?.()),
+        minSpinPromise
+      ]);
+    } catch {
+      await minSpinPromise;
+    } finally {
+      setIsRefreshingTickets(false);
+    }
+  }, [isRefreshingTickets, onRefresh]);
   const [actionFeedback, setActionFeedbackState] = useState<string | null>(null);
   const [isFeedbackVisible, setIsFeedbackVisible] = useState<boolean>(false);
   const feedbackFadeOutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1503,13 +1520,20 @@ export const SupportSection: React.FC<SupportSectionProps> = ({
               <div className="support-tickets-actions-row">
                 <button
                   type="button"
-                  onClick={onRefresh}
+                  disabled={isRefreshingTickets}
+                  onClick={handleRefreshTickets}
                   className="btn-flat"
-                  style={{ padding: '6px 12px', fontSize: '0.74rem' }}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.74rem',
+                    borderColor: isRefreshingTickets ? 'var(--accent-primary)' : undefined,
+                    color: isRefreshingTickets ? 'var(--accent-primary)' : undefined,
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                  }}
                   title="Actualizar tickets en vivo"
                 >
-                  <RefreshCw size={14} />
-                  <span>Actualizar</span>
+                  <RefreshCw size={14} className={isRefreshingTickets ? 'spin-fast' : ''} />
+                  <span>{isRefreshingTickets ? 'Actualizando...' : 'Actualizar'}</span>
                 </button>
               </div>
             </div>

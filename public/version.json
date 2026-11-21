@@ -1,14 +1,14 @@
 {
-  "version": "1.0.46",
-  "versionCode": 47,
+  "version": "1.0.47",
+  "versionCode": 48,
   "releaseDate": "2026-11-21",
-  "notes": "Sin botones redundantes en Asistencia TI, menús desplegables portaleados con efecto blur real sin recortes y filtros móviles más compactos y limpios.",
+  "notes": "Animación de giro y estado visual en el botón Actualizar de Tickets.",
   "features": [
     {
-      "title": "Sin Botones Redundantes en Asistencia TI",
-      "desc": "Se retiraron los botones duplicados 'Registrar Ticket' y 'Enseñar Nueva Solución Manualmente', centralizando la acción en el botón '+ Registrar' superior."
+      "title": "Botón Actualizar Animado",
+      "desc": "Al presionar Actualizar en Asistencia TI, el icono gira suavemente con indicador de carga 'Actualizando...'."
     }
   ],
-  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.46",
+  "apkUrl": "https://tay-audit.pages.dev/TayAudit.apk?v=1.0.47",
   "forceUpdate": true
 }
